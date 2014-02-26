@@ -1,5 +1,6 @@
 package temp.data.annotation.nlp;
 
+import net.sf.json.JSONObject;
 import temp.data.annotation.TempDocument;
 
 public class TokenSpan {
@@ -31,5 +32,31 @@ public class TokenSpan {
 		return this.endTokenIndex;
 	}
 	
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		for (int i = this.startTokenIndex; i < this.endTokenIndex; i++)
+			str.append(this.document.getToken(this.sentenceIndex, i)).append(" ");
+		
+		return str.toString().trim();
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		json.put("startTokenIndex", this.startTokenIndex);
+		json.put("endTokenIndex", this.endTokenIndex);
+		
+		return json;
+	}
+	
+	public static TokenSpan fromJSON(JSONObject json, TempDocument document, int sentenceIndex) {
+		return new TokenSpan(
+			document,
+			sentenceIndex,
+			json.getInt("startTokenIndex"),
+			json.getInt("endTokenIndex")
+		);
+	}
 }
 

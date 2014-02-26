@@ -8,6 +8,7 @@ import java.util.Map;
 import temp.data.annotation.nlp.PoSTag;
 import temp.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.timeml.Event;
+import temp.data.annotation.timeml.Signal;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
 
@@ -21,7 +22,12 @@ public class TempDocument {
 	
 	private Event[][] events;
 	private Time[][] times;
+	private Signal[][] signals;
 	private TLink[] tlinks;
+	
+	private Map<String, Event> eventMap;
+	private Map<String, Time> timeMap;
+	private Map<String, Signal> signalMap;
 	
 	public Language getLanguage() {
 		return this.language;
@@ -81,6 +87,10 @@ public class TempDocument {
 		return times;
 	}
 	
+	public Time getTime(String id) {
+		return this.timeMap.get(id);
+	}
+	
 	public List<Event> getEvents() {
 		List<Event> events = new ArrayList<Event>();
 		for (int i = 0; i < this.events.length; i++) {
@@ -97,6 +107,32 @@ public class TempDocument {
 			events.add(this.events[sentenceIndex][j]);
 		}
 		return events;
+	}
+	
+	public Event getEvent(String id) {
+		return this.eventMap.get(id);
+	}
+	
+	public List<Signal> getSignals() {
+		List<Signal> signals = new ArrayList<Signal>();
+		for (int i = 0; i < this.signals.length; i++) {
+			for (int j = 0; j < this.signals[i].length; j++) {
+				signals.add(this.signals[i][j]);
+			}
+		}
+		return signals;
+	}
+	
+	public List<Signal> getSignals(int sentenceIndex) {
+		List<Signal> signals = new ArrayList<Signal>();
+		for (int j = 0; j < this.signals[sentenceIndex].length; j++) {
+			signals.add(this.signals[sentenceIndex][j]);
+		}
+		return signals;
+	}
+	
+	public Signal getSignal(String id) {
+		return this.signalMap.get(id);
 	}
 	
 	public List<TLink> getTLinks() {
@@ -124,6 +160,8 @@ public class TempDocument {
 		if (sentenceIndex > this.tokens.length)
 			return false;
 		this.events[sentenceIndex] = (Event[])(events.toArray());
+		for (int i = 0; i < this.events[sentenceIndex].length; i++)
+			this.eventMap.put(this.events[sentenceIndex][i].getId(), this.events[sentenceIndex][i]);	
 		return true;
 	}
 	
@@ -131,6 +169,17 @@ public class TempDocument {
 		if (sentenceIndex > this.tokens.length)
 			return false;
 		this.times[sentenceIndex] = (Time[])(times.toArray());
+		for (int i = 0; i < this.times[sentenceIndex].length; i++)
+			this.timeMap.put(this.times[sentenceIndex][i].getId(), this.times[sentenceIndex][i]);	
+		return true;
+	}
+	
+	public boolean setSignals(int sentenceIndex, List<Event> signals) {
+		if (sentenceIndex > this.tokens.length)
+			return false;
+		this.signals[sentenceIndex] = (Signal[])(signals.toArray());
+		for (int i = 0; i < this.signals[sentenceIndex].length; i++)
+			this.signalMap.put(this.signals[sentenceIndex][i].getId(), this.signals[sentenceIndex][i]);	
 		return true;
 	}
 	
@@ -139,22 +188,22 @@ public class TempDocument {
 		return true;
 	}
 	
-	public boolean saveToJSON(String path) {
+	public boolean saveToJSONFile(String path) {
 		/* FIXME */
 		return true;
 	}
 	
-	public boolean saveToXML(String path) {
+	public boolean saveToXMLFile(String path) {
 		/* FIXME */
 		return true;
 	}
 	
-	public static TempDocument loadFromJSON(String path) {
+	public static TempDocument loadFromJSONFile(String path) {
 		/* FIXME */
 		return null;
 	}
 	
-	public static TempDocument loadFromXML(String path) {
+	public static TempDocument loadFromXMLFile(String path) {
 		/* FIXME */
 		return null;
 	}
