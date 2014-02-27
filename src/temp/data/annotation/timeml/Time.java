@@ -206,10 +206,18 @@ public class Time implements TLinkable {
 			time.tokenSpan = TokenSpan.fromJSON(json.getJSONObject("tokenSpan"), document, sentenceIndex);
 		if (json.containsKey("timeMLType"))
 			time.timeMLType = TimeMLType.valueOf(json.getString("timeMLType"));
-		if (json.containsKey("startTimeId"))
-			time.startTime = document.getTime(json.getString("startTimeId"));
-		if (json.containsKey("endTimeId"))
-			time.endTime = document.getTime(json.getString("endTimeId"));	
+		if (json.containsKey("startTimeId") && json.getString("startTimeId").length() > 0) {
+			Time startTime = document.getTime(json.getString("startTimeId"));
+			if (startTime == null)
+				return null;
+			time.startTime = startTime; 
+		}
+		if (json.containsKey("endTimeId") && json.getString("endTimeId").length() > 0) {
+			Time endTime = document.getTime(json.getString("endTimeId"));
+			if (endTime == null)
+				return null;
+			time.endTime = 	endTime;
+		}
 		if (json.containsKey("quant"))
 			time.quant = json.getString("quant");
 		if (json.containsKey("duration"))
@@ -218,10 +226,18 @@ public class Time implements TLinkable {
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(json.getString("timeMLDocumentFunction"));
 		if (json.containsKey("temporalFunction"))
 			time.temporalFunction = json.getBoolean("temporalFunction");
-		if (json.containsKey("anchorTimeId"))
-			time.anchorTime = document.getTime(json.getString("anchorTimeId"));
-		if (json.containsKey("valueFromFunctionId"))
-			time.valueFromFunction = document.getTime(json.getString("valueFromFunctionId"));
+		if (json.containsKey("anchorTimeId") && json.getString("anchorTimeId").length() > 0) {
+			Time anchorTime = document.getTime(json.getString("anchorTimeId"));
+			if (anchorTime == null)
+				return null;
+			time.anchorTime = anchorTime;
+		}
+		if (json.containsKey("valueFromFunctionId") && json.getString("valueFromFunctionId").length() > 0) {
+			Time valueFromFunction = document.getTime(json.getString("valueFromFunctionId"));
+			if (valueFromFunction == null)
+				return null;
+			time.valueFromFunction = valueFromFunction;
+		}
 		if (json.containsKey("timeMLValue"))
 			time.timeMLValue = TimeMLValue.valueOf(json.getString("timeMLValue"));
 		if (json.containsKey("timeMLMod"))
@@ -295,10 +311,24 @@ public class Time implements TLinkable {
 		
 		if (hasTimeMLType)
 			time.timeMLType = TimeMLType.valueOf(element.getAttributeValue("type"));
-		if (hasStartTimeId)
-			time.startTime = document.getTime(element.getAttributeValue("starttid"));
-		if (hasEndTimeId)
-			time.endTime = document.getTime(element.getAttributeValue("endttid"));
+		if (hasStartTimeId) {
+			String starttid = element.getAttributeValue("starttid");
+			if (starttid.length() > 0) {
+				Time startTime = document.getTime(starttid);
+				if (startTime == null)
+					return null;
+				time.startTime = startTime;
+			}
+		}
+		if (hasEndTimeId) {
+			String endtid = element.getAttributeValue("endttid");
+			if (endtid.length() > 0) {
+				Time endTime = document.getTime(endtid);
+				if (endTime == null)
+					return null;
+				time.endTime = endTime;
+			}
+		}
 		if (hasQuant)
 			time.quant = element.getAttributeValue("quant");
 		if (hasDuration)
@@ -307,10 +337,24 @@ public class Time implements TLinkable {
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(element.getAttributeValue("docFunction"));
 		if (hasTemporalFunction && element.getAttributeValue("temporalFunction").length() > 0)
 			time.temporalFunction = Boolean.parseBoolean(element.getAttributeValue("temporalFunction"));
-		if (hasAnchorTimeId)
-			time.anchorTime = document.getTime(element.getAttributeValue("anchortid"));
-		if (hasValueFromFunctionId)
-			time.valueFromFunction = document.getTime(element.getAttributeValue("valueFromFunctionTid"));
+		if (hasAnchorTimeId) {
+			String anchortid = element.getAttributeValue("anchortid");
+			if (anchortid.length() > 0) {
+				Time anchorTime = document.getTime(anchortid);
+				if (anchorTime == null)
+					return null;
+				time.anchorTime = anchorTime;
+			}
+		}
+		if (hasValueFromFunctionId) {
+			String valueFromFunctionTid = element.getAttributeValue("valueFromFunctionTid");
+			if (valueFromFunctionTid.length() > 0) {
+				Time valueFromFunction = document.getTime(valueFromFunctionTid);
+				if (valueFromFunction == null)
+					return null;
+				time.valueFromFunction = valueFromFunction;
+			}
+		}
 		if (hasTimeMLValue)
 			time.timeMLValue = TimeMLValue.valueOf(element.getAttributeValue("value"));
 		if (hasTimeMLMod)
