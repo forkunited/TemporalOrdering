@@ -3,17 +3,13 @@ package temp.data.annotation.nlp;
 import temp.data.annotation.TempDocument;
 
 public class TypedDependency {
-	public enum Type {
-		/* FIXME */
-	}
-	
 	private TempDocument document;
 	private int sentenceIndex;
 	private int parentTokenIndex;
 	private int childTokenIndex;
-	private Type type;
+	private String type;
 	
-	public TypedDependency(TempDocument document, int sentenceIndex, int parentTokenIndex, int childTokenIndex, Type type) {
+	public TypedDependency(TempDocument document, int sentenceIndex, int parentTokenIndex, int childTokenIndex, String type) {
 		this.document = document;
 		this.sentenceIndex = sentenceIndex;
 		this.parentTokenIndex = parentTokenIndex;
@@ -37,7 +33,7 @@ public class TypedDependency {
 		return this.sentenceIndex;
 	}
 	
-	public Type getType() {
+	public String getType() {
 		return this.type;
 	}
 	
@@ -53,7 +49,7 @@ public class TypedDependency {
 		str = str.trim();
 		
 		String[] typeAndRest = str.split("\\(");
-		TypedDependency.Type type = Type.valueOf(typeAndRest[0]);
+		String type = typeAndRest[0];
 		
 		String rest = typeAndRest[1].substring(0, str.length() - 1);
 		String[] parentAndChild = rest.split(",");

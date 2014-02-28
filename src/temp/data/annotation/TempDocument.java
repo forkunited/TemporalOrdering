@@ -22,6 +22,7 @@ import ark.util.FileUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import temp.data.annotation.nlp.Annotator;
 import temp.data.annotation.nlp.PoSTag;
 import temp.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.timeml.Event;
@@ -32,6 +33,7 @@ import temp.data.annotation.timeml.Time;
 public class TempDocument {
 	private String name;
 	private Language language;
+	private String nlpAnnotator;
 	
 	private String[][] tokens;
 	private PoSTag[][] posTags;
@@ -215,6 +217,7 @@ public class TempDocument {
 		
 		json.put("name", this.name);
 		json.put("language", this.language.toString());
+		json.put("nlpAnnotator", this.nlpAnnotator);
 		
 		for (int i = 0; i < this.tokens.length; i++) {
 			JSONObject sentenceJson = new JSONObject();
@@ -262,6 +265,7 @@ public class TempDocument {
 		
 		element.setAttribute("name", this.name);
 		element.setAttribute("language", this.language.toString());
+		element.setAttribute("nlpAnnotator", this.nlpAnnotator);
 		
 		for (int i = 0; i < this.tokens.length; i++) {
 			Element entryElement = new Element("entry");
@@ -355,6 +359,7 @@ public class TempDocument {
 		
 		document.name = json.getString("name");
 		document.language = Language.valueOf(json.getString("language"));
+		document.nlpAnnotator = json.getString("nlpAnnotator");
 		
 		JSONArray sentences = json.getJSONArray("sentences");
 		document.tokens = new String[sentences.size()][];
@@ -439,6 +444,7 @@ public class TempDocument {
 		
 		boolean hasName = false;
 		boolean hasLanguage = false;
+		boolean hasNlpAnnotator = false;
 		
 		List<Attribute> attributes = (List<Attribute>)element.getAttributes();
 		for (Attribute attribute : attributes) {
@@ -446,12 +452,16 @@ public class TempDocument {
 				hasName = true;
 			else if (attribute.getName().equals("language"))
 				hasLanguage = true;
+			else if (attribute.getName().equals("nlpAnnotator"))
+				hasNlpAnnotator = true;
 		}
 		
 		if (hasName)
 			document.name = element.getAttributeValue("name");
 		if (hasLanguage)
 			document.language = Language.valueOf(element.getAttributeValue("language"));
+		if (hasNlpAnnotator)
+			document.nlpAnnotator = element.getAttributeValue("nlpAnnotator");
 		
 		List<Element> entryElements = (List<Element>)element.getChildren("entry");
 		document.tokens = new String[entryElements.size()][];
@@ -569,8 +579,27 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromText(String text, Language language) {
-		/* FIXME */
-		return null;
+	public static TempDocument createFromText(String text, Language language, Annotator annotator) {
+		TempDocument document = new TempDocument();
+		
+		annotator.setLanguage(language);
+		annotator.setText(text);
+		
+		document.language = language;
+		document.nlpAnnotator = annotator.toString();
+		
+		document.tokens = annotator.makeTokens();
+		document.dependencies = annotator.makeDependencies();
+		document.posTags = annotator.makePoSTags();
+
+		
+		document.events = new Event[document.tokens.length][0];
+		document.times = new Time[document.tokens.length][0];
+		document.signals = new Signal[document.tokens.length][0];
+		document.eventMap = new HashMap<String, Event>();
+		document.timeMap = new HashMap<String, Time>();
+		document.signalMap = new HashMap<String, Signal>();
+		
+		return document;
 	}
 }
