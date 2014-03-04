@@ -1,6 +1,9 @@
 package temp.data.annotation.nlp;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import edu.upc.freeling.ChartParser;
 import edu.upc.freeling.DepTxala;
@@ -15,6 +18,7 @@ import edu.upc.freeling.Senses;
 import edu.upc.freeling.Sentence;
 import edu.upc.freeling.Splitter;
 import edu.upc.freeling.Tokenizer;
+import edu.upc.freeling.TreeDepnode;
 import edu.upc.freeling.Ukb;
 import edu.upc.freeling.Util;
 import edu.upc.freeling.VectorWord;
@@ -29,7 +33,8 @@ public class AnnotatorFreeLing extends Annotator {
     private HmmTagger posTagger;
     private ChartParser parser;
     private DepTxala dependencyParser;
-    private Senses senseDictionary;
+    private Nec ner;
+    private Senses senseDictionary; 
     private Ukb senseDisambiguator;
     
     private ListWord textWords;
@@ -60,10 +65,13 @@ public class AnnotatorFreeLing extends Annotator {
 	}
 	
 	private void loadLibrary(String library) {
-		System.loadLibrary(new File(properties.getFreeLingLibraryPath(), "bin/" + library).getPath());
+		System.loadLibrary(new File(properties.getFreeLingLibraryPath(), "bin/" + library).getPath().replace("\\", "/"));
 	}
 	
 	public boolean setLanguage(Language language) {
+		if (language == this.language)
+			return true;
+		
 		String langStr = null;
 		if (language == Language.English)
 			langStr = "en";
@@ -98,7 +106,8 @@ public class AnnotatorFreeLing extends Annotator {
 	    this.morphologyAnalyzer = new Maco(this.options);
 	    this.posTagger= new HmmTagger(langPath + "/tagger.dat", true, 2);
 	    this.parser = new ChartParser(langPath + "/chunker/grammar-chunk.dat");
-	    this.dependencyParser = new DepTxala(langPath + "/dep/dependences.dat", parser.getStartSymbol());
+	    this.dependencyParser = new DepTxala(langPath + "/dep/dependences.dat", this.parser.getStartSymbol());
+	    this.ner = new Nec(langPath + "/nerc/nec/nec-ab-poor1.dat");
 	    this.senseDictionary = new Senses(langPath + "/senses.dat");
 	    this.senseDisambiguator = new Ukb(langPath + "/ukb.dat");
 	    
@@ -115,7 +124,14 @@ public class AnnotatorFreeLing extends Annotator {
 		
 		this.textWords = this.tokenizer.tokenize(text);
 		this.textSentences = this.sentenceSplitter.split(this.textWords, false);
+		
 		this.morphologyAnalyzer.analyze(this.textSentences);
+		this.posTagger.analyze(this.textSentences);
+	    this.ner.analyze(this.textSentences);
+	    this.senseDictionary.analyze(this.textSentences);
+	    this.senseDisambiguator.analyze(this.textSentences);
+	    this.parser.analyze(this.textSentences);
+	    this.dependencyParser.analyze(this.textSentences);
 		
 		return true;
 	}
@@ -140,17 +156,107 @@ public class AnnotatorFreeLing extends Annotator {
 	}
 	
 	public PoSTag[][] makePoSTags() {
-		/* FIXME */
-		return null;
+		PoSTag[][] tags = new PoSTag[(int)this.textSentences.size()][];
+		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
+		int i = 0;
+		while (iterator.hasNext()) {
+			Sentence sentence = iterator.next();
+			VectorWord words = sentence.getWords();
+			tags[i] = new PoSTag[(int)words.size()];
+			
+			for (int j = 0; j < words.size(); j++) {
+				String tag = words.get(j).getTag();
+				if (tag.equals("CC"))
+					tags[i][j] = PoSTag.CC;
+				else if (tag.startsWith("Z"))
+					tags[i][j] = PoSTag.CD;
+				else if (tag.startsWith("D"))
+					tags[i][j] = PoSTag.DT;
+				else if (tag.equals("CS") || tag.startsWith("S"))
+					tags[i][j] = PoSTag.IN;
+				else if (tag.matches("A.S..."))
+					tags[i][j] = PoSTag.JJS;
+				else if (tag.startsWith("A"))
+					tags[i][j] = PoSTag.JJ;
+				else if (tag.matches("NP.S..."))
+					tags[i][j] = PoSTag.NNP;
+				else if (tag.matches("NP.P..."))
+					tags[i][j] = PoSTag.NNPS;
+				else if (tag.matches("N..P..."))
+					tags[i][j] = PoSTag.NNS;
+				else if (tag.startsWith("N"))
+					tags[i][j] = PoSTag.NN;
+				else if (tag.startsWith("PP"))
+					tags[i][j] = PoSTag.PRP;
+				else if (tag.startsWith("PX"))
+					tags[i][j] = PoSTag.PRP$;
+				else if (tag.startsWith("R"))
+					tags[i][j] = PoSTag.RB;
+				else if (tag.startsWith("F"))
+					tags[i][j] = PoSTag.SYM;
+				else if (tag.startsWith("PE") || tag.equals("I"))
+					tags[i][j] = PoSTag.UH;
+				else if (tag.matches("V..P3S."))
+					tags[i][j] = PoSTag.VBZ;
+				else if (tag.matches("V..P.S."))
+					tags[i][j] = PoSTag.VBP;
+				else if (tag.matches("V.PI...") || tag.matches("V.PS..."))
+					tags[i][j] = PoSTag.VBN;
+				else if (tag.matches("V.G....") || tag.matches("V.PP..."))
+					tags[i][j] = PoSTag.VBG;
+				else if (tag.matches("V..I...") || tag.matches("V..S..."))
+					tags[i][j] = PoSTag.VBD;
+				else if (tag.startsWith("V"))
+					tags[i][j] = PoSTag.VB;
+				else if (tag.startsWith("PT") || tag.startsWith("PR"))
+					tags[i][j] = PoSTag.WP;
+				else
+					tags[i][j] = PoSTag.Other;
+				
+			}
+			
+			i++;
+		}
+		
+		return tags;
 	}
 	
 	public TypedDependency[][] makeDependencies() {
-		/* FIXME */
-		return null;
-	}
-
-	public PhraseParseTree makeParse() {
-		// TODO Auto-generated method stub
-		return null;
+		TypedDependency[][] dependencies = new TypedDependency[(int)this.textSentences.size()][];
+		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
+		int i = 0;
+		while (iterator.hasNext()) {
+			List<TypedDependency> dependencyList = new LinkedList<TypedDependency>(); 
+			Sentence sentence = iterator.next();
+			Queue<TreeDepnode> treeNodes = new LinkedList<TreeDepnode>();
+			treeNodes.add(sentence.getDepTree());
+			boolean isRoot = true;
+			while (!treeNodes.isEmpty()) {
+				TreeDepnode nextNode = treeNodes.remove();
+				
+				int parentTokenIndex = -1;
+				if (!isRoot) {
+					parentTokenIndex = (int)nextNode.getParent().getInfo().getWord().getPosition();
+				}
+				
+				int childTokenIndex = (int)nextNode.getInfo().getWord().getPosition();
+				String type = nextNode.getInfo().getLabel();
+				
+				dependencyList.add(new TypedDependency(null, i, parentTokenIndex, childTokenIndex, type));
+				
+				int numChildren = (int)nextNode.numChildren();
+				for (int j = 0; j < numChildren; j++) {
+					treeNodes.add(nextNode.nthChildRef(j));
+				}
+				
+				isRoot = false;
+			}
+			
+			dependencies[i] = new TypedDependency[dependencyList.size()];
+			dependencies[i] = dependencyList.toArray(dependencies[i]);
+			
+			i++;
+		}
+		return dependencies;
 	}
 }

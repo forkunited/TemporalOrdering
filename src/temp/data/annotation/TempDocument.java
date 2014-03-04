@@ -3,6 +3,7 @@ package temp.data.annotation;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import ark.util.FileUtil;
 
@@ -65,7 +68,10 @@ public class TempDocument {
 	}
 	
 	public String getToken(int sentenceIndex, int tokenIndex) {
-		return this.tokens[sentenceIndex][tokenIndex];
+		if (tokenIndex < 0)
+			return "ROOT";
+		else 
+			return this.tokens[sentenceIndex][tokenIndex];
 	}
 	
 	public PoSTag getPoSTag(int sentenceIndex, int tokenIndex) {
@@ -298,6 +304,7 @@ public class TempDocument {
 			if (depsStr.length() > 0)
 				depsStr = depsStr.delete(depsStr.length() - 1, depsStr.length());
 			depsElement.addContent(depsStr.toString());
+			entryElement.addContent(depsElement);
 			
 			Element eventsElement = new Element("events");
 			for (int j = 0; j < this.events[i].length; j++) 
@@ -321,6 +328,7 @@ public class TempDocument {
 			element.addContent(this.tlinks[i].toXML());
 		}
 		
+		
 		return element;
 	}
 	
@@ -341,11 +349,14 @@ public class TempDocument {
 	
 	public boolean saveToXMLFile(String path) {
 		try {
-			BufferedWriter w = new BufferedWriter(new FileWriter(path));
+			Document document = new Document();
+			document.setRootElement(toXML());
 			
-			w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + toXML().toString());
+			FileOutputStream out = new FileOutputStream(new File(path));
+			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 			
-			w.close();
+			outputter.output(document, out);
+			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -579,19 +590,31 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromText(String text, Language language, Annotator annotator) {
+	public static TempDocument createFromText(String name, String text, Language language, Annotator annotator) {
 		TempDocument document = new TempDocument();
 		
 		annotator.setLanguage(language);
 		annotator.setText(text);
 		
+		document.name = name;
 		document.language = language;
 		document.nlpAnnotator = annotator.toString();
 		
 		document.tokens = annotator.makeTokens();
-		document.dependencies = annotator.makeDependencies();
+		
+		TypedDependency[][] dependencies = annotator.makeDependencies();
+		document.dependencies = new TypedDependency[dependencies.length][];
+		for (int i = 0; i < dependencies.length; i++) {
+			document.dependencies[i] = dependencies[i];
+			for (int j = 0; j < dependencies[i].length; j++) {
+				document.dependencies[i][j] = new TypedDependency(document, i, 
+																  dependencies[i][j].getParentTokenIndex(), 
+																  dependencies[i][j].getChildTokenIndex(), 
+																  dependencies[i][j].getType());
+			}
+		}
+			
 		document.posTags = annotator.makePoSTags();
-
 		
 		document.events = new Event[document.tokens.length][0];
 		document.times = new Time[document.tokens.length][0];
@@ -599,6 +622,8 @@ public class TempDocument {
 		document.eventMap = new HashMap<String, Event>();
 		document.timeMap = new HashMap<String, Time>();
 		document.signalMap = new HashMap<String, Signal>();
+		
+		document.tlinks = new TLink[0];
 		
 		return document;
 	}

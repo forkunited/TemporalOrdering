@@ -81,17 +81,4 @@ public class AnnotatorMultiLanguage extends Annotator {
 			return null;
 		}
 	}
-
-
-	@Override
-	public PhraseParseTree makeParse() {
-		if (this.language == Language.English) {
-			return this.englishAnnotator.makeParse();
-		} else if (this.language == Language.Spanish) {
-			return this.spanishAnnotator.makeParse();
-		} else {
-			return null;
-		}
-	}
-
 }

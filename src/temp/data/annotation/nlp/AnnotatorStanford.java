@@ -39,9 +39,4 @@ public class AnnotatorStanford extends Annotator {
 		/* FIXME */
 		return null;
 	}
-
-	public PhraseParseTree makeParse() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

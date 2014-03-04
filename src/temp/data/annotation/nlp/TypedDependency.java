@@ -7,6 +7,9 @@ public class TypedDependency {
 	private int sentenceIndex;
 	private int parentTokenIndex;
 	private int childTokenIndex;
+	
+	// FreeLing dependency types: http://devel.cpl.upc.edu/freeling/svn/trunk/doc/grammars/ca+esLABELINGtags 
+	// Stanford dependency types: http://nlp.stanford.edu/software/dependencies_manual.pdf
 	private String type;
 	
 	public TypedDependency(TempDocument document, int sentenceIndex, int parentTokenIndex, int childTokenIndex, String type) {

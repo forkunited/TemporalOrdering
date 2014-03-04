@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+import temp.util.TempProperties;
+
 import edu.upc.freeling.*;
 
 public class FreeLingScratch {
   // Modify this line to be your FreeLing installation directory
-  private static final String DATA = "";
-  private static final String LANG = "en";
+  private static final TempProperties properties = new TempProperties();
+  private static final String DATA = properties.getFreeLingDataDirectoryPath();
+  private static final String LANG = "es";
 
   public static void main( String argv[] ) throws IOException {
 	  System.loadLibrary( "freeling-3.1-win/bin/zlibwapi" );
@@ -18,7 +21,7 @@ public class FreeLingScratch {
 	  System.loadLibrary( "freeling-3.1-win/bin/icuuc49" );
 	  
 	  
-	  System.loadLibrary( "freeling-3.1-win/icule49" );
+	  System.loadLibrary( "freeling-3.1-win/bin/icule49" );
 	  System.loadLibrary( "freeling-3.1-win/bin/icuin49" );
 	  System.loadLibrary( "freeling-3.1-win/bin/iculx49" );
 	  System.loadLibrary( "freeling-3.1-win/bin/icutu49" );  
@@ -160,8 +163,8 @@ public class FreeLingScratch {
           Word w = wIt.next();
          
           System.out.print(
-            w.getSensesString() + " " + w.getForm() + " " + w.getLemma() + " " + w.getTag() );
-          printSenses( w );
+            w.getForm() + " " + w.getTag());//w.getSensesString() + " " + w.getForm() + " " + w.getLemma() + " " + w.getTag() );
+          //printSenses( w );
           System.out.println();
         }
 
@@ -240,7 +243,7 @@ public class FreeLingScratch {
 
     System.out.print(
       "(" + w.getForm() + " " + w.getLemma() + " " + w.getTag() );
-    printSenses( w );
+    //printSenses( w );
     System.out.print( ")" );
 
     nch = tr.numChildren();

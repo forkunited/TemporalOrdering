@@ -15,7 +15,6 @@ public abstract class Annotator {
 	public abstract String[][] makeTokens();
 	public abstract PoSTag[][] makePoSTags();
 	public abstract TypedDependency[][] makeDependencies();
-	public abstract PhraseParseTree makeParse();
 	
 	public static Annotator forLanguage(TempProperties properties, Language language) {
 		if (language == Language.English)
