@@ -1,9 +1,11 @@
-package temp.data.annotation.nlp;
+package temp.model.annotator.nlp;
 
 import temp.data.annotation.Language;
+import temp.data.annotation.nlp.PoSTag;
+import temp.data.annotation.nlp.TypedDependency;
 import temp.util.TempProperties;
 
-public abstract class Annotator {
+public abstract class NLPAnnotator {
 	protected TempProperties properties;
 	protected Language language;
 	protected String text;
@@ -16,11 +18,11 @@ public abstract class Annotator {
 	public abstract PoSTag[][] makePoSTags();
 	public abstract TypedDependency[][] makeDependencies();
 	
-	public static Annotator forLanguage(TempProperties properties, Language language) {
+	public static NLPAnnotator forLanguage(TempProperties properties, Language language) {
 		if (language == Language.English)
-			return new AnnotatorStanford(properties);
+			return new NLPAnnotatorStanford(properties);
 		else if (language == Language.Spanish)
-			return new AnnotatorFreeLing(properties);
+			return new NLPAnnotatorFreeLing(properties);
 		else
 			return null;
 	}

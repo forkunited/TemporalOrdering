@@ -25,7 +25,7 @@ import ark.util.FileUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import temp.data.annotation.nlp.Annotator;
+import temp.model.annotator.nlp.NLPAnnotator;
 import temp.data.annotation.nlp.PoSTag;
 import temp.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.timeml.Event;
@@ -49,8 +49,8 @@ public class TempDocument {
 	
 	private Map<String, Event> eventMap;
 	private Map<String, Time> timeMap;
-	private Map<String, Signal> signalMap;
-	
+	private Map<String, Signal> signalMap;	
+		
 	public String getName() {
 		return this.name;
 	}
@@ -185,35 +185,54 @@ public class TempDocument {
 		return tlinks;
 	}
 	
-	public boolean setEvents(int sentenceIndex, List<Event> events) {
-		if (sentenceIndex > this.tokens.length)
-			return false;
-		this.events[sentenceIndex] = (Event[])(events.toArray());
-		for (int i = 0; i < this.events[sentenceIndex].length; i++)
-			this.eventMap.put(this.events[sentenceIndex][i].getId(), this.events[sentenceIndex][i]);	
+	public boolean setEvents(Event[][] events) {
+		this.events = new Event[events.length][];
+		this.eventMap = new HashMap<String, Event>();
+		for (int i = 0; i < events.length; i++) {
+			this.events[i] = new Event[events.length];
+			for (int j = 0; i < events[i].length; j++) {
+				this.events[i][j] = events[i][j];
+				if (this.events[i][j] != null)
+					this.eventMap.put(events[i][j].getId(), events[i][j]);
+			}
+		}
 		return true;
 	}
 	
-	public boolean setTimes(int sentenceIndex, List<Time> times) {
-		if (sentenceIndex > this.tokens.length)
-			return false;
-		this.times[sentenceIndex] = (Time[])(times.toArray());
-		for (int i = 0; i < this.times[sentenceIndex].length; i++)
-			this.timeMap.put(this.times[sentenceIndex][i].getId(), this.times[sentenceIndex][i]);	
+	public boolean setTimes(Time[][] times) {
+		this.times = new Time[times.length][];
+		this.timeMap = new HashMap<String, Time>();
+		for (int i = 0; i < times.length; i++) {
+			this.times[i] = new Time[times.length];
+			for (int j = 0; i < times[i].length; j++) {
+				this.times[i][j] = times[i][j];
+				if (this.times[i][j] != null)
+					this.timeMap.put(times[i][j].getId(), times[i][j]);
+			}
+		}
 		return true;
 	}
 	
-	public boolean setSignals(int sentenceIndex, List<Signal> signals) {
-		if (sentenceIndex > this.tokens.length)
-			return false;
-		this.signals[sentenceIndex] = (Signal[])(signals.toArray());
-		for (int i = 0; i < this.signals[sentenceIndex].length; i++)
-			this.signalMap.put(this.signals[sentenceIndex][i].getId(), this.signals[sentenceIndex][i]);	
+	public boolean setSignals(Signal[][] signals) {
+		this.signals = new Signal[signals.length][];
+		this.signalMap = new HashMap<String, Signal>();
+		for (int i = 0; i < signals.length; i++) {
+			this.signals[i] = new Signal[signals.length];
+			for (int j = 0; i < signals[i].length; j++) {
+				this.signals[i][j] = signals[i][j];
+				if (this.signals[i][j] != null)
+					this.signalMap.put(signals[i][j].getId(), signals[i][j]);
+			}
+		}
 		return true;
 	}
 	
 	public boolean setTLinks(List<TLink> tlinks) {
-		this.tlinks = (TLink[])(tlinks.toArray());
+		return setTLinks((TLink[])(tlinks.toArray()));
+	}
+	
+	public boolean setTLinks(TLink[] tlinks) {
+		this.tlinks = tlinks.clone();
 		return true;
 	}
 	
@@ -242,17 +261,20 @@ public class TempDocument {
 			
 			JSONArray eventsJson = new JSONArray();
 			for (int j = 0; j < this.events[i].length; j++)
-				eventsJson.add(this.events[i][j].toJSON());
+				if (this.events[i][j] != null)
+					eventsJson.add(this.events[i][j].toJSON());
 			sentenceJson.put("events", eventsJson);
 			
 			JSONArray timesJson = new JSONArray();
 			for (int j = 0; j < this.times[i].length; j++)
-				timesJson.add(this.times[i][j].toJSON());
+				if (this.times[i][j] != null)
+					timesJson.add(this.times[i][j].toJSON());
 			sentenceJson.put("times", timesJson);
 			
 			JSONArray signalsJson = new JSONArray();
 			for (int j = 0; j < this.signals[i].length; j++)
-				signalsJson.add(this.signals[i][j].toJSON());
+				if (this.signals[i][j] != null)
+					signalsJson.add(this.signals[i][j].toJSON());
 			
 			sentences.add(sentenceJson);
 		}
@@ -308,17 +330,20 @@ public class TempDocument {
 			
 			Element eventsElement = new Element("events");
 			for (int j = 0; j < this.events[i].length; j++) 
-				eventsElement.addContent(this.events[i][j].toXML());
+				if (this.events[i][j] != null)
+					eventsElement.addContent(this.events[i][j].toXML());
 			entryElement.addContent(eventsElement);
 			
 			Element timexesElement = new Element("timexes");
 			for (int j = 0; j < this.times[i].length; j++)
-				timexesElement.addContent(this.times[i][j].toXML());
+				if (this.times[i][j] != null)
+					timexesElement.addContent(this.times[i][j].toXML());
 			entryElement.addContent(timexesElement);
 			
 			Element signalsElement = new Element("signals");
 			for (int j = 0; j < this.signals[i].length; j++)
-				signalsElement.addContent(this.signals[i][j].toXML());
+				if (this.signals[i][j] != null)
+					signalsElement.addContent(this.signals[i][j].toXML());
 			entryElement.addContent(signalsElement);
 			
 			element.addContent(entryElement);
@@ -365,6 +390,16 @@ public class TempDocument {
 		return true;
 	}
 	
+	private void initializeTimeML() {
+		this.events = new Event[this.tokens.length][0];
+		this.times = new Time[this.tokens.length][0];
+		this.signals = new Signal[this.tokens.length][0];
+		this.eventMap = new HashMap<String, Event>();
+		this.timeMap = new HashMap<String, Time>();
+		this.signalMap = new HashMap<String, Signal>();	
+		this.tlinks = new TLink[0];
+	}
+	
 	public static TempDocument fromJSON(JSONObject json) {
 		TempDocument document = new TempDocument();
 		
@@ -376,12 +411,12 @@ public class TempDocument {
 		document.tokens = new String[sentences.size()][];
 		document.posTags = new PoSTag[sentences.size()][];
 		document.dependencies = new TypedDependency[sentences.size()][];
-		document.events = new Event[sentences.size()][];
-		document.times = new Time[sentences.size()][];
-		document.signals = new Signal[sentences.size()][];
-		document.eventMap = new HashMap<String, Event>();
-		document.timeMap = new HashMap<String, Time>();
-		document.signalMap = new HashMap<String, Signal>();
+
+		document.initializeTimeML();
+		
+		JSONArray[] timesJson = new JSONArray[sentences.size()];
+		JSONArray[] eventsJson = new JSONArray[sentences.size()];
+		Signal[][] signals = new Signal[sentences.size()][];
 		
 		for (int i = 0; i < sentences.size(); i++) {
 			JSONObject sentenceJson = sentences.getJSONObject(i);
@@ -389,8 +424,9 @@ public class TempDocument {
 			JSONArray posTagsJson = sentenceJson.getJSONArray("posTags");
 			JSONArray dependenciesJson = sentenceJson.getJSONArray("dependencies");
 			JSONArray signalsJson = sentenceJson.getJSONArray("signals");
-			JSONArray timesJson = sentenceJson.getJSONArray("times");
-			JSONArray eventsJson = sentenceJson.getJSONArray("events");
+			
+			timesJson[i] = sentenceJson.getJSONArray("times");
+			eventsJson[i] = sentenceJson.getJSONArray("events");
 			
 			document.tokens[i] = new String[tokensJson.size()];
 			for (int j = 0; j < tokensJson.size(); j++)
@@ -404,46 +440,50 @@ public class TempDocument {
 			for (int j = 0; j < dependenciesJson.size(); j++)
 				document.dependencies[i][j] = TypedDependency.fromString(dependenciesJson.getString(j), document, i);
 			
-			List<Signal> signals = new ArrayList<Signal>(signalsJson.size());
+			signals[i] = new Signal[signalsJson.size()];
 			for (int j = 0; j < signalsJson.size(); j++)
-				signals.add(Signal.fromJSON(signalsJson.getJSONObject(j), document, i));
-			document.setSignals(i, signals);
-			
-			/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
-			 * possible that if they are added in the wrong order, the references will be empty.  The 
-			 * following code fixes this issue by repeatedly trying to add all of the times, 
-			 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
-			 * to do this, but it should be alright, for now, given that the number of times that reference other 
-			 * times is small.
-			 */
-			List<Time> times = new ArrayList<Time>(timesJson.size());
-			List<Integer> timesToAdd = new ArrayList<Integer>();
-			for (int j = 0; j < timesJson.size(); j++)
-				timesToAdd.add(j);
-			while (!timesToAdd.isEmpty()) {
-				List<Integer> nextTimesToAdd = new ArrayList<Integer>();
-				for (int j = 0; j < timesToAdd.size(); j++) {
-					Time time = Time.fromJSON(timesJson.getJSONObject(timesToAdd.get(j)), document, i);
-					if (time != null) {
-						times.add(time);
-					} else {
-						nextTimesToAdd.add(timesToAdd.get(j));
-					}
-				}
-				document.setTimes(i, times);
-				timesToAdd = nextTimesToAdd;
-			}
-			
-			List<Event> events = new ArrayList<Event>(eventsJson.size());
-			for (int j = 0; j < eventsJson.size(); j++)
-				events.add(Event.fromJSON(eventsJson.getJSONObject(j), document, i));
-			document.setEvents(i, events);
+				signals[i][j] = Signal.fromJSON(signalsJson.getJSONObject(j), document, i);
 		}
+
+		document.setSignals(signals);
+
+		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
+		 * possible that if they are added in the wrong order, the references will be empty.  The 
+		 * following code fixes this issue by repeatedly trying to add all of the times, 
+		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
+		 * to do this, but it should be alright, for now, given that the number of times that reference other 
+		 * times is small.
+		 */
+		boolean failedToAddTime;
+		do {
+			failedToAddTime = false;
+			Time[][] times = new Time[timesJson.length][];
+			for (int i = 0; i < timesJson.length; i++) {
+				for (int j = 0; j < timesJson[i].size(); j++) {
+					if (document.times[i].length > j && document.times[i][j] != null)
+						times[i][j] = document.times[i][j];
+					else
+						times[i][j] = Time.fromJSON(timesJson[i].getJSONObject(j), document, i);
+					
+					if (times[i][j] == null)
+						failedToAddTime = true;
+				}
+			}
+			document.setTimes(times);
+		} while (failedToAddTime);
+		
+		Event[][] events = new Event[eventsJson.length][];
+		for (int i = 0; i < events.length; i++) {
+			for (int j = 0; j < eventsJson[i].size(); j++) {
+				events[i][j] = Event.fromJSON(eventsJson[i].getJSONObject(j), document, i);
+			}
+		}
+		document.setEvents(events);
 		
 		JSONArray tlinksJson = json.getJSONArray("tlinks");
-		List<TLink> tlinks = new ArrayList<TLink>(tlinksJson.size());
+		TLink[] tlinks = new TLink[tlinksJson.size()];
 		for (int i = 0; i < tlinksJson.size(); i++)
-			tlinks.add(TLink.fromJSON(tlinksJson.getJSONObject(i), document));
+			tlinks[i] = TLink.fromJSON(tlinksJson.getJSONObject(i), document);
 		document.setTLinks(tlinks);
 	
 		return document;
@@ -478,81 +518,89 @@ public class TempDocument {
 		document.tokens = new String[entryElements.size()][];
 		document.posTags = new PoSTag[entryElements.size()][];
 		document.dependencies = new TypedDependency[entryElements.size()][];
-		document.events = new Event[entryElements.size()][];
-		document.times = new Time[entryElements.size()][];
-		document.signals = new Signal[entryElements.size()][];
-		document.eventMap = new HashMap<String, Event>();
-		document.timeMap = new HashMap<String, Time>();
-		document.signalMap = new HashMap<String, Signal>();
+		
+		document.initializeTimeML();
+		
+		List<List<Element>> timexesXML = new ArrayList<List<Element>>();
+		List<List<Element>> eventsXML = new ArrayList<List<Element>>();
+		Signal[][] signals = new Signal[entryElements.size()][];
 		
 		for (Element entryElement : entryElements) {
 			int sentenceIndex = Integer.parseInt(entryElement.getAttributeValue("sid"));
+		
+			Element timexesElement = entryElement.getChild("timexes");
+			timexesXML.add(timexesElement.getChildren("timex"));
+			
+			Element eventsElement = entryElement.getChild("events");
+			eventsXML.add(eventsElement.getChildren("event"));
 			
 			Element tokensElement = entryElement.getChild("tokens");
 			List<Element> tElements = tokensElement.getChildren("t");
 			document.tokens[sentenceIndex] = new String[tElements.size()];
 			document.posTags[sentenceIndex] = new PoSTag[tElements.size()];
-			for (int i = 0; i < tElements.size(); i++) {
-				document.tokens[sentenceIndex][i] = (tElements.get(i).getText().split("\""))[3];
-				List<Attribute> tAttributes = (List<Attribute>)tElements.get(i).getAttributes();
+			for (int j = 0; j < tElements.size(); j++) {
+				document.tokens[sentenceIndex][j] = (tElements.get(j).getText().split("\""))[3];
+				List<Attribute> tAttributes = (List<Attribute>)tElements.get(j).getAttributes();
 				for (Attribute attribute : tAttributes)
 					if (attribute.getName().equals("pos"))
-						document.posTags[sentenceIndex][i] = PoSTag.valueOf(attribute.getValue());
+						document.posTags[sentenceIndex][j] = PoSTag.valueOf(attribute.getValue());
 			}
 			
 			Element depsElement = entryElement.getChild("deps");
 			String[] depStrs = depsElement.getText().split("\n");
 			document.dependencies[sentenceIndex] = new TypedDependency[depStrs.length];
-			for (int i = 0; i < depStrs.length; i++)
-				document.dependencies[sentenceIndex][i] = TypedDependency.fromString(depStrs[i], document, sentenceIndex);
+			for (int j = 0; j < depStrs.length; j++)
+				document.dependencies[sentenceIndex][j] = TypedDependency.fromString(depStrs[j], document, sentenceIndex);
 			
 			Element signalsElement = entryElement.getChild("signals");
 			List<Element> signalElements = signalsElement.getChildren("signal");
-			List<Signal> signals = new ArrayList<Signal>(signalElements.size());
-			for (int i = 0; i < signalElements.size(); i++)
-				signals.add(Signal.fromXML(signalElements.get(i), document, sentenceIndex));
-			document.setSignals(sentenceIndex, signals);
-				
-			/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
-			 * possible that if they are added in the wrong order, the references will be empty.  The 
-			 * following code fixes this issue by repeatedly trying to add all of the times, 
-			 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
-			 * to do this, but it should be alright, for now, given that the number of times that reference other 
-			 * times is small.
-			 */
-			Element timexesElement = entryElement.getChild("timexes");
-			List<Element> timexElements = timexesElement.getChildren("timex");
-			List<Time> times = new ArrayList<Time>(timexElements.size());
-			List<Integer> timesToAdd = new ArrayList<Integer>();
-			for (int i = 0; i < timexElements.size(); i++)
-				timesToAdd.add(i);
-			while (!timesToAdd.isEmpty()) {
-				List<Integer> nextTimesToAdd = new ArrayList<Integer>();
-				for (int i = 0; i < timesToAdd.size(); i++) {
-					Time time = Time.fromXML(timexElements.get(timesToAdd.get(i)), document, sentenceIndex);
-					if (time != null) {
-						times.add(time);
-					} else {
-						nextTimesToAdd.add(timesToAdd.get(i));
-					}
-				}
-				document.setTimes(sentenceIndex, times);
-				timesToAdd = nextTimesToAdd;
-			}
-			
-				
-			Element eventsElement = entryElement.getChild("events");
-			List<Element> eventElements = eventsElement.getChildren("event");
-			List<Event> events = new ArrayList<Event>(eventElements.size());
-			for (int i = 0; i < eventElements.size(); i++)
-				events.addAll(Event.fromXML(eventElements.get(i), document, sentenceIndex));
-			document.setEvents(sentenceIndex, events);
+			signals[sentenceIndex] = new Signal[signalElements.size()];
+			for (int j = 0; j < signalElements.size(); j++)
+				signals[sentenceIndex][j] = Signal.fromXML(signalElements.get(j), document, sentenceIndex);
 		}
 		
+		document.setSignals(signals);
+				
+		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
+		 * possible that if they are added in the wrong order, the references will be empty.  The 
+		 * following code fixes this issue by repeatedly trying to add all of the times, 
+		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
+		 * to do this, but it should be alright, for now, given that the number of times that reference other 
+		 * times is small.
+		 */
+		boolean failedToAddTime;
+		do {
+			failedToAddTime = false;
+			Time[][] times = new Time[timexesXML.size()][];
+			for (int i = 0; i < timexesXML.size(); i++) {
+				for (int j = 0; j < timexesXML.get(i).size(); j++) {
+					if (document.times[i].length > j && document.times[i][j] != null)
+						times[i][j] = document.times[i][j];
+					else
+						times[i][j] = Time.fromXML(timexesXML.get(i).get(j), document, i);
+					
+					if (times[i][j] == null)
+						failedToAddTime = true;
+				}
+			}
+			document.setTimes(times);
+		} while (failedToAddTime);
+			
+		Event[][] events = new Event[eventsXML.size()][];
+		for (int i = 0; i < eventsXML.size(); i++) {
+			List<Event> sentenceEvents = new ArrayList<Event>();
+			for (int j = 0; j < eventsXML.get(i).size(); j++) {
+				sentenceEvents.addAll(Event.fromXML(eventsXML.get(i).get(j), document, i));
+			}
+			events[i] = new Event[sentenceEvents.size()];
+			events[i] = sentenceEvents.toArray(events[i]);
+		}
+		document.setEvents(events);
+		
 		List<Element> tlinkElements = (List<Element>)element.getChildren("tlink");
-		List<TLink> tlinks = new ArrayList<TLink>(tlinkElements.size());
-		for (Element tlinkElement : tlinkElements) {
-			tlinks.add(TLink.fromXML(tlinkElement, document));
+		TLink[] tlinks = new TLink[tlinkElements.size()];
+		for (int i = 0; i < tlinkElements.size(); i++) {
+			tlinks[i] = TLink.fromXML(tlinkElements.get(i), document);
 		}
 		document.setTLinks(tlinks);
 		
@@ -590,7 +638,7 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromText(String name, String text, Language language, Annotator annotator) {
+	public static TempDocument createFromText(String name, String text, Language language, NLPAnnotator annotator) {
 		TempDocument document = new TempDocument();
 		
 		annotator.setLanguage(language);
@@ -616,14 +664,7 @@ public class TempDocument {
 			
 		document.posTags = annotator.makePoSTags();
 		
-		document.events = new Event[document.tokens.length][0];
-		document.times = new Time[document.tokens.length][0];
-		document.signals = new Signal[document.tokens.length][0];
-		document.eventMap = new HashMap<String, Event>();
-		document.timeMap = new HashMap<String, Time>();
-		document.signalMap = new HashMap<String, Signal>();
-		
-		document.tlinks = new TLink[0];
+		document.initializeTimeML();
 		
 		return document;
 	}

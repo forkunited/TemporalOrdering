@@ -1,18 +1,16 @@
-package temp.data.annotation.nlp;
+package temp.model.annotator.nlp;
 
 import temp.data.annotation.Language;
+import temp.data.annotation.nlp.PoSTag;
+import temp.data.annotation.nlp.TypedDependency;
 import temp.util.TempProperties;
 
-public class AnnotatorMultiLanguage extends Annotator {
-	private Annotator spanishAnnotator;
-	private Annotator englishAnnotator;
+public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
+	private NLPAnnotator spanishAnnotator;
+	private NLPAnnotator englishAnnotator;
 	
-	public AnnotatorMultiLanguage(TempProperties properties, Language language) {
+	public NLPAnnotatorMultiLanguage(TempProperties properties, Language language) {
 		this.properties = properties;
-		
-		this.spanishAnnotator = Annotator.forLanguage(properties, Language.Spanish);
-		this.englishAnnotator = Annotator.forLanguage(properties, Language.English);
-		
 		setLanguage(language);
 	}
 	
@@ -20,12 +18,22 @@ public class AnnotatorMultiLanguage extends Annotator {
 	@Override
 	public boolean setLanguage(Language language) {
 		this.language = language;
+		if (this.language == Language.English)
+			this.englishAnnotator = NLPAnnotator.forLanguage(properties, Language.English);
+		else if (this.language == Language.Spanish)
+			this.spanishAnnotator = NLPAnnotator.forLanguage(properties, Language.Spanish);
+		else
+			return false;
 		setText(this.text);
 		return true;
 	}
 
 	@Override
 	public boolean setText(String text) {
+		if (text == null) {
+			return true;
+		}
+		
 		if (this.language == Language.English) {
 			this.englishAnnotator.setText(text);
 		} else if (this.language == Language.Spanish) {

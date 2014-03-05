@@ -1,4 +1,4 @@
-package temp.data.annotation.nlp;
+package temp.model.annotator.nlp;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -23,9 +23,11 @@ import edu.upc.freeling.Ukb;
 import edu.upc.freeling.Util;
 import edu.upc.freeling.VectorWord;
 import temp.data.annotation.Language;
+import temp.data.annotation.nlp.PoSTag;
+import temp.data.annotation.nlp.TypedDependency;
 import temp.util.TempProperties;
 
-public class AnnotatorFreeLing extends Annotator {
+public class NLPAnnotatorFreeLing extends NLPAnnotator {
 	private MacoOptions options;
     private Tokenizer tokenizer;
     private Splitter sentenceSplitter;
@@ -40,7 +42,7 @@ public class AnnotatorFreeLing extends Annotator {
     private ListWord textWords;
     private ListSentence textSentences;
 	
-	public AnnotatorFreeLing(TempProperties properties) {
+	public NLPAnnotatorFreeLing(TempProperties properties) {
 		this.properties = properties;
 		
 		loadLibrary("zlibwapi");
