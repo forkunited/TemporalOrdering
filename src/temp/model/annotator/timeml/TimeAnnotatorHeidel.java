@@ -1,21 +1,17 @@
 package temp.model.annotator.timeml;
 
-import java.io.IOException;
 import java.io.StringReader;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
+import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
 
 import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.HeidelTimeStandalone;
 import de.unihd.dbs.heideltime.standalone.OutputType;
-import de.unihd.dbs.heideltime.standalone.exceptions.DocumentCreationTimeMissingException;
-import de.unihd.dbs.uima.annotator.heideltime.HeidelTime;
 import temp.data.annotation.Language;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.timeml.Time;
@@ -54,7 +50,7 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 				timeMLStr = timeMLStr.replace("<!DOCTYPE TimeML SYSTEM \"TimeML.dtd\">", "");
 				
 				Document sentenceDoc = this.xmlBuilder.build(new StringReader(timeMLStr));
-				times[i] = buildTimesFromTimeML(sentenceDoc.getRootElement());
+				times[i] = buildTimesFromTimeML(sentenceDoc.getRootElement(), document, i);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -91,31 +87,42 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private Time[] buildTimesFromTimeML(Element timeMLElement) {
+	private Time[] buildTimesFromTimeML(Element timeMLElement, TempDocument document, int sentenceIndex) {
 		List xmlParts = timeMLElement.getContent();
 		List<Time> times = new LinkedList<Time>();
+		int curTokenIndex = 0;
 		for (int j = 0; j < xmlParts.size(); j++) {
+			String text = null;
+			Element timexElement = null;
 			if (xmlParts.get(j).getClass() == Element.class) { // Timex
-				Element timexElement = (Element)xmlParts.get(j);
-				times.add(buildTimeFromTimexElement(timexElement));
-				
-				/*if (!this.nlpAnnotator.setText(timexElement.getText()))
-					return null;
-				
-				String[][] tokens = this.nlpAnnotator.makeTokens();
-				*/
-				// FIXME
+				timexElement = (Element)xmlParts.get(j);
+				text = timexElement.getText();
 			} else { // Outside Timex
-				// FIXME
+				text = ((Text)xmlParts.get(j)).getText();
 			}
+			
+			if (!this.nlpAnnotator.setText(text))
+				return null;			
+			
+			String[][] tokens = this.nlpAnnotator.makeTokens();
+			int numTokens = 0;
+			if (tokens.length > 0) {
+				numTokens = tokens[0].length;
+			}
+			
+			if (timexElement != null)
+				times.add(buildTimeFromTimexElement(timexElement, document, sentenceIndex, curTokenIndex, numTokens));
+			
+			curTokenIndex += numTokens;
 		}
 		
 		Time[] timesArray = new Time[times.size()];
 		return times.toArray(timesArray);
 	}
 	
-	private Time buildTimeFromTimexElement(Element timexElement) {
-		// FIXME
-		return null;
+	private Time buildTimeFromTimexElement(Element timexElement, TempDocument document, int sentenceIndex, int startTokenIndex, int length) {
+		timexElement.setAttribute("offset", String.valueOf(startTokenIndex + 1));
+		timexElement.setAttribute("length", String.valueOf(length));
+		return Time.fromXML(timexElement, document, sentenceIndex);
 	}
 }

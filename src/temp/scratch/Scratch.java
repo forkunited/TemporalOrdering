@@ -26,61 +26,22 @@ import de.unihd.dbs.heideltime.standalone.exceptions.DocumentCreationTimeMissing
 
 import temp.data.annotation.Language;
 import temp.data.annotation.TempDocument;
+import temp.data.annotation.timeml.Time;
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
+import temp.model.annotator.timeml.TimeAnnotatorHeidel;
 import temp.util.TempProperties;
 
 public class Scratch {
 	public static void main(String[] args) {
-		/*HeidelTimeStandalone h = new HeidelTimeStandalone(de.unihd.dbs.uima.annotator.heideltime.resources.Language.SPANISH, DocumentType.NARRATIVES, OutputType.TIMEML);
-		try {
-			System.out.println(h.process("En 5 de Mayo, yo estoy en un casa.  Six days later, I'll eat pancakes.  Today, I'll bake a cake."));
-		} catch (DocumentCreationTimeMissingException e) {
-			// TODO Auto-generated catch block <!DOCTYPE TimeML SYSTEM \"TimeML.dtd\">
-			e.printStackTrace();
-		}*/
-		
-		SAXBuilder builder = new SAXBuilder();
-		try {
-			Document doc = builder.build(new StringReader("<?xml version=\"1.0\"?>\n<TimeML>En <TIMEX3 tid=\"t2\" type=\"DATE\" value=\"XXXX-05-05\">5 de Mayo</TIMEX3>.</TimeML>"));
-			Element el = doc.getRootElement();
-			List x = el.getContent();
-			for (int i = 0; i < x.size(); i++) {
-				if (x.get(i).getClass() == Element.class)
-					System.out.println(x.get(i));
-			}
-			/*
-			List<Element> c = el.getChildren("TIMEX3");
-			System.out.println(el.getContentSize());
-			System.out.println(c.get(0).getText());*/
-		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		/*Map<String, Language> texts = new HashMap<String, Language>();
-		//texts.put("El perro persigue el gato.", Language.Spanish);
-		//texts.put("El gato persigue el perro.", Language.Spanish);
-		texts.put("Joe bakes a cake.", Language.English);
-		texts.put("The cat flies.", Language.English);
-		
 		TempProperties properties = new TempProperties();
 		NLPAnnotatorMultiLanguage annotator = new NLPAnnotatorMultiLanguage(properties, Language.English);
-		for (Entry<String, Language> entry : texts.entrySet()) {
-			TempDocument document = TempDocument.createFromText("Test", entry.getKey(), entry.getValue(), annotator);
-			JSONObject jsonDocument = document.toJSON();
-			System.out.println(jsonDocument.toString());
-			
-			Element element = document.toXML();
-			XMLOutputter op = new XMLOutputter(Format.getPrettyFormat());
-			try {
-				op.output(element, System.out);
-			} catch (IOException e) {
-				e.printStackTrace();
+		TempDocument document = TempDocument.createFromText("test", "The dog barks on March 30th 2013. I ran for 10 minutes.", Language.English, Calendar.getInstance().getTime(), annotator);
+		TimeAnnotatorHeidel timeAnnotator = new TimeAnnotatorHeidel(properties);
+		Time[][] times = timeAnnotator.makeTimes(document);
+		for (int i = 0; i < times.length; i++) {
+			for (int j = 0; j < times[i].length; j++) {
+				System.out.println(times[i][j].toJSON().toString());
 			}
-		}*/
+		}
 	}
 }

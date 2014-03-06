@@ -28,18 +28,6 @@ public class Time implements TLinkable {
 		NONE
 	}
 	
-	/* NOTE: These are lower case in the spec... It's messy.  Oh well. :( */
-	public enum TimeMLValue {
-		Duration,
-		Date,
-		Time,
-		WeekDate,
-		WeekTime,
-		Season,
-		PartOfYear,
-		PaPrFu
-	}
-	
 	public enum TimeMLMod {
 		BEFORE,
 		AFTER,
@@ -61,12 +49,12 @@ public class Time implements TLinkable {
 	private Time startTime;
 	private Time endTime;
 	private String quant;
-	private String duration; // FIXME: Duration format
-	private TimeMLDocumentFunction timeMLDocumentFunction;
+	private String freq;
+	private String value;
+	private TimeMLDocumentFunction timeMLDocumentFunction = TimeMLDocumentFunction.NONE;
 	private boolean temporalFunction;
 	private Time anchorTime;
 	private Time valueFromFunction;
-	private TimeMLValue timeMLValue;
 	private TimeMLMod timeMLMod;
 	
 	public TLinkable.Type getTLinkableType() {
@@ -97,8 +85,12 @@ public class Time implements TLinkable {
 		return this.quant;
 	}
 	
-	public String getDuration() {
-		return this.duration;
+	public String getFreq() {
+		return this.freq;
+	}
+	
+	public String getValue() {
+		return this.value;
 	}
 	
 	public TimeMLDocumentFunction getTimeMLDocumentFunction() {
@@ -117,10 +109,6 @@ public class Time implements TLinkable {
 		return this.valueFromFunction;
 	}
 	
-	public TimeMLValue getTimeMLValue() {
-		return this.timeMLValue;
-	}
-	
 	public TimeMLMod getTimeMLMod() {
 		return this.timeMLMod;
 	}
@@ -137,11 +125,13 @@ public class Time implements TLinkable {
 		if (this.startTime != null)
 			json.put("startTimeId", this.startTime.getId());
 		if (this.endTime != null)
-			json.put("endTimeId", this.endTime.getId());		
+			json.put("endTimeId", this.endTime.getId());	
+		if (this.freq != null)
+			json.put("freq", this.freq);
+		if (this.value != null)
+			json.put("value", this.value);
 		if (this.quant != null)
 			json.put("quant", this.quant);
-		if (this.duration != null)
-			json.put("duration", this.duration);
 		if (this.timeMLDocumentFunction != null)
 			json.put("timeMLDocumentFunction", this.timeMLDocumentFunction);
 		
@@ -151,8 +141,6 @@ public class Time implements TLinkable {
 			json.put("anchorTimeId", this.anchorTime.getId());
 		if (this.valueFromFunction != null)
 			json.put("valueFromFunctionId", this.valueFromFunction.getId());
-		if (this.timeMLValue != null)
-			json.put("timeMLValue", this.timeMLValue);
 		if (this.timeMLMod != null)
 			json.put("timeMLMod", this.timeMLMod);
 
@@ -176,10 +164,12 @@ public class Time implements TLinkable {
 			element.setAttribute("starttid", this.startTime.getId());
 		if (this.endTime != null)
 			element.setAttribute("endtid", this.endTime.getId());
+		if (this.freq != null)
+			element.setAttribute("freq", this.freq);
+		if (this.value != null)
+			element.setAttribute("value", this.value);
 		if (this.quant != null)
 			element.setAttribute("quant", this.quant);
-		if (this.duration != null)
-			element.setAttribute("duration", this.duration);
 		if (this.timeMLDocumentFunction != null)
 			element.setAttribute("docFunction", this.timeMLDocumentFunction.toString());
 		
@@ -189,8 +179,6 @@ public class Time implements TLinkable {
 			element.setAttribute("anchortid", this.anchorTime.getId());
 		if (this.valueFromFunction != null)
 			element.setAttribute("valueFromFunctionTid", this.valueFromFunction.getId());
-		if (this.timeMLValue != null)
-			element.setAttribute("value", this.timeMLValue.toString());
 		if (this.timeMLMod != null)
 			element.setAttribute("mod", this.timeMLMod.toString());
 		
@@ -218,10 +206,12 @@ public class Time implements TLinkable {
 				return null;
 			time.endTime = 	endTime;
 		}
+		if (json.containsKey("value"))
+			time.value = json.getString("value");
+		if (json.containsKey("freq"))
+			time.freq = json.getString("freq");
 		if (json.containsKey("quant"))
 			time.quant = json.getString("quant");
-		if (json.containsKey("duration"))
-			time.duration = json.getString("duration");
 		if (json.containsKey("timeMLDocumentFunction"))
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(json.getString("timeMLDocumentFunction"));
 		if (json.containsKey("temporalFunction"))
@@ -238,8 +228,6 @@ public class Time implements TLinkable {
 				return null;
 			time.valueFromFunction = valueFromFunction;
 		}
-		if (json.containsKey("timeMLValue"))
-			time.timeMLValue = TimeMLValue.valueOf(json.getString("timeMLValue"));
 		if (json.containsKey("timeMLMod"))
 			time.timeMLMod = TimeMLMod.valueOf(json.getString("timeMLMod"));
 		
@@ -256,13 +244,13 @@ public class Time implements TLinkable {
 		boolean hasTimeMLType = false;
 		boolean hasStartTimeId = false;
 		boolean hasEndTimeId = false;
+		boolean hasFreq = false;
+		boolean hasValue = false;
 		boolean hasQuant = false;
-		boolean hasDuration = false;
 		boolean hasTimeMLDocumentFunction = false;
 		boolean hasTemporalFunction = false;
 		boolean hasAnchorTimeId = false;
 		boolean hasValueFromFunctionId = false;
-		boolean hasTimeMLValue = false;
 		boolean hasTimeMLMod = false;
 		
 		List<Attribute> attributes = (List<Attribute>)element.getAttributes();
@@ -281,8 +269,6 @@ public class Time implements TLinkable {
 				hasEndTimeId = true;
 			else if (attribute.getName().equals("quant"))
 				hasQuant = true;
-			else if (attribute.getName().equals("duration"))
-				hasDuration = true;
 			else if (attribute.getName().equals("docFunction"))
 				hasTimeMLDocumentFunction = true;
 			else if (attribute.getName().equals("temporalFunction"))
@@ -291,8 +277,10 @@ public class Time implements TLinkable {
 				hasAnchorTimeId = true;
 			else if (attribute.getName().equals("valueFromFunctionTid"))
 				hasValueFromFunctionId = true;
+			else if (attribute.getName().equals("freq"))
+				hasFreq = true;
 			else if (attribute.getName().equals("value"))
-				hasTimeMLValue = true;
+				hasValue = true;
 			else if (attribute.getName().equals("mod"))
 				hasTimeMLMod = true;
 		}
@@ -329,10 +317,12 @@ public class Time implements TLinkable {
 				time.endTime = endTime;
 			}
 		}
+		if (hasFreq)
+			time.freq = element.getAttributeValue("freq");
+		if (hasValue)
+			time.value = element.getAttributeValue("value");
 		if (hasQuant)
 			time.quant = element.getAttributeValue("quant");
-		if (hasDuration)
-			time.duration = element.getAttributeValue("duration");
 		if (hasTimeMLDocumentFunction && element.getAttributeValue("docFunction").length() > 0)
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(element.getAttributeValue("docFunction"));
 		if (hasTemporalFunction && element.getAttributeValue("temporalFunction").length() > 0)
@@ -355,8 +345,6 @@ public class Time implements TLinkable {
 				time.valueFromFunction = valueFromFunction;
 			}
 		}
-		if (hasTimeMLValue)
-			time.timeMLValue = TimeMLValue.valueOf(element.getAttributeValue("value"));
 		if (hasTimeMLMod)
 			time.timeMLMod = TimeMLMod.valueOf(element.getAttributeValue("mod"));
 		
