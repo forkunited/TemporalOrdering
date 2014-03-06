@@ -26,4 +26,13 @@ public abstract class NLPAnnotator {
 		else
 			return null;
 	}
+	
+	public static NLPAnnotator fromString(TempProperties properties, String str) {
+		if (str.equals("Stanford"))
+			return new NLPAnnotatorStanford(properties);
+		else if (str.equals("FreeLing"))
+			return new NLPAnnotatorFreeLing(properties);
+		else
+			return null;
+	}
 }

@@ -6,8 +6,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +37,12 @@ import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
 
 public class TempDocument {
+	private static SimpleDateFormat CREATION_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	private String name;
 	private Language language;
 	private String nlpAnnotator;
+	private Date creationTime;
 	
 	private String[][] tokens;
 	private PoSTag[][] posTags;
@@ -59,12 +65,31 @@ public class TempDocument {
 		return this.language;
 	}
 	
+	public String getNLPAnnotator() {
+		return this.nlpAnnotator;
+	}
+	
+	public Date getCreationTime() {
+		return this.creationTime;
+	}
+	
 	public int getSentenceCount() {
 		return this.tokens.length;
 	}
 	
 	public int getSentenceTokenCount(int sentenceIndex) {
 		return this.tokens[sentenceIndex].length;
+	}
+	
+	public String getSentence(int sentenceIndex) {
+		StringBuilder sentenceStr = new StringBuilder();
+		
+		for (int i = 0; i < this.tokens[sentenceIndex].length; i++) {
+			if (this.posTags[sentenceIndex][i] != PoSTag.SYM)
+				sentenceStr = sentenceStr.append(" ");
+			sentenceStr = sentenceStr.append(this.tokens[sentenceIndex][i]);
+		}
+		return sentenceStr.toString();
 	}
 	
 	public String getToken(int sentenceIndex, int tokenIndex) {
@@ -242,6 +267,8 @@ public class TempDocument {
 		
 		json.put("name", this.name);
 		json.put("language", this.language.toString());
+		if (this.creationTime != null)
+			json.put("creationTime", TempDocument.CREATION_TIME_FORMAT.format(this.creationTime));
 		json.put("nlpAnnotator", this.nlpAnnotator);
 		
 		for (int i = 0; i < this.tokens.length; i++) {
@@ -294,6 +321,9 @@ public class TempDocument {
 		element.setAttribute("name", this.name);
 		element.setAttribute("language", this.language.toString());
 		element.setAttribute("nlpAnnotator", this.nlpAnnotator);
+		
+		if (this.creationTime != null)
+			element.setAttribute("creationTime", TempDocument.CREATION_TIME_FORMAT.format(this.creationTime));
 		
 		for (int i = 0; i < this.tokens.length; i++) {
 			Element entryElement = new Element("entry");
@@ -405,6 +435,13 @@ public class TempDocument {
 		
 		document.name = json.getString("name");
 		document.language = Language.valueOf(json.getString("language"));
+		if (json.has("creationTime")) {
+			try {
+				document.creationTime = TempDocument.CREATION_TIME_FORMAT.parse(json.getString("creationTime"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
 		document.nlpAnnotator = json.getString("nlpAnnotator");
 		
 		JSONArray sentences = json.getJSONArray("sentences");
@@ -495,6 +532,7 @@ public class TempDocument {
 		
 		boolean hasName = false;
 		boolean hasLanguage = false;
+		boolean hasCreationTime = false;
 		boolean hasNlpAnnotator = false;
 		
 		List<Attribute> attributes = (List<Attribute>)element.getAttributes();
@@ -505,12 +543,21 @@ public class TempDocument {
 				hasLanguage = true;
 			else if (attribute.getName().equals("nlpAnnotator"))
 				hasNlpAnnotator = true;
+			else if (attribute.getName().equals("creationTime"))
+				hasCreationTime = true;
 		}
 		
 		if (hasName)
 			document.name = element.getAttributeValue("name");
 		if (hasLanguage)
 			document.language = Language.valueOf(element.getAttributeValue("language"));
+		if (hasCreationTime) {
+			try {
+				document.creationTime = TempDocument.CREATION_TIME_FORMAT.parse(element.getAttributeValue("creationTime"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
 		if (hasNlpAnnotator)
 			document.nlpAnnotator = element.getAttributeValue("nlpAnnotator");
 		
@@ -638,7 +685,7 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromText(String name, String text, Language language, NLPAnnotator annotator) {
+	public static TempDocument createFromText(String name, String text, Language language, Date creationTime, NLPAnnotator annotator) {
 		TempDocument document = new TempDocument();
 		
 		annotator.setLanguage(language);
@@ -646,6 +693,7 @@ public class TempDocument {
 		
 		document.name = name;
 		document.language = language;
+		document.creationTime = creationTime;
 		document.nlpAnnotator = annotator.toString();
 		
 		document.tokens = annotator.makeTokens();
