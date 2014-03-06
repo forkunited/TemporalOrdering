@@ -16,6 +16,12 @@ public class TokenSpan {
 		this.endTokenIndex = endTokenIndex;
 	}
 	
+	public boolean containsToken(int sentenceIndex, int tokenIndex) {
+		return this.sentenceIndex == sentenceIndex
+				&& this.startTokenIndex <= tokenIndex
+				&& this.endTokenIndex > tokenIndex;
+	}
+	
 	public TempDocument getDocument() {
 		return this.document;
 	}

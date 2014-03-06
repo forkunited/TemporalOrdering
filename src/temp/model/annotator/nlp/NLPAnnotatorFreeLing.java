@@ -1,9 +1,18 @@
 package temp.model.annotator.nlp;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+
+import ark.util.FileUtil;
 
 import edu.upc.freeling.ChartParser;
 import edu.upc.freeling.DepTxala;
@@ -25,24 +34,27 @@ import edu.upc.freeling.VectorWord;
 import temp.data.annotation.Language;
 import temp.data.annotation.nlp.PoSTag;
 import temp.data.annotation.nlp.TypedDependency;
+import temp.data.annotation.nlp.WordNet;
 import temp.util.TempProperties;
 
 public class NLPAnnotatorFreeLing extends NLPAnnotator {
 	private MacoOptions options;
-    private Tokenizer tokenizer;
-    private Splitter sentenceSplitter;
-    private Maco morphologyAnalyzer;
-    private HmmTagger posTagger;
-    private ChartParser parser;
-    private DepTxala dependencyParser;
-    private Nec ner;
-    private Senses senseDictionary; 
-    private Ukb senseDisambiguator;
+	private Tokenizer tokenizer;
+	private Splitter sentenceSplitter;
+	private Maco morphologyAnalyzer;
+	private HmmTagger posTagger;
+	private ChartParser parser;
+	private DepTxala dependencyParser;
+	private Nec ner;
+	private Senses senseDictionary; 
+	private Ukb senseDisambiguator;
     
-    private ListWord textWords;
-    private ListSentence textSentences;
+	private ListWord textWords;
+	private ListSentence textSentences;
+
+	private Map<String, List<WordNet.Hypernym>> wordNetHypernymMap;
 	
-	public NLPAnnotatorFreeLing(TempProperties properties) {
+    public NLPAnnotatorFreeLing(TempProperties properties) {
 		this.properties = properties;
 		
 		loadLibrary("zlibwapi");
@@ -64,10 +76,46 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		Util.initLocale( "default" );
 		
 		setLanguage(Language.Spanish);
+		
+		loadWordNetHypernymMap();
 	}
 	
 	private void loadLibrary(String library) {
-		System.loadLibrary(new File(properties.getFreeLingLibraryPath(), "bin/" + library).getPath().replace("\\", "/"));
+		System.loadLibrary(new File(this.properties.getFreeLingLibraryPath(), "bin/" + library).getPath().replace("\\", "/"));
+	}
+	
+	private void loadWordNetHypernymMap() {
+		String wordNetFilePath = new File(this.properties.getFreeLingDataDirectoryPath(), "common/wn30.src").getAbsolutePath();
+		this.wordNetHypernymMap = new HashMap<String, List<WordNet.Hypernym>>();
+		
+		try {
+			BufferedReader r = FileUtil.getFileReader(wordNetFilePath);
+			String line = null;
+			while ((line = r.readLine()) != null) {
+				String lineParts[] = line.split(" ");
+				
+				if (lineParts.length < 4 || lineParts[3].equals("-"))
+					continue;
+				
+				String sense1 = lineParts[0];
+				String sense2 = lineParts[1];
+				String hypernyms[] = lineParts[3].split(":");
+				
+				if (!this.wordNetHypernymMap.containsKey(sense1))
+					this.wordNetHypernymMap.put(sense1, new ArrayList<WordNet.Hypernym>());
+				if (!this.wordNetHypernymMap.containsKey(sense2))
+					this.wordNetHypernymMap.put(sense2, new ArrayList<WordNet.Hypernym>());
+			
+				for (int i = 0; i < hypernyms.length; i++) {
+					this.wordNetHypernymMap.get(sense1).add(WordNet.hypernymFromString(hypernyms[i]));
+					this.wordNetHypernymMap.get(sense2).add(WordNet.hypernymFromString(hypernyms[i]));
+				}
+			}
+			
+			r.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean setLanguage(Language language) {
@@ -260,5 +308,35 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			i++;
 		}
 		return dependencies;
+	}
+	
+	public WordNet.Hypernym[][][] makeTokenHypernyms() {
+		WordNet.Hypernym[][][] hypernyms = new WordNet.Hypernym[(int)this.textSentences.size()][][];
+		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
+		int i = 0;
+		while (iterator.hasNext()) {
+			Sentence sentence = iterator.next();
+			VectorWord words = sentence.getWords();
+			hypernyms[i] = new WordNet.Hypernym[(int)words.size()][];
+			
+			for (int j = 0; j < words.size(); j++) {
+				String[] senses = words.get(j).getSensesString().split("/");
+				Set<WordNet.Hypernym> hypernymsForWord = new HashSet<WordNet.Hypernym>();
+				for (int k = 0; k < senses.length; k++) {
+					if (senses[k].length() == 0)
+						continue;
+					String sense = senses[k].substring(0, senses[k].indexOf(':'));
+					if (this.wordNetHypernymMap.containsKey(sense))
+						hypernymsForWord.addAll(this.wordNetHypernymMap.get(sense));
+				}
+				
+				hypernyms[i][j] = new WordNet.Hypernym[hypernymsForWord.size()];
+				hypernyms[i][j] = hypernymsForWord.toArray(hypernyms[i][j]);
+			}
+			
+			i++;
+		}
+		
+		return hypernyms;
 	}
 }

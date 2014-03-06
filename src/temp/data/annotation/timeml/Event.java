@@ -63,6 +63,18 @@ public class Event implements TLinkable {
 	private String modality;
 	private String cardinality;
 	
+	public Event() {
+		
+	}
+	
+	public Event(int id, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass) {
+		this.id = "ei" + id;
+		this.sourceId = "e" + id;
+		this.timeMLTense = timeMLTense;
+		this.timeMLAspect = timeMLAspect;
+		this.timeMLClass = timeMLClass;
+	}
+	
 	public TLinkable.Type getTLinkableType() {
 		return TLinkable.Type.EVENT;
 	}

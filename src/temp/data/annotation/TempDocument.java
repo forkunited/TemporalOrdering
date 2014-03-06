@@ -81,6 +81,13 @@ public class TempDocument {
 		return this.tokens[sentenceIndex].length;
 	}
 	
+	public String getText() {
+		StringBuilder text = new StringBuilder();
+		for (int i = 0; i < getSentenceCount(); i++)
+			text = text.append(getSentence(i)).append(" ");
+		return text.toString().trim();
+	}
+	
 	public String getSentence(int sentenceIndex) {
 		StringBuilder sentenceStr = new StringBuilder();
 		
@@ -159,6 +166,15 @@ public class TempDocument {
 		List<Event> events = new ArrayList<Event>();
 		for (int j = 0; j < this.events[sentenceIndex].length; j++) {
 			events.add(this.events[sentenceIndex][j]);
+		}
+		return events;
+	}
+	
+	public List<Event> getEventsForToken(int sentenceIndex, int tokenIndex) {
+		List<Event> events = new ArrayList<Event>();
+		for (int j = 0; j < this.events[sentenceIndex].length; j++) {
+			if (this.events[sentenceIndex][j].getTokenSpan().containsToken(sentenceIndex, tokenIndex))
+				events.add(this.events[sentenceIndex][j]);
 		}
 		return events;
 	}
