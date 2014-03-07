@@ -54,10 +54,11 @@ public class TypedDependency {
 		String[] typeAndRest = str.split("\\(");
 		String type = typeAndRest[0];
 		
-		String rest = typeAndRest[1].substring(0, str.length() - 1);
+		String rest = typeAndRest[1].substring(0, typeAndRest[1].length() - 1);
 		String[] parentAndChild = rest.split(",");
-		int parentTokenIndex = Integer.parseInt(parentAndChild[0].trim().split("\\-")[1]) - 1;
-		int childTokenIndex = Integer.parseInt(parentAndChild[1].trim().split("\\-")[1]) - 1;
+		
+		int parentTokenIndex = Integer.parseInt(parentAndChild[0].substring(parentAndChild[0].lastIndexOf("-") + 1).replace("'", "").trim()) - 1;
+		int childTokenIndex = Integer.parseInt(parentAndChild[1].substring(parentAndChild[1].lastIndexOf("-") + 1).replace("'",  "").trim()) - 1;
 		
 		return new TypedDependency(document, sentenceIndex, parentTokenIndex, childTokenIndex, type);
 	}

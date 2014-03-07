@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,14 +33,13 @@ import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.Signal;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
+import temp.data.annotation.timeml.Time.TimeMLDocumentFunction;
 
 public class TempDocument {
-	private static SimpleDateFormat CREATION_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	
 	private String name;
 	private Language language;
 	private String nlpAnnotator;
-	private Date creationTime;
+	private Time creationTime;
 	
 	private String[][] tokens;
 	private PoSTag[][] posTags;
@@ -69,7 +66,7 @@ public class TempDocument {
 		return this.nlpAnnotator;
 	}
 	
-	public Date getCreationTime() {
+	public Time getCreationTime() {
 		return this.creationTime;
 	}
 	
@@ -226,12 +223,28 @@ public class TempDocument {
 		return tlinks;
 	}
 	
+	public boolean setPoSTags(PoSTag[][] posTags) {
+		if (this.tokens.length != posTags.length)
+			return false;
+		this.posTags = new PoSTag[this.tokens.length][];
+		for (int i = 0; i < posTags.length; i++) {
+			if (this.tokens[i].length != posTags[i].length)
+				return false;
+			this.posTags[i] = new PoSTag[posTags[i].length];
+			for (int j = 0; j < posTags[i].length; j++) {
+				this.posTags[i][j] = posTags[i][j];
+			}
+		}
+		
+		return true;
+	}
+	
 	public boolean setEvents(Event[][] events) {
 		this.events = new Event[events.length][];
 		this.eventMap = new HashMap<String, Event>();
 		for (int i = 0; i < events.length; i++) {
-			this.events[i] = new Event[events.length];
-			for (int j = 0; i < events[i].length; j++) {
+			this.events[i] = new Event[events[i].length];
+			for (int j = 0; j < events[i].length; j++) {
 				this.events[i][j] = events[i][j];
 				if (this.events[i][j] != null)
 					this.eventMap.put(events[i][j].getId(), events[i][j]);
@@ -244,8 +257,8 @@ public class TempDocument {
 		this.times = new Time[times.length][];
 		this.timeMap = new HashMap<String, Time>();
 		for (int i = 0; i < times.length; i++) {
-			this.times[i] = new Time[times.length];
-			for (int j = 0; i < times[i].length; j++) {
+			this.times[i] = new Time[times[i].length];
+			for (int j = 0; j < times[i].length; j++) {
 				this.times[i][j] = times[i][j];
 				if (this.times[i][j] != null)
 					this.timeMap.put(times[i][j].getId(), times[i][j]);
@@ -258,8 +271,8 @@ public class TempDocument {
 		this.signals = new Signal[signals.length][];
 		this.signalMap = new HashMap<String, Signal>();
 		for (int i = 0; i < signals.length; i++) {
-			this.signals[i] = new Signal[signals.length];
-			for (int j = 0; i < signals[i].length; j++) {
+			this.signals[i] = new Signal[signals[i].length];
+			for (int j = 0; j < signals[i].length; j++) {
 				this.signals[i][j] = signals[i][j];
 				if (this.signals[i][j] != null)
 					this.signalMap.put(signals[i][j].getId(), signals[i][j]);
@@ -284,12 +297,13 @@ public class TempDocument {
 		json.put("name", this.name);
 		json.put("language", this.language.toString());
 		if (this.creationTime != null)
-			json.put("creationTime", TempDocument.CREATION_TIME_FORMAT.format(this.creationTime));
+			json.put("creationTime", this.creationTime.toJSON());
 		json.put("nlpAnnotator", this.nlpAnnotator);
 		
 		for (int i = 0; i < this.tokens.length; i++) {
 			JSONObject sentenceJson = new JSONObject();
 			
+			sentenceJson.put("sentence", getSentence(i));
 			sentenceJson.put("tokens", JSONArray.fromObject(this.tokens[i]));
 	
 			JSONArray posTagsJson = new JSONArray();
@@ -339,7 +353,7 @@ public class TempDocument {
 		element.setAttribute("nlpAnnotator", this.nlpAnnotator);
 		
 		if (this.creationTime != null)
-			element.setAttribute("creationTime", TempDocument.CREATION_TIME_FORMAT.format(this.creationTime));
+			element.addContent(this.creationTime.toXML());
 		
 		for (int i = 0; i < this.tokens.length; i++) {
 			Element entryElement = new Element("entry");
@@ -451,13 +465,6 @@ public class TempDocument {
 		
 		document.name = json.getString("name");
 		document.language = Language.valueOf(json.getString("language"));
-		if (json.has("creationTime")) {
-			try {
-				document.creationTime = TempDocument.CREATION_TIME_FORMAT.parse(json.getString("creationTime"));
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-		}
 		document.nlpAnnotator = json.getString("nlpAnnotator");
 		
 		JSONArray sentences = json.getJSONArray("sentences");
@@ -466,6 +473,12 @@ public class TempDocument {
 		document.dependencies = new TypedDependency[sentences.size()][];
 
 		document.initializeTimeML();
+		
+		if (json.has("creationTime")) {
+			document.creationTime = Time.fromJSON(json.getJSONObject("creationTime"), document, -1);
+			if (document.creationTime != null)
+				document.timeMap.put(document.creationTime.getId(), document.creationTime);
+		}
 		
 		JSONArray[] timesJson = new JSONArray[sentences.size()];
 		JSONArray[] eventsJson = new JSONArray[sentences.size()];
@@ -515,8 +528,9 @@ public class TempDocument {
 				for (int j = 0; j < timesJson[i].size(); j++) {
 					if (document.times[i].length > j && document.times[i][j] != null)
 						times[i][j] = document.times[i][j];
-					else
+					else {
 						times[i][j] = Time.fromJSON(timesJson[i].getJSONObject(j), document, i);
+					}
 					
 					if (times[i][j] == null)
 						failedToAddTime = true;
@@ -548,7 +562,6 @@ public class TempDocument {
 		
 		boolean hasName = false;
 		boolean hasLanguage = false;
-		boolean hasCreationTime = false;
 		boolean hasNlpAnnotator = false;
 		
 		List<Attribute> attributes = (List<Attribute>)element.getAttributes();
@@ -559,21 +572,16 @@ public class TempDocument {
 				hasLanguage = true;
 			else if (attribute.getName().equals("nlpAnnotator"))
 				hasNlpAnnotator = true;
-			else if (attribute.getName().equals("creationTime"))
-				hasCreationTime = true;
 		}
 		
 		if (hasName)
 			document.name = element.getAttributeValue("name");
+		
 		if (hasLanguage)
 			document.language = Language.valueOf(element.getAttributeValue("language"));
-		if (hasCreationTime) {
-			try {
-				document.creationTime = TempDocument.CREATION_TIME_FORMAT.parse(element.getAttributeValue("creationTime"));
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-		}
+		else
+			document.language = Language.English;
+			
 		if (hasNlpAnnotator)
 			document.nlpAnnotator = element.getAttributeValue("nlpAnnotator");
 		
@@ -592,10 +600,10 @@ public class TempDocument {
 			int sentenceIndex = Integer.parseInt(entryElement.getAttributeValue("sid"));
 		
 			Element timexesElement = entryElement.getChild("timexes");
-			timexesXML.add(timexesElement.getChildren("timex"));
+			timexesXML.add((List<Element>)timexesElement.getChildren("timex"));
 			
 			Element eventsElement = entryElement.getChild("events");
-			eventsXML.add(eventsElement.getChildren("event"));
+			eventsXML.add((List<Element>)eventsElement.getChildren("event"));
 			
 			Element tokensElement = entryElement.getChild("tokens");
 			List<Element> tElements = tokensElement.getChildren("t");
@@ -616,14 +624,25 @@ public class TempDocument {
 				document.dependencies[sentenceIndex][j] = TypedDependency.fromString(depStrs[j], document, sentenceIndex);
 			
 			Element signalsElement = entryElement.getChild("signals");
-			List<Element> signalElements = signalsElement.getChildren("signal");
-			signals[sentenceIndex] = new Signal[signalElements.size()];
-			for (int j = 0; j < signalElements.size(); j++)
-				signals[sentenceIndex][j] = Signal.fromXML(signalElements.get(j), document, sentenceIndex);
+			if (signalsElement != null) {
+				List<Element> signalElements = signalsElement.getChildren("signal");
+				signals[sentenceIndex] = new Signal[signalElements.size()];
+				for (int j = 0; j < signalElements.size(); j++)
+					signals[sentenceIndex][j] = Signal.fromXML(signalElements.get(j), document, sentenceIndex);
+			} else {
+				signals[sentenceIndex] = new Signal[0];
+			}
 		}
 		
 		document.setSignals(signals);
 				
+		List<Element> creationTimeElements = (List<Element>)element.getChildren("timex");
+		if (creationTimeElements.size() > 0) {
+			document.creationTime = Time.fromXML(creationTimeElements.get(0), document, -1);
+			if (document.creationTime != null)
+				document.timeMap.put(document.creationTime.getId(), document.creationTime);
+		}
+		
 		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
 		 * possible that if they are added in the wrong order, the references will be empty.  The 
 		 * following code fixes this issue by repeatedly trying to add all of the times, 
@@ -636,12 +655,14 @@ public class TempDocument {
 			failedToAddTime = false;
 			Time[][] times = new Time[timexesXML.size()][];
 			for (int i = 0; i < timexesXML.size(); i++) {
+				times[i] = new Time[timexesXML.get(i).size()];
 				for (int j = 0; j < timexesXML.get(i).size(); j++) {
 					if (document.times[i].length > j && document.times[i][j] != null)
 						times[i][j] = document.times[i][j];
-					else
+					else {
 						times[i][j] = Time.fromXML(timexesXML.get(i).get(j), document, i);
-					
+					}
+						
 					if (times[i][j] == null)
 						failedToAddTime = true;
 				}
@@ -709,7 +730,7 @@ public class TempDocument {
 		
 		document.name = name;
 		document.language = language;
-		document.creationTime = creationTime;
+		document.creationTime = Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, document, null);
 		document.nlpAnnotator = annotator.toString();
 		
 		document.tokens = annotator.makeTokens();

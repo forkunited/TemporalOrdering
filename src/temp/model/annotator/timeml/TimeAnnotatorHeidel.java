@@ -45,7 +45,7 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 				if (document.getCreationTime() == null)
 					timeMLStr = this.heidelTime.process(sentenceStr);
 				else 
-					timeMLStr = this.heidelTime.process(sentenceStr, document.getCreationTime());
+					timeMLStr = this.heidelTime.process(sentenceStr, document.getCreationTime().getValue().getRange().first().getTime());
 				
 				timeMLStr = timeMLStr.replace("<!DOCTYPE TimeML SYSTEM \"TimeML.dtd\">", "");
 				

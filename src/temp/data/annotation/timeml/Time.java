@@ -1,5 +1,7 @@
 package temp.data.annotation.timeml;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -50,7 +52,7 @@ public class Time implements TLinkable {
 	private Time endTime;
 	private String quant;
 	private String freq;
-	private String value;
+	private NormalizedTimeValue value;
 	private TimeMLDocumentFunction timeMLDocumentFunction = TimeMLDocumentFunction.NONE;
 	private boolean temporalFunction;
 	private Time anchorTime;
@@ -89,7 +91,7 @@ public class Time implements TLinkable {
 		return this.freq;
 	}
 	
-	public String getValue() {
+	public NormalizedTimeValue getValue() {
 		return this.value;
 	}
 	
@@ -129,7 +131,7 @@ public class Time implements TLinkable {
 		if (this.freq != null)
 			json.put("freq", this.freq);
 		if (this.value != null)
-			json.put("value", this.value);
+			json.put("value", this.value.toString());
 		if (this.quant != null)
 			json.put("quant", this.quant);
 		if (this.timeMLDocumentFunction != null)
@@ -167,7 +169,7 @@ public class Time implements TLinkable {
 		if (this.freq != null)
 			element.setAttribute("freq", this.freq);
 		if (this.value != null)
-			element.setAttribute("value", this.value);
+			element.setAttribute("value", this.value.toString());
 		if (this.quant != null)
 			element.setAttribute("quant", this.quant);
 		if (this.timeMLDocumentFunction != null)
@@ -207,7 +209,7 @@ public class Time implements TLinkable {
 			time.endTime = 	endTime;
 		}
 		if (json.containsKey("value"))
-			time.value = json.getString("value");
+			time.value = new NormalizedTimeValue(json.getString("value"));
 		if (json.containsKey("freq"))
 			time.freq = json.getString("freq");
 		if (json.containsKey("quant"))
@@ -320,7 +322,7 @@ public class Time implements TLinkable {
 		if (hasFreq)
 			time.freq = element.getAttributeValue("freq");
 		if (hasValue)
-			time.value = element.getAttributeValue("value");
+			time.value = new NormalizedTimeValue(element.getAttributeValue("value"));
 		if (hasQuant)
 			time.quant = element.getAttributeValue("quant");
 		if (hasTimeMLDocumentFunction && element.getAttributeValue("docFunction").length() > 0)
@@ -349,5 +351,35 @@ public class Time implements TLinkable {
 			time.timeMLMod = TimeMLMod.valueOf(element.getAttributeValue("mod"));
 		
 		return time;
+	}
+	
+	public static Time fromDate(Date date, 
+								int id, 
+								TimeMLDocumentFunction documentFunction, 
+								TempDocument document, 
+								TokenSpan tokenSpan) {
+		Element timeElement = new Element("timex");
+		
+		SimpleDateFormat format = new SimpleDateFormat("YYYY-MM-DD");
+		String value = format.format(date);
+		int sentenceIndex = -1;
+		int offset = -1;
+		int length = 0;
+		if (tokenSpan != null) {
+			sentenceIndex = tokenSpan.getSentenceIndex();
+			offset = tokenSpan.getStartTokenIndex();
+			length = tokenSpan.getEndTokenIndex() - tokenSpan.getStartTokenIndex();
+		}
+			
+		timeElement.setAttribute("offset", String.valueOf(offset));
+		timeElement.setAttribute("length", String.valueOf(length));
+		
+		timeElement.setAttribute("id", "t" + id);
+		timeElement.setAttribute("value", value);
+		timeElement.setAttribute("type", "DATE");
+		timeElement.setAttribute("docFunction", documentFunction.toString());
+		timeElement.setAttribute("temporalFunction", "false");
+		
+		return fromXML(timeElement, document, sentenceIndex);
 	}
 }
