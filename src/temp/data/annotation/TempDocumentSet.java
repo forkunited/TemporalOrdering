@@ -60,8 +60,10 @@ public class TempDocumentSet {
 			    }
 			});
 			
-			for (File file : tempFiles)
+			for (File file : tempFiles) {
+				System.out.println("Loading document " + file.getName());
 				documentSet.addDocument(TempDocument.loadFromJSONFile(file.getAbsolutePath()));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

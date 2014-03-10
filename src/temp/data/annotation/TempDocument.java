@@ -465,7 +465,9 @@ public class TempDocument {
 		
 		document.name = json.getString("name");
 		document.language = Language.valueOf(json.getString("language"));
-		document.nlpAnnotator = json.getString("nlpAnnotator");
+		
+		if (json.has("nlpAnnotator"))
+			document.nlpAnnotator = json.getString("nlpAnnotator");
 		
 		JSONArray sentences = json.getJSONArray("sentences");
 		document.tokens = new String[sentences.size()][];
@@ -489,7 +491,9 @@ public class TempDocument {
 			JSONArray tokensJson = sentenceJson.getJSONArray("tokens");
 			JSONArray posTagsJson = sentenceJson.getJSONArray("posTags");
 			JSONArray dependenciesJson = sentenceJson.getJSONArray("dependencies");
-			JSONArray signalsJson = sentenceJson.getJSONArray("signals");
+			JSONArray signalsJson = null;
+			if (sentenceJson.has("signals"))
+				signalsJson = sentenceJson.getJSONArray("signals");
 			
 			timesJson[i] = sentenceJson.getJSONArray("times");
 			eventsJson[i] = sentenceJson.getJSONArray("events");
@@ -506,9 +510,13 @@ public class TempDocument {
 			for (int j = 0; j < dependenciesJson.size(); j++)
 				document.dependencies[i][j] = TypedDependency.fromString(dependenciesJson.getString(j), document, i);
 			
-			signals[i] = new Signal[signalsJson.size()];
-			for (int j = 0; j < signalsJson.size(); j++)
-				signals[i][j] = Signal.fromJSON(signalsJson.getJSONObject(j), document, i);
+			if (signalsJson != null) {
+				signals[i] = new Signal[signalsJson.size()];
+				for (int j = 0; j < signalsJson.size(); j++)
+					signals[i][j] = Signal.fromJSON(signalsJson.getJSONObject(j), document, i);
+			} else {
+				signals[i] = new Signal[0];
+			}
 		}
 
 		document.setSignals(signals);
@@ -525,6 +533,7 @@ public class TempDocument {
 			failedToAddTime = false;
 			Time[][] times = new Time[timesJson.length][];
 			for (int i = 0; i < timesJson.length; i++) {
+				times[i] = new Time[timesJson[i].size()];
 				for (int j = 0; j < timesJson[i].size(); j++) {
 					if (document.times[i].length > j && document.times[i][j] != null)
 						times[i][j] = document.times[i][j];
@@ -541,6 +550,7 @@ public class TempDocument {
 		
 		Event[][] events = new Event[eventsJson.length][];
 		for (int i = 0; i < events.length; i++) {
+			events[i] = new Event[eventsJson[i].size()];
 			for (int j = 0; j < eventsJson[i].size(); j++) {
 				events[i][j] = Event.fromJSON(eventsJson[i].getJSONObject(j), document, i);
 			}

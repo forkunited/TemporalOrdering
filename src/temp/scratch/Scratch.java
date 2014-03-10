@@ -44,5 +44,10 @@ public class Scratch {
 				System.out.println(times[i][j].toJSON().toString());
 			}
 		}
+		
+		/****/
+		
+		//TempDocumentSet documentSet = TempDocumentSet.loadFromJSONDirectory("");
+		
 	}
 }
