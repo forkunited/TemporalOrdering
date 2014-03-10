@@ -1,8 +1,13 @@
 package temp.data.annotation.nlp;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import temp.data.annotation.TempDocument;
 
 public class TypedDependency {
+	private static Pattern dependencyPattern = Pattern.compile("(.*)\\((.*)-([0-9']*),(.*)-([0-9']*)\\)");
+	
 	private TempDocument document;
 	private int sentenceIndex;
 	private int parentTokenIndex;
@@ -51,14 +56,10 @@ public class TypedDependency {
 	public static TypedDependency fromString(String str, TempDocument document, int sentenceIndex) {
 		str = str.trim();
 		
-		String[] typeAndRest = str.split("\\(");
-		String type = typeAndRest[0];
-		
-		String rest = typeAndRest[1].substring(0, typeAndRest[1].length() - 1);
-		String[] parentAndChild = rest.split(",");
-		
-		int parentTokenIndex = Integer.parseInt(parentAndChild[0].substring(parentAndChild[0].lastIndexOf("-") + 1).replace("'", "").trim()) - 1;
-		int childTokenIndex = Integer.parseInt(parentAndChild[1].substring(parentAndChild[1].lastIndexOf("-") + 1).replace("'",  "").trim()) - 1;
+		Matcher m = TypedDependency.dependencyPattern.matcher(str.trim());
+		String type = m.group(1).trim();
+		Integer parentTokenIndex = Integer.parseInt(m.group(3).replace("'", "").trim());
+		Integer childTokenIndex = Integer.parseInt(m.group(5).replace("'", "").trim());
 		
 		return new TypedDependency(document, sentenceIndex, parentTokenIndex, childTokenIndex, type);
 	}
