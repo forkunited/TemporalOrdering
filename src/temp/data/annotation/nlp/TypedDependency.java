@@ -65,6 +65,6 @@ public class TypedDependency {
 		Integer parentTokenIndex = Integer.parseInt(m.group(3).replace("'", "").trim());
 		Integer childTokenIndex = Integer.parseInt(m.group(5).replace("'", "").trim());
 		
-		return new TypedDependency(document, sentenceIndex, parentTokenIndex, childTokenIndex, type);
+		return new TypedDependency(document, sentenceIndex, parentTokenIndex-1, childTokenIndex-1, type);
 	}
 }
