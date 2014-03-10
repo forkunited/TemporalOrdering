@@ -67,12 +67,18 @@ public class Event implements TLinkable {
 		
 	}
 	
-	public Event(int id, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass) {
+	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass) {
+		this(id, tokenSpan, timeMLTense, timeMLAspect, timeMLClass, TimeMLPolarity.POS);
+	}
+	
+	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity) {
 		this.id = "ei" + id;
 		this.sourceId = "e" + id;
+		this.tokenSpan = tokenSpan;
 		this.timeMLTense = timeMLTense;
 		this.timeMLAspect = timeMLAspect;
 		this.timeMLClass = timeMLClass;
+		this.timeMLPolarity = timeMLPolarity;
 	}
 	
 	public TLinkable.Type getTLinkableType() {

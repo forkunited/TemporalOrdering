@@ -14,6 +14,7 @@ import edu.stanford.nlp.stats.Counter;
 
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
+import temp.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.nlp.WordNet;
 import temp.data.annotation.timeml.Event;
@@ -61,7 +62,7 @@ public class EventAnnotatorChambers extends EventAnnotator {
 		  			Event.TimeMLAspect timeMLAspect = Event.TimeMLAspect.valueOf(this.aspectClassifier.classOf(datum));
 		  			Event.TimeMLClass timeMLClass = Event.TimeMLClass.valueOf(this.classClassifier.classOf(datum));
 		  			
-		  			sentenceEvents.add(new Event(eventId, timeMLTense, timeMLAspect, timeMLClass));
+		  			sentenceEvents.add(new Event(eventId, new TokenSpan(document, i, j, j+1), timeMLTense, timeMLAspect, timeMLClass));
 		  		}
 			}
 			events[i] = new Event[sentenceEvents.size()];

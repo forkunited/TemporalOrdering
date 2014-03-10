@@ -59,6 +59,25 @@ public class Time implements TLinkable {
 	private Time valueFromFunction;
 	private TimeMLMod timeMLMod;
 	
+	public Time() {
+		
+	}
+	
+	public Time(String id, String value, TokenSpan tokenSpan, TimeMLType timeMLType) {
+		this.id  = id;
+		this.value = new NormalizedTimeValue(value);
+		this.tokenSpan = tokenSpan;
+		this.timeMLType = timeMLType;
+		this.timeMLDocumentFunction = TimeMLDocumentFunction.NONE;
+	}
+	
+	public Time(String id, String value, TimeMLType timeMLType, TimeMLDocumentFunction timeMLDocumentFunction) {
+		this.id = id;
+		this.value = new NormalizedTimeValue(value);
+		this.timeMLType = timeMLType;
+		this.timeMLDocumentFunction = timeMLDocumentFunction;
+	}
+	
 	public TLinkable.Type getTLinkableType() {
 		return TLinkable.Type.TIME;
 	}
