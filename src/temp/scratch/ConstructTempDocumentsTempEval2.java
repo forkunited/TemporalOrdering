@@ -9,15 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import edu.stanford.nlp.international.Languages.Language;
-
 import ark.util.FileUtil;
+import temp.data.annotation.Language;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
 import temp.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
+import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
+import temp.util.TempProperties;
 
 public class ConstructTempDocumentsTempEval2 {
 	public static void main(String[] args) {
@@ -41,23 +42,26 @@ public class ConstructTempDocumentsTempEval2 {
 		Map<String, String[][]> tlinksDctEvent = readTSVFile(new File(directoryPath, "tlinks-dct-events.tab").getAbsolutePath());
 		Map<String, String[][]> tlinksEventTimex = readTSVFile(new File(directoryPath, "tlinks-event-timex.tab").getAbsolutePath());
 		
+		NLPAnnotatorMultiLanguage nlpAnnotator = new NLPAnnotatorMultiLanguage(new TempProperties(), language);
+		TempDocumentSet documentSet = new TempDocumentSet();
+		
 		for (String file : baseSegmentation.keySet()) {
 			String[][] tokens = tokensFromLines(baseSegmentation.get(file));
 			Time creationTime = creationTimeFromLines(dct.get(file));
-			//Time[][] times = timesFromLines(document, timexExtents.get(file), timexAttributes.get(file));
-			//Event[][] events = eventsFromLines(document, eventExtents.get(file), eventAttributes.get(file));
+			TempDocument document = TempDocument.createFromTokens(file, tokens, language, creationTime, nlpAnnotator);
 			
-			// Add times and events to document
+			Time[][] times = timesFromLines(document, timexExtents.get(file), timexAttributes.get(file));
+			Event[][] events = eventsFromLines(document, eventExtents.get(file), eventAttributes.get(file));
 			
-			//TLink[] tlinks = tlinksFromLines(document, tlinksDctEvent.get(file), tlinksEventTimex.get(file));
-		
-			// Add tokens, creation time, language, name to document
-			// Run annotator on document to produce dependencies and posTags
-			// Add times, events, tlinks
+			document.setTimes(times);
+			document.setEvents(events);
+			
+			TLink[] tlinks = tlinksFromLines(document, tlinksDctEvent.get(file), tlinksEventTimex.get(file));
+			document.setTLinks(tlinks);
+			documentSet.addDocument(document);
 		}
 		
-		/* FIXME */
-		return null;
+		return documentSet;
 	}
 	
 	private static String[][] tokensFromLines(String[][] lines) {
@@ -207,8 +211,17 @@ public class ConstructTempDocumentsTempEval2 {
 	private static TLink[] tlinksFromLines(TempDocument document, String[][] tlinksDctEvent, String[][] tlinksEventTimex) {
 		TLink[] tlinks = new TLink[tlinksDctEvent.length + tlinksEventTimex.length];
 		
+		int id = 0;
+		
 		for (int i = 0; i < tlinksDctEvent.length; i++) {
-			/* FIXME */
+			String eventId = tlinksDctEvent[i][1];
+			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksDctEvent[i][3].toUpperCase());
+			Event event = document.getEvent(eventId);
+			Time creationTime = document.getCreationTime();
+			
+			tlinks[id] = new TLink("l" + id, event, creationTime, type);
+			
+			id++;
 		}
 		
 		for (int i = 0; i < tlinksEventTimex.length; i++) {
@@ -218,7 +231,10 @@ public class ConstructTempDocumentsTempEval2 {
 			
 			Event event = document.getEvent(eventId);
 			Time time = document.getTime(timeId);
-			/* FIXME */
+			
+			tlinks[id] = new TLink("l" + id, event, time, type);
+			
+			id++;
 		}
 		
 		return tlinks;

@@ -54,6 +54,16 @@ public class TempDocument {
 	private Map<String, Time> timeMap;
 	private Map<String, Signal> signalMap;	
 		
+	private void initializeTimeML() {
+		this.events = new Event[this.tokens.length][0];
+		this.times = new Time[this.tokens.length][0];
+		this.signals = new Signal[this.tokens.length][0];
+		this.eventMap = new HashMap<String, Event>();
+		this.timeMap = new HashMap<String, Time>();
+		this.signalMap = new HashMap<String, Signal>();	
+		this.tlinks = new TLink[0];
+	}
+	
 	public String getName() {
 		return this.name;
 	}
@@ -450,16 +460,6 @@ public class TempDocument {
 		return true;
 	}
 	
-	private void initializeTimeML() {
-		this.events = new Event[this.tokens.length][0];
-		this.times = new Time[this.tokens.length][0];
-		this.signals = new Signal[this.tokens.length][0];
-		this.eventMap = new HashMap<String, Event>();
-		this.timeMap = new HashMap<String, Time>();
-		this.signalMap = new HashMap<String, Signal>();	
-		this.tlinks = new TLink[0];
-	}
-	
 	public static TempDocument fromJSON(JSONObject json) {
 		TempDocument document = new TempDocument();
 		
@@ -722,19 +722,18 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromText(String name, String text, Language language, Date creationTime, NLPAnnotator annotator) {
+	public static TempDocument createFromTokens(String name, String[][] tokens, Language language, Time creationTime, NLPAnnotator annotator) {
 		TempDocument document = new TempDocument();
 		
-		annotator.setLanguage(language);
-		annotator.setText(text);
-		
+		document.tokens = tokens;
 		document.name = name;
 		document.language = language;
-		document.creationTime = Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, document, null);
+		document.creationTime = creationTime;
 		document.nlpAnnotator = annotator.toString();
 		
-		document.tokens = annotator.makeTokens();
-		
+		annotator.setLanguage(language);
+		annotator.setText(document.getText());
+
 		TypedDependency[][] dependencies = annotator.makeDependencies();
 		document.dependencies = new TypedDependency[dependencies.length][];
 		for (int i = 0; i < dependencies.length; i++) {
@@ -752,5 +751,29 @@ public class TempDocument {
 		document.initializeTimeML();
 		
 		return document;
+	}
+	
+	public static TempDocument createFromTokens(String name, String[][] tokens, Language language, Date creationTime, NLPAnnotator annotator) {
+		return TempDocument.createFromTokens(name, 
+											 tokens, 
+											 language, 
+											 Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, null, null), 
+											 annotator);
+	}
+	
+	public static TempDocument createFromText(String name, String text, Language language, Time creationTime, NLPAnnotator annotator) {
+		annotator.setLanguage(language);
+		annotator.setText(text);
+		String[][] tokens = annotator.makeTokens();
+		
+		return TempDocument.createFromTokens(name, tokens, language, creationTime, annotator);
+	}
+	
+	public static TempDocument createFromText(String name, String text, Language language, Date creationTime, NLPAnnotator annotator) {		
+		return TempDocument.createFromText(name, 
+										   text, 
+										   language, 
+										   Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, null, null), 
+										   annotator);
 	}
 }

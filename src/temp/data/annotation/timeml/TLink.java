@@ -36,6 +36,17 @@ public class TLink {
 	private TimeMLRelType timeMLRelType;
 	private String syntax;
 	
+	public TLink() {
+		
+	}
+	
+	public TLink(String id, TLinkable source, TLinkable target, TimeMLRelType timeMLRelType) {
+		this.id = id;
+		this.source = source;
+		this.target = target;
+		this.timeMLRelType = timeMLRelType;
+	}
+	
 	public String getId() {
 		return this.id;
 	}
