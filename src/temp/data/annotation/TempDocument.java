@@ -349,7 +349,7 @@ public class TempDocument {
 		
 		JSONArray tlinksJson = new JSONArray();
 		for (int i = 0; i < this.tlinks.length; i++)
-			tlinksJson.add(this.tlinks[i]);
+			tlinksJson.add(this.tlinks[i].toJSON());
 		json.put("tlinks", tlinksJson);
 		
 		return json;
