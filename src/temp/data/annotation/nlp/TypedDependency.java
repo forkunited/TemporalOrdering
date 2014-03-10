@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import temp.data.annotation.TempDocument;
 
 public class TypedDependency {
-	private static Pattern dependencyPattern = Pattern.compile("(.*)\\((.*)-([0-9']*),(.*)-([0-9']*)\\)");
+	private static Pattern dependencyPattern = Pattern.compile("(.*)\\((.*)\\-([0-9']*),(.*)\\-([0-9']*)\\)");
 	
 	private TempDocument document;
 	private int sentenceIndex;
@@ -56,7 +56,11 @@ public class TypedDependency {
 	public static TypedDependency fromString(String str, TempDocument document, int sentenceIndex) {
 		str = str.trim();
 		
-		Matcher m = TypedDependency.dependencyPattern.matcher(str.trim());
+		Matcher m = TypedDependency.dependencyPattern.matcher(str);
+		
+		if (!m.matches())
+			return null;
+		
 		String type = m.group(1).trim();
 		Integer parentTokenIndex = Integer.parseInt(m.group(3).replace("'", "").trim());
 		Integer childTokenIndex = Integer.parseInt(m.group(5).replace("'", "").trim());

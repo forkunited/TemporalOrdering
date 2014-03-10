@@ -2,6 +2,7 @@ package temp.scratch;
 
 
 import java.util.Calendar;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import temp.data.annotation.Language;
@@ -14,17 +15,14 @@ import temp.util.TempProperties;
 
 public class Scratch {
 	public static void main(String[] args) {
+		Pattern p = Pattern.compile("(.*)\\((.*)\\-([0-9']*),(.*)\\-([0-9']*)\\)");
+		Matcher m = p.matcher("det(hand-4, the-2)");		
+		m.matches();
+		System.out.println(m.group(1));
 		
-		Pattern p = Pattern.compile("(.*)\\((.*)-([0-9']*),(.*)-([0-9']*)\\)");
+		/****/
 		
-		Matcher m = p.matcher("input");
-		
-		boolean x = "hi(asdf-1, 200,000-2)".matches("(.*)\\((.*)-([0-9']*),(.*)-([0-9']*)\\)");
-		System.out.println();
-		
-		
-		
-		/*TempProperties properties = new TempProperties();
+		TempProperties properties = new TempProperties();
 		NLPAnnotatorFreeLing annotator = new NLPAnnotatorFreeLing(properties);
 		annotator.setLanguage(Language.English);
 		annotator.setText("I was at the carnival.");
@@ -34,10 +32,10 @@ public class Scratch {
 				System.out.print(hypernyms[0][i][j] + " ");
 			}
 			System.out.println();
-		}*/
+		}
 		
 		/*****/
-		/*
+		
 		TempDocument document = TempDocument.createFromText("test", "The dog barks on March 30th 2013. I ran for 10 minutes.", Language.English, Calendar.getInstance().getTime(), annotator);
 		TimeAnnotatorHeidel timeAnnotator = new TimeAnnotatorHeidel(properties);
 		Time[][] times = timeAnnotator.makeTimes(document);
@@ -45,6 +43,6 @@ public class Scratch {
 			for (int j = 0; j < times[i].length; j++) {
 				System.out.println(times[i][j].toJSON().toString());
 			}
-		}*/
+		}
 	}
 }
