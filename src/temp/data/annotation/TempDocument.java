@@ -186,6 +186,15 @@ public class TempDocument {
 		return events;
 	}
 	
+	public List<Time> getTimesForToken(int sentenceIndex, int tokenIndex) {
+		List<Time> times = new ArrayList<Time>();
+		for (int j = 0; j < this.times[sentenceIndex].length; j++) {
+			if (this.times[sentenceIndex][j].getTokenSpan().containsToken(sentenceIndex, tokenIndex))
+				times.add(this.times[sentenceIndex][j]);
+		}
+		return times;
+	}
+	
 	public Event getEvent(String id) {
 		return this.eventMap.get(id);
 	}
