@@ -23,6 +23,10 @@ public class Event implements TLinkable {
 	
 	public enum TimeMLAspect {
 		PROGRESSIVE,
+		
+		IMPERFECTIVE, // Spanish only
+		IMPERFECTIVE_PROGRESSIVE, // Spanish only
+		
 		PERFECTIVE,
 		PERFECTIVE_PROGRESSIVE,
 		NONE
@@ -40,7 +44,8 @@ public class Event implements TLinkable {
 		ASPECTUAL,
         STATE,
         I_STATE, 
-        I_ACTION
+        I_ACTION,
+        NONE
 	}
 	
 	public enum TimeMLPoS {
@@ -49,6 +54,21 @@ public class Event implements TLinkable {
 		VERB,
 		PREPOSITION,
 		OTHER
+	}
+	
+	public enum TimeMLMood {
+		INDICATIVE,
+		SUBJUNCTIVE,
+		CONDITIONAL,
+		IMPERATIVE,
+		NONE
+	}
+	
+	public enum TimeMLVerbForm {
+		INFINITIVE,
+		GERUNDIVE,
+		PARTICIPLE,
+		NONE
 	}
 
 	private String id;
@@ -59,6 +79,8 @@ public class Event implements TLinkable {
 	private TimeMLAspect timeMLAspect;
 	private TimeMLPolarity timeMLPolarity = TimeMLPolarity.POS;
 	private TimeMLClass timeMLClass;
+	private TimeMLMood timeMLMood;
+	private TimeMLVerbForm timeMLVerbForm;
 	private TimeMLPoS timeMLPoS;
 	private String modality;
 	private String cardinality;
@@ -72,6 +94,10 @@ public class Event implements TLinkable {
 	}
 	
 	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity) {
+		this(id, tokenSpan, timeMLTense, timeMLAspect, timeMLClass, timeMLPolarity, TimeMLMood.NONE, TimeMLVerbForm.NONE);
+	}
+	
+	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity, TimeMLMood timeMLMood, TimeMLVerbForm timeMLVerbForm) {
 		this.id = "ei" + id;
 		this.sourceId = "e" + id;
 		this.tokenSpan = tokenSpan;
@@ -79,6 +105,8 @@ public class Event implements TLinkable {
 		this.timeMLAspect = timeMLAspect;
 		this.timeMLClass = timeMLClass;
 		this.timeMLPolarity = timeMLPolarity;
+		this.timeMLMood = timeMLMood;
+		this.timeMLVerbForm = timeMLVerbForm;
 	}
 	
 	public TLinkable.Type getTLinkableType() {
@@ -121,6 +149,14 @@ public class Event implements TLinkable {
 		return this.timeMLPoS;
 	}
 	
+	public TimeMLMood getTimeMLMood() {
+		return this.timeMLMood;
+	}
+	
+	public TimeMLVerbForm getTimeMLVerbForm() {
+		return this.timeMLVerbForm;
+	}
+	
 	public String getModality() {
 		return this.modality;
 	}
@@ -150,6 +186,10 @@ public class Event implements TLinkable {
 			json.put("timeMLClass", this.timeMLClass.toString());
 		if (this.timeMLPoS != null)
 			json.put("timeMLPoS", this.timeMLPoS.toString());
+		if (this.timeMLMood != null)
+			json.put("timeMLMood", this.timeMLMood.toString());
+		if (this.timeMLVerbForm != null)
+			json.put("timeMLVerbForm", this.timeMLVerbForm.toString());
 		if (this.modality != null)
 			json.put("modality", this.modality);
 		if (this.cardinality != null)
@@ -182,6 +222,10 @@ public class Event implements TLinkable {
 			element.setAttribute("class", this.timeMLClass.toString());
 		if (this.timeMLPoS != null)
 			element.setAttribute("pos", this.timeMLPoS.toString());
+		if (this.timeMLMood != null)
+			element.setAttribute("mood", this.timeMLMood.toString());
+		if (this.timeMLVerbForm != null)
+			element.setAttribute("vform", this.timeMLVerbForm.toString());
 		if (this.modality != null)
 			element.setAttribute("modality", this.modality);
 		if (this.cardinality != null)
@@ -211,6 +255,10 @@ public class Event implements TLinkable {
 			event.timeMLClass = TimeMLClass.valueOf(json.getString("timeMLClass"));
 		if (json.containsKey("timeMLPoS"))
 			event.timeMLPoS = TimeMLPoS.valueOf(json.getString("timeMLPoS"));
+		if (json.containsKey("timeMLMood"))
+			event.timeMLMood = TimeMLMood.valueOf(json.getString("timeMLMood"));
+		if (json.containsKey("timeMLVerbForm"))
+			event.timeMLVerbForm = TimeMLVerbForm.valueOf(json.getString("timeMLVerbForm"));
 		if (json.containsKey("modality"))
 			event.modality = json.getString("modality");
 		if (json.containsKey("polarity"))
@@ -233,6 +281,8 @@ public class Event implements TLinkable {
 			boolean hasAspect = false;
 			boolean hasClass = false;
 			boolean hasPoS = false;
+			boolean hasMood = false;
+			boolean hasVForm = false;
 			boolean hasModality = false;
 			boolean hasCardinality = false;
 			
@@ -254,6 +304,10 @@ public class Event implements TLinkable {
 					hasClass = true;
 				else if (attribute.getName().equals("pos"))
 					hasPoS = true;
+				else if (attribute.getName().equals("mood"))
+					hasMood = true;
+				else if (attribute.getName().equals("vform"))
+					hasVForm = true;
 				else if (attribute.getName().equals("modality"))
 					hasModality = true;
 				else if (attribute.getName().equals("cardinality"))
@@ -282,6 +336,10 @@ public class Event implements TLinkable {
 				event.timeMLClass = TimeMLClass.valueOf(element.getAttributeValue("class"));
 			if (hasPoS)
 				event.timeMLPoS = TimeMLPoS.valueOf(element.getAttributeValue("pos"));
+			if (hasMood)
+				event.timeMLMood = TimeMLMood.valueOf(element.getAttributeValue("mood"));
+			if (hasVForm)
+				event.timeMLVerbForm = TimeMLVerbForm.valueOf(element.getAttributeValue("vform"));
 			if (hasModality)
 				event.modality = element.getAttributeValue("modality");
 			if (hasCardinality)

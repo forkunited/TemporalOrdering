@@ -2,11 +2,13 @@ package temp.scratch;
 
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import temp.data.annotation.Language;
 import temp.data.annotation.TempDocument;
+import temp.data.annotation.TempDocumentSet;
 import temp.data.annotation.nlp.WordNet;
 import temp.data.annotation.timeml.Time;
 import temp.model.annotator.nlp.NLPAnnotatorFreeLing;
@@ -15,6 +17,13 @@ import temp.util.TempProperties;
 
 public class Scratch {
 	public static void main(String[] args) {
+		TempDocumentSet set = TempDocumentSet.loadFromJSONDirectory("");
+		List<TempDocument> documents = set.getDocuments();
+		for (TempDocument document : documents) 
+			System.out.println(document.getName());
+		
+		/***/
+		
 		Pattern p = Pattern.compile("(.*)\\((.*)\\-([0-9']*),(.*)\\-([0-9']*)\\)");
 		Matcher m = p.matcher("det(hand-4, the-2)");		
 		m.matches();

@@ -99,11 +99,9 @@ public class TempDocument {
 		StringBuilder sentenceStr = new StringBuilder();
 		
 		for (int i = 0; i < this.tokens[sentenceIndex].length; i++) {
-			if (this.posTags[sentenceIndex][i] != PoSTag.SYM)
-				sentenceStr = sentenceStr.append(" ");
-			sentenceStr = sentenceStr.append(this.tokens[sentenceIndex][i]);
+			sentenceStr = sentenceStr.append(this.tokens[sentenceIndex][i]).append(" ");
 		}
-		return sentenceStr.toString();
+		return sentenceStr.toString().trim();
 	}
 	
 	public String getToken(int sentenceIndex, int tokenIndex) {
@@ -741,17 +739,18 @@ public class TempDocument {
 		return TempDocument.fromXML(element);
 	}
 	
-	public static TempDocument createFromTokens(String name, String[][] tokens, Language language, Time creationTime, NLPAnnotator annotator) {
+	public static TempDocument createFromText(String name, String text, Language language, Time creationTime, NLPAnnotator annotator) {
 		TempDocument document = new TempDocument();
 		
-		document.tokens = tokens;
 		document.name = name;
 		document.language = language;
 		document.creationTime = creationTime;
 		document.nlpAnnotator = annotator.toString();
 		
 		annotator.setLanguage(language);
-		annotator.setText(document.getText());
+		annotator.setText(text);
+		
+		document.tokens = annotator.makeTokens();
 
 		TypedDependency[][] dependencies = annotator.makeDependencies();
 		document.dependencies = new TypedDependency[dependencies.length][];
@@ -772,27 +771,70 @@ public class TempDocument {
 		return document;
 	}
 	
-	public static TempDocument createFromTokens(String name, String[][] tokens, Language language, Date creationTime, NLPAnnotator annotator) {
-		return TempDocument.createFromTokens(name, 
-											 tokens, 
-											 language, 
-											 Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, null, null), 
-											 annotator);
-	}
-	
-	public static TempDocument createFromText(String name, String text, Language language, Time creationTime, NLPAnnotator annotator) {
-		annotator.setLanguage(language);
-		annotator.setText(text);
-		String[][] tokens = annotator.makeTokens();
-		
-		return TempDocument.createFromTokens(name, tokens, language, creationTime, annotator);
-	}
-	
 	public static TempDocument createFromText(String name, String text, Language language, Date creationTime, NLPAnnotator annotator) {		
 		return TempDocument.createFromText(name, 
 										   text, 
 										   language, 
 										   Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, null, null), 
 										   annotator);
+	}
+	
+	public static TempDocument createFromSentences(String name, String[] sentences, Language language, Time creationTime, NLPAnnotator annotator) {
+		TempDocument document = new TempDocument();
+		
+		document.name = name;
+		document.language = language;
+		document.creationTime = creationTime;
+		document.nlpAnnotator = annotator.toString();
+		document.dependencies = new TypedDependency[sentences.length][];
+		document.tokens = new String[sentences.length][];
+		document.posTags = new PoSTag[sentences.length][];
+		
+		annotator.setLanguage(language);
+		
+		for (int i = 0; i < sentences.length; i++) {
+			annotator.setText(sentences[i]);
+			
+			String[][] sentenceTokens = annotator.makeTokens();
+			if (sentenceTokens.length > 1)
+				throw new IllegalArgumentException("Input sentences are not actually sentences according to annotator...");
+			else if (sentenceTokens.length == 0) {
+				document.tokens[i] = new String[0];
+				document.dependencies[i] = new TypedDependency[0];
+				document.posTags[i] = new PoSTag[0];
+				continue;
+			}
+			
+			document.tokens[i] = new String[sentenceTokens[0].length];
+			for (int j = 0; j < sentenceTokens[0].length; j++)
+				document.tokens[i][j] = sentenceTokens[0][j];
+						
+			TypedDependency[][] sentenceDependencies = annotator.makeDependencies();
+			document.dependencies[i] = new TypedDependency[sentenceDependencies[0].length];
+			for (int j = 0; j < sentenceDependencies[0].length; j++) {
+				document.dependencies[i][j] = new TypedDependency(document, i, 
+																  sentenceDependencies[0][j].getParentTokenIndex(), 
+																  sentenceDependencies[0][j].getChildTokenIndex(), 
+																  sentenceDependencies[0][j].getType());
+			}
+			
+			PoSTag[][] sentencePoSTags = annotator.makePoSTags();
+			document.posTags[i] = new PoSTag[sentencePoSTags[0].length];
+			for (int j = 0; j < sentencePoSTags[0].length; j++)
+				document.posTags[i][j] = sentencePoSTags[0][j];
+			
+		}
+		
+		document.initializeTimeML();
+		
+		return document;
+	}
+	
+	public static TempDocument createFromSentences(String name, String[] sentences, Language language, Date creationTime, NLPAnnotator annotator) {		
+		return TempDocument.createFromSentences(name, 
+				   sentences, 
+				   language, 
+				   Time.fromDate(creationTime, 0, TimeMLDocumentFunction.CREATION_TIME, null, null), 
+				   annotator);
 	}
 }

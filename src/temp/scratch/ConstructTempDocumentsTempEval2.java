@@ -2,14 +2,16 @@ package temp.scratch;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ark.util.FileUtil;
 import temp.data.annotation.Language;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
@@ -17,6 +19,7 @@ import temp.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
+import temp.model.annotator.nlp.NLPAnnotator;
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
@@ -26,13 +29,10 @@ public class ConstructTempDocumentsTempEval2 {
 		String outputPath = args[1];
 		Language language = Language.valueOf(args[2]);
 		
-		TempDocumentSet documentSet = constructFromDataDirectory(inputPath, language);
-		if (documentSet == null)
-			return;
-		documentSet.saveToJSONDirectory(outputPath);
+		constructFromDataDirectory(inputPath, outputPath, language);
 	}
 	
-	public static TempDocumentSet constructFromDataDirectory(String directoryPath, Language language) {
+	public static boolean constructFromDataDirectory(String directoryPath, String outputPath, Language language) {
 		Map<String, String[][]> baseSegmentation = readTSVFile(new File(directoryPath, "base-segmentation.tab").getAbsolutePath());
 		Map<String, String[][]> dct = readTSVFile(new File(directoryPath, "dct.tab").getAbsolutePath());
 		Map<String, String[][]> timexAttributes = readTSVFile(new File(directoryPath, "timex-attributes.tab").getAbsolutePath());
@@ -43,60 +43,140 @@ public class ConstructTempDocumentsTempEval2 {
 		Map<String, String[][]> tlinksEventTimex = readTSVFile(new File(directoryPath, "tlinks-event-timex.tab").getAbsolutePath());
 		
 		NLPAnnotatorMultiLanguage nlpAnnotator = new NLPAnnotatorMultiLanguage(new TempProperties(), language);
-		TempDocumentSet documentSet = new TempDocumentSet();
 		
 		for (String file : baseSegmentation.keySet()) {
-			String[][] tokens = tokensFromLines(baseSegmentation.get(file));
-			Time creationTime = creationTimeFromLines(dct.get(file));
-			TempDocument document = TempDocument.createFromTokens(file, tokens, language, creationTime, nlpAnnotator);
+			if ((new File(outputPath, file + ".json")).exists()) {
+				System.out.println("Output for " + file + " already exists.  Skipping...");
+				continue;
+			}
 			
-			Time[][] times = timesFromLines(document, timexExtents.get(file), timexAttributes.get(file));
-			Event[][] events = eventsFromLines(document, eventExtents.get(file), eventAttributes.get(file));
+			TempDocumentSet documentSet = new TempDocumentSet();
+			
+			System.out.print("Loading document " + file + "... ");
+			String[][] fileTokens = tokensFromLines(baseSegmentation.get(file));
+			String[][] fileDct = dct.containsKey(file) ? dct.get(file) : new String[0][0];
+			String[][] fileTimexAttributes = timexAttributes.containsKey(file) ? timexAttributes.get(file) : new String[0][0];
+			String[][] fileTimexExtents = timexExtents.containsKey(file) ? timexExtents.get(file) : new String[0][0];
+			String[][] fileEventAttributes = eventAttributes.containsKey(file) ? eventAttributes.get(file) : new String[0][0];
+			String[][] fileEventExtents = eventExtents.containsKey(file) ? eventExtents.get(file) : new String[0][0];
+			String[][] fileTlinksDctEvent = tlinksDctEvent.containsKey(file) ? tlinksDctEvent.get(file) : new String[0][0];
+			String[][] fileTlinksEventTimex = tlinksEventTimex.containsKey(file) ? tlinksEventTimex.get(file) : new String[0][0];
+
+			String[] fileSentences = sentencesFromTokens(fileTokens);
+			int[][] fileToAnnotationTokenMap = buildFileToAnnotationTokenMap(fileTokens, fileSentences, nlpAnnotator);
+			
+			Time creationTime = creationTimeFromLines(fileDct);
+			TempDocument document = TempDocument.createFromSentences(file, fileSentences, language, creationTime, nlpAnnotator);
+			
+			Time[][] times = timesFromLines(document, fileTimexExtents, fileTimexAttributes, fileToAnnotationTokenMap);
+			Event[][] events = eventsFromLines(document, fileEventExtents, fileEventAttributes, fileToAnnotationTokenMap);
 			
 			document.setTimes(times);
 			document.setEvents(events);
 			
-			TLink[] tlinks = tlinksFromLines(document, tlinksDctEvent.get(file), tlinksEventTimex.get(file));
+			TLink[] tlinks = tlinksFromLines(document, fileTlinksDctEvent, fileTlinksEventTimex);
 			document.setTLinks(tlinks);
 			documentSet.addDocument(document);
+			System.out.println(" Done.");
+			
+			documentSet.saveToJSONDirectory(outputPath);
 		}
 		
-		return documentSet;
+		return true;
 	}
 	
 	private static String[][] tokensFromLines(String[][] lines) {
 		Map<Integer, Integer> sentenceIdsToLengths = new HashMap<Integer, Integer>();
 		
+		int maxSentenceIndex = 0;
 		for (int i = 0; i < lines.length; i++) {
 			int sentenceId = Integer.valueOf(lines[i][1]);
 			int tokenId = Integer.valueOf(lines[i][2]);
+			
+			maxSentenceIndex = Math.max(sentenceId - 1, maxSentenceIndex);
+			
 			if (!sentenceIdsToLengths.containsKey(sentenceId))
 				sentenceIdsToLengths.put(sentenceId, tokenId);
 			else 
 				sentenceIdsToLengths.put(sentenceId, Math.max(tokenId, sentenceIdsToLengths.get(sentenceId)));
 		}
 		
-		String[][] tokens = new String[sentenceIdsToLengths.size()][];
+		String[][] tokens = new String[maxSentenceIndex + 1][];
+		for (int i = 0; i < tokens.length; i++) {
+			int sentenceId = i + 1;
+			if (sentenceIdsToLengths.containsKey(sentenceId))
+				tokens[i] = new String[sentenceIdsToLengths.get(i + 1)];
+			else
+				tokens[i] = new String[0];
+			
+			for (int j = 0; j < tokens[i].length; j++)
+				tokens[i][j] = "";
+		}
 		
 		for (int i = 0; i < lines.length; i++) {
 			int sentenceIndex = Integer.valueOf(lines[i][1]) - 1;
 			int tokenIndex = Integer.valueOf(lines[i][2]) - 1;
-			
-			if (tokens[sentenceIndex] == null)
-				tokens[sentenceIndex] = new String[sentenceIdsToLengths.get(sentenceIndex + 1)];
-			
 			tokens[sentenceIndex][tokenIndex] = lines[i][3];
-			
+		}
+		
+		// HACK: Add missing punctuation because Freeling seems to not work if it's missing
+		for (int i = 0; i < tokens.length; i++) {
+			if (tokens[i].length == 0)
+				continue;
+			String lastToken = tokens[i][tokens[i].length - 1];
+			if (!lastToken.equals(".") && !lastToken.equals("?") && !lastToken.equals("!")) {
+				tokens[i] = Arrays.copyOf(tokens[i], tokens[i].length + 1);
+				tokens[i][tokens[i].length - 1] = ".";
+			}
 		}
 		
 		return tokens;
+	}
+	
+	private static String[] sentencesFromTokens(String[][] fileTokens) {
+		String[] sentences = new String[fileTokens.length];
+		for (int i = 0; i < fileTokens.length; i++) {
+			StringBuilder sentenceText = new StringBuilder();
+			for (int j = 0; j < fileTokens[i].length; j++) {
+				sentenceText = sentenceText.append(fileTokens[i][j]).append(" ");
+			}
+			sentences[i] = sentenceText.toString().trim();
+		}
+		return sentences;
+	}
+	
+	private static int[][] buildFileToAnnotationTokenMap(String[][] fileTokens, String[] fileSentences, NLPAnnotator nlpAnnotator) {
+		int[][] tokenMap = new int[fileTokens.length][];
+		
+		for (int i = 0; i < tokenMap.length; i++) {
+			nlpAnnotator.setText(fileSentences[i]);
+			String[][] annotationTokens = nlpAnnotator.makeTokens();
+			if (annotationTokens.length > 1)
+				throw new IllegalArgumentException("Annotator split TempEval2 sentence... :(");
+			
+			tokenMap[i] = new int[fileTokens[i].length];
+			int annotationTokenIndex = 0;
+			StringBuilder fileTokenSpan = new StringBuilder();
+			for (int j = 0; j < fileTokens[i].length; j++) {
+				fileTokenSpan = fileTokenSpan.append(fileTokens[i][j]);
+				tokenMap[i][j] = annotationTokenIndex;
+				if (fileTokenSpan.toString().equals(annotationTokens[0][annotationTokenIndex])) {
+					annotationTokenIndex++;
+					fileTokenSpan = new StringBuilder();
+				} else {
+					fileTokenSpan.append("_");
+				}
+			}
+		}
+		
+		return tokenMap;
 	}
 	
 	private static Time creationTimeFromLines(String[][] lines) {
 		return new Time("t0", lines[0][1], Time.TimeMLType.DATE, Time.TimeMLDocumentFunction.CREATION_TIME);
 	}
 	
-	private static Time[][] timesFromLines(TempDocument document, String[][] timexExtentLines, String[][] timexAttributeLines) {
+	private static Time[][] timesFromLines(TempDocument document, String[][] timexExtentLines, String[][] timexAttributeLines, int[][] fileToAnnotationTokenMap) {
 		List<List<String>> sentenceTimeIds = new ArrayList<List<String>>(document.getSentenceCount());
 		for (int i = 0; i < document.getSentenceCount(); i++)
 			sentenceTimeIds.add(new ArrayList<String>());
@@ -124,11 +204,11 @@ public class ConstructTempDocumentsTempEval2 {
 		Map<String, Time.TimeMLType> timeToType = new HashMap<String, Time.TimeMLType>();
 		for (int i = 0; i < timexAttributeLines.length; i++) {
 			String timeId = timexAttributeLines[i][4];
-			String lineValue = timexAttributeLines[i][7];
+			String lineValue = (timexAttributeLines[i].length < 8) ? "" : timexAttributeLines[i][7];
 			if (timexAttributeLines[i][6].equals("val")) {
-				timeToValue.put(timeId, lineValue);
+				timeToValue.put(timeId, lineValue.equals("") ? "XXXX-XX-XX" : lineValue);
 			} else if (timexAttributeLines[i][6].equals("type")) {
-				timeToType.put(timeId, Time.TimeMLType.valueOf(lineValue));
+				timeToType.put(timeId, lineValue.equals("") ? Time.TimeMLType.DATE : Time.TimeMLType.valueOf(lineValue));
 			}
 		}
 		
@@ -139,7 +219,11 @@ public class ConstructTempDocumentsTempEval2 {
 				String timeId = sentenceTimeIds.get(i).get(j);
 				String value = timeToValue.get(timeId);
 				Time.TimeMLType timeMLType = timeToType.get(timeId);
-				TokenSpan tokenSpan = new TokenSpan(document, i, timeToMinTokenIndex.get(timeId).intValue(), timeToMaxTokenIndex.get(timeId) + 1);
+				
+				int minAnnotationTokenIndex = fileToAnnotationTokenMap[i][timeToMinTokenIndex.get(timeId).intValue()];
+				int maxAnnotationTokenIndex = fileToAnnotationTokenMap[i][timeToMaxTokenIndex.get(timeId).intValue()];
+				TokenSpan tokenSpan = new TokenSpan(document, i, minAnnotationTokenIndex, maxAnnotationTokenIndex + 1);
+				
 				times[i][j] = new Time(timeId, value, tokenSpan, timeMLType);
 			}
 		}	
@@ -147,7 +231,7 @@ public class ConstructTempDocumentsTempEval2 {
 		return times;
 	}
 	
-	private static Event[][] eventsFromLines(TempDocument document, String[][] eventExtentLines, String[][] eventAttributeLines) {
+	private static Event[][] eventsFromLines(TempDocument document, String[][] eventExtentLines, String[][] eventAttributeLines, int[][] fileToAnnotationTokenMap) {
 		List<List<String>> sentenceEventIds = new ArrayList<List<String>>(document.getSentenceCount());
 		for (int i = 0; i < document.getSentenceCount(); i++)
 			sentenceEventIds.add(new ArrayList<String>());
@@ -174,10 +258,12 @@ public class ConstructTempDocumentsTempEval2 {
 		Map<String, Event.TimeMLAspect> eventToAspect = new HashMap<String, Event.TimeMLAspect>();
 		Map<String, Event.TimeMLClass> eventToClass = new HashMap<String, Event.TimeMLClass>();
 		Map<String, Event.TimeMLPolarity> eventToPolarity = new HashMap<String, Event.TimeMLPolarity>();
-		
+		Map<String, Event.TimeMLMood> eventToMood = new HashMap<String, Event.TimeMLMood>();
+		Map<String, Event.TimeMLVerbForm> eventToVerbForm = new HashMap<String, Event.TimeMLVerbForm>();
+	
 		for (int i = 0; i < eventAttributeLines.length; i++) {
 			String eventId = eventAttributeLines[i][4];
-			String lineValue = eventAttributeLines[i][7];
+			String lineValue = (eventAttributeLines[i].length < 8) ? "NONE" : eventAttributeLines[i][7];
 			if (eventAttributeLines[i][6].equals("tense")) {
 				eventToTense.put(eventId, Event.TimeMLTense.valueOf(lineValue));
 			} else if (eventAttributeLines[i][6].equals("aspect")) {
@@ -186,6 +272,10 @@ public class ConstructTempDocumentsTempEval2 {
 				eventToClass.put(eventId, Event.TimeMLClass.valueOf(lineValue));
 			} else if (eventAttributeLines[i][6].equals("polarity")) {
 				eventToPolarity.put(eventId, Event.TimeMLPolarity.valueOf(lineValue));
+			} else if (eventAttributeLines[i][6].equals("mood")) {
+				eventToMood.put(eventId, Event.TimeMLMood.valueOf(lineValue));
+			} else if (eventAttributeLines[i][6].equals("vform")) {
+				eventToVerbForm.put(eventId, Event.TimeMLVerbForm.valueOf(lineValue));
 			}
 		}
 		
@@ -198,10 +288,14 @@ public class ConstructTempDocumentsTempEval2 {
 				Event.TimeMLAspect timeMLAspect = eventToAspect.get(eventId);
 				Event.TimeMLClass timeMLClass = eventToClass.get(eventId);
 				Event.TimeMLPolarity timeMLPolarity = eventToPolarity.get(eventId);
+				Event.TimeMLMood timeMLMood = eventToMood.get(eventId);
+				Event.TimeMLVerbForm timeMLVerbForm = eventToVerbForm.get(eventId);
 				
-				TokenSpan tokenSpan = new TokenSpan(document, i, eventToMinTokenIndex.get(eventId).intValue(), eventToMaxTokenIndex.get(eventId) + 1);
+				int minAnnotationTokenIndex = fileToAnnotationTokenMap[i][eventToMinTokenIndex.get(eventId).intValue()];
+				int maxAnnotationTokenIndex = fileToAnnotationTokenMap[i][eventToMaxTokenIndex.get(eventId).intValue()];
+				TokenSpan tokenSpan = new TokenSpan(document, i, minAnnotationTokenIndex, maxAnnotationTokenIndex + 1);
 				
-				events[i][j] = new Event(Integer.valueOf(eventId.substring(1)), tokenSpan, timeMLTense, timeMLAspect, timeMLClass, timeMLPolarity);
+				events[i][j] = new Event(Integer.valueOf(eventId.substring(1)), tokenSpan, timeMLTense, timeMLAspect, timeMLClass, timeMLPolarity, timeMLMood, timeMLVerbForm);
 			}
 		}	
 		
@@ -215,7 +309,7 @@ public class ConstructTempDocumentsTempEval2 {
 		
 		for (int i = 0; i < tlinksDctEvent.length; i++) {
 			String eventId = tlinksDctEvent[i][1];
-			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksDctEvent[i][3].toUpperCase());
+			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksDctEvent[i][3].toUpperCase().replaceAll("\\-",  "_"));
 			Event event = document.getEvent(eventId);
 			Time creationTime = document.getCreationTime();
 			
@@ -227,7 +321,7 @@ public class ConstructTempDocumentsTempEval2 {
 		for (int i = 0; i < tlinksEventTimex.length; i++) {
 			String eventId = tlinksEventTimex[i][1];
 			String timeId = tlinksEventTimex[i][2];
-			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksEventTimex[i][3].toUpperCase());
+			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksEventTimex[i][3].toUpperCase().replaceAll("\\-", "_"));
 			
 			Event event = document.getEvent(eventId);
 			Time time = document.getTime(timeId);
@@ -242,7 +336,7 @@ public class ConstructTempDocumentsTempEval2 {
 	
 	private static Map<String, String[][]> readTSVFile(String path) {
 		try {
-			BufferedReader r = FileUtil.getFileReader(path);
+			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"));
 			String line = null;
 			Map<String, List<String[]>> namesToLines = new HashMap<String, List<String[]>>();
 			while ((line = r.readLine()) != null) {
@@ -259,6 +353,8 @@ public class ConstructTempDocumentsTempEval2 {
 				lines = entry.getValue().toArray(lines);
 				groupedLines.put(entry.getKey(),  lines);
 			}
+			
+			r.close();
 			
 			return groupedLines;
 		} catch (IOException e) {

@@ -24,8 +24,9 @@ public class TempDocumentSet {
 	
 	public boolean saveToJSONDirectory(String directoryPath) {
 		for (TempDocument document : this.documents) {
-			System.out.println("Outputting " + document.getName());
+			System.out.print("Outputting " + document.getName() + "... ");
 			document.saveToJSONFile(new File(directoryPath, document.getName() + ".json").getAbsolutePath());
+			System.out.println("Done.");
 		}
 		
 		return true;
