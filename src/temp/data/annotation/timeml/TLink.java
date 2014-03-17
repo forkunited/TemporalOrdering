@@ -11,6 +11,10 @@ import temp.data.annotation.TempDocument;
 
 public class TLink {
 	public enum TimeMLRelType {
+		OVERLAP, // TempEval2
+		BEFORE_OR_OVERLAP, // TempEval2
+		OVERLAP_OR_AFTER, // TempEval2
+		
 		BEFORE,
 		AFTER,
 		INCLUDES,

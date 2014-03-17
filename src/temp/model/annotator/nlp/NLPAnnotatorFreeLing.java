@@ -280,6 +280,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			Sentence sentence = iterator.next();
 			Queue<TreeDepnode> treeNodes = new LinkedList<TreeDepnode>();
 			treeNodes.add(sentence.getDepTree());
+			
 			boolean isRoot = true;
 			while (!treeNodes.isEmpty()) {
 				TreeDepnode nextNode = treeNodes.remove();
@@ -291,7 +292,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 				
 				int childTokenIndex = (int)nextNode.getInfo().getWord().getPosition();
 				String type = nextNode.getInfo().getLabel();
-				
+					
 				dependencyList.add(new TypedDependency(null, i, parentTokenIndex, childTokenIndex, type));
 				
 				int numChildren = (int)nextNode.numChildren();

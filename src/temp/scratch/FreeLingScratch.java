@@ -71,7 +71,7 @@ public class FreeLingScratch {
 
     // Make sure the encoding matches your input text (utf-8, iso-8859-15, ...)
     BufferedReader input = new BufferedReader(
-      new InputStreamReader( System.in, "utf-8" ) );
+      new InputStreamReader( System.in, "iso-8859-15" ) );//"utf-8" ) );
     String line = input.readLine();
 
     // Identify language of the text.  
