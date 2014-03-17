@@ -8,6 +8,7 @@ import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.TLinkable;
 import temp.data.annotation.timeml.Time;
+import temp.data.features.TemporalConnectives;
 import temp.model.annotator.timeml.tlink.EdgeFeatures;
 import temp.model.annotator.timeml.tlink.TLinkModel;
 
@@ -18,6 +19,10 @@ public class TrainTLinkModels {
 		TempDocumentSet tDocs = TempDocumentSet.loadFromJSONDirectory("/home/jesse/workspace/temporalOrdering/TemporalOrdering/data/sieve");
 		//TestConstraints.testConstraints(tDocs);
 		relations = TestConstraints.findRelations(tDocs);
+		
+		TemporalConnectives tc = new TemporalConnectives(tDocs, relations);
+		tc.findConnectives();
+		System.exit(1);
 		
 		TLinkModel model = new TLinkModel();
 		for (TempDocument doc : tDocs.getDocuments()){

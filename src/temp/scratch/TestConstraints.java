@@ -34,6 +34,7 @@ public class TestConstraints {
 		int numTlinksBetweenEventAndTime = 0;
 		int numDocuments = 0;
 		int numSentences = 0;
+		
 		for (TempDocument doc : tDocs.getDocuments()){
 			int docNumTlinksBetweenEventAndTime = countTlinks(doc);
 			System.out.println("doc: " + doc.getName());
