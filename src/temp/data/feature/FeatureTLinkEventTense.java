@@ -6,7 +6,20 @@ import java.util.Map;
 import temp.data.annotation.TLinkDatum;
 import ark.data.feature.Feature;
 
+/**
+ * Don't implement.  Delete later. 
+ * 
+ * @author Bill McDowell
+ */
 public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
+	public enum InteractionMode {
+		NO_INTERACTION,
+		INCLUDE_INTERACTION,
+		ONLY_INTERACTION
+	}
+	
+	private InteractionMode interactionMode;
+	
 	public FeatureTLinkEventTense() {
 		
 	}
@@ -17,7 +30,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	public Map<Integer, Double> computeVector(TLinkDatum<L> arg0) {
+	public Map<Integer, Double> computeVector(TLinkDatum<L> datum) {
 		// TODO Auto-generated method stub
 		return null;
 	}
