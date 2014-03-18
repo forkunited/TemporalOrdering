@@ -12,11 +12,6 @@ import ark.data.feature.Feature;
  * @author Bill McDowell
  */
 public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
-	public enum InteractionMode {
-		NO_INTERACTION,
-		INCLUDE_INTERACTION,
-		ONLY_INTERACTION
-	}
 	
 	public FeatureTLinkEventTense() {
 		
