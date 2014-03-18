@@ -1,6 +1,6 @@
 package temp.data.annotation.timeml;
 
-import temp.data.annotation.nlp.TokenSpan;
+import ark.data.annotation.nlp.TokenSpan;
 
 public interface TLinkable {
 	public enum Type {

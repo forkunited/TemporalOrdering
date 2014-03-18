@@ -3,7 +3,7 @@ package temp.model.annotator.timeml.tlink;
 import java.util.*;
 
 import temp.data.annotation.TempDocument;
-import temp.data.annotation.nlp.TypedDependency;
+import ark.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.timeml.TLinkable;
 
 public class EdgeFeatures {

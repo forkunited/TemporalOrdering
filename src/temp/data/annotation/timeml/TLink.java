@@ -36,8 +36,8 @@ public class TLink {
 	private String origin;
 	private TLinkable source;
 	private TLinkable target;
-	private Signal signal;
 	private TimeMLRelType timeMLRelType;
+	private Signal signal;
 	private String syntax;
 	
 	public TLink() {
@@ -140,8 +140,9 @@ public class TLink {
 	public static TLink fromJSON(JSONObject json, TempDocument document) {
 		TLink tlink = new TLink();
 		
-		if (json.containsKey("id"))
+		if (json.containsKey("id")) {
 			tlink.id = json.getString("id");
+		}
 		if (json.containsKey("origin"))
 			tlink.origin = json.getString("origin");
 		if (json.containsKey("sourceType"))
@@ -194,8 +195,9 @@ public class TLink {
 				hasSyntax = true;
 		}
 		
-		if (hasId)
+		if (hasId) {
 			tlink.id = element.getAttributeValue("id");
+		}
 		if (hasOrigin)
 			tlink.origin = element.getAttributeValue("origin");
 		if (hasSignalId)

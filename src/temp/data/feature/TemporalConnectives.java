@@ -1,4 +1,4 @@
-package temp.data.features;
+package temp.data.feature;
 
 import java.util.*;
 
@@ -7,7 +7,6 @@ import jesse.util.Pair;
 
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
-import temp.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;

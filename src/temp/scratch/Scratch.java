@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import temp.data.annotation.Language;
+import ark.data.annotation.nlp.WordNet;
+import ark.data.annotation.Language;
+
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
-import temp.data.annotation.nlp.WordNet;
+
 import temp.data.annotation.timeml.Time;
 import temp.model.annotator.nlp.NLPAnnotatorFreeLing;
 import temp.model.annotator.timeml.TimeAnnotatorHeidel;
@@ -45,7 +47,7 @@ public class Scratch {
 		
 		/*****/
 		
-		TempDocument document = TempDocument.createFromText("test", "The dog barks on March 30th 2013. I ran for 10 minutes.", Language.English, Calendar.getInstance().getTime(), annotator);
+		TempDocument document = new TempDocument("test", "The dog barks on March 30th 2013. I ran for 10 minutes.", Language.English, Calendar.getInstance().getTime(), annotator);
 		TimeAnnotatorHeidel timeAnnotator = new TimeAnnotatorHeidel(properties);
 		Time[][] times = timeAnnotator.makeTimes(document);
 		for (int i = 0; i < times.length; i++) {

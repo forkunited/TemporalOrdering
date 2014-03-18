@@ -13,6 +13,11 @@ import java.util.Queue;
 import java.util.Set;
 
 import ark.util.FileUtil;
+import ark.model.annotator.nlp.NLPAnnotator;
+import ark.data.annotation.Language;
+import ark.data.annotation.nlp.PoSTag;
+import ark.data.annotation.nlp.TypedDependency;
+import ark.data.annotation.nlp.WordNet;
 
 import edu.upc.freeling.ChartParser;
 import edu.upc.freeling.DepTxala;
@@ -31,13 +36,12 @@ import edu.upc.freeling.TreeDepnode;
 import edu.upc.freeling.Ukb;
 import edu.upc.freeling.Util;
 import edu.upc.freeling.VectorWord;
-import temp.data.annotation.Language;
-import temp.data.annotation.nlp.PoSTag;
-import temp.data.annotation.nlp.TypedDependency;
-import temp.data.annotation.nlp.WordNet;
+
 import temp.util.TempProperties;
 
 public class NLPAnnotatorFreeLing extends NLPAnnotator {
+	private TempProperties properties;
+	
 	private MacoOptions options;
 	private Tokenizer tokenizer;
 	private Splitter sentenceSplitter;

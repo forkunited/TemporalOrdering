@@ -8,7 +8,7 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 import temp.data.annotation.TempDocument;
-import temp.data.annotation.nlp.TokenSpan;
+import ark.data.annotation.nlp.TokenSpan;
 
 public class Signal {	
 	private String id;

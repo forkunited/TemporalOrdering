@@ -3,12 +3,12 @@ package temp.scratch;
 import java.util.*;
 
 import temp.data.annotation.*;
-import temp.data.annotation.nlp.TokenSpan;
+import ark.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.TLinkable;
 import temp.data.annotation.timeml.Time;
-import temp.data.features.TemporalConnectives;
+import temp.data.feature.TemporalConnectives;
 import temp.model.annotator.timeml.tlink.EdgeFeatures;
 import temp.model.annotator.timeml.tlink.TLinkModel;
 

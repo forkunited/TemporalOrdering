@@ -9,11 +9,11 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
+import ark.data.annotation.nlp.PoSTag;
+import ark.model.annotator.nlp.NLPAnnotatorStanford;
+
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
-import temp.data.annotation.nlp.PoSTag;
-import temp.model.annotator.nlp.NLPAnnotatorStanford;
-import temp.util.TempProperties;
 
 public class ConstructTempDocumentsTimeSieve {
 	public static void main(String[] args) {
@@ -38,13 +38,13 @@ public class ConstructTempDocumentsTimeSieve {
 			e.printStackTrace();
 		}
 		
-		NLPAnnotatorStanford nlpAnnotator = new NLPAnnotatorStanford(new TempProperties());
+		NLPAnnotatorStanford nlpAnnotator = new NLPAnnotatorStanford();
 		TempDocumentSet documentSet = new TempDocumentSet();
 		Element element = document.getRootElement();
 		List<Element> fileElements = (List<Element>)element.getChildren("file");
 		int i = 0;
 		for (Element fileElement : fileElements) {
-			TempDocument tempDocument = TempDocument.fromXML(fileElement);
+			TempDocument tempDocument = new TempDocument(fileElement);
 			nlpAnnotator.setText(tempDocument.getText());
 			PoSTag[][] tags = nlpAnnotator.makePoSTags();
 			if (!tempDocument.setPoSTags(tags))

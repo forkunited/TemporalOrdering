@@ -12,14 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import temp.data.annotation.Language;
+import ark.model.annotator.nlp.NLPAnnotator;
+import ark.data.annotation.Language;
+import ark.data.annotation.nlp.TokenSpan;
+
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
-import temp.data.annotation.nlp.TokenSpan;
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
-import temp.model.annotator.nlp.NLPAnnotator;
+
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
@@ -66,7 +68,7 @@ public class ConstructTempDocumentsTempEval2 {
 			int[][] fileToAnnotationTokenMap = buildFileToAnnotationTokenMap(fileTokens, fileSentences, nlpAnnotator);
 			
 			Time creationTime = creationTimeFromLines(fileDct);
-			TempDocument document = TempDocument.createFromSentences(file, fileSentences, language, creationTime, nlpAnnotator);
+			TempDocument document = new TempDocument(file, fileSentences, language, creationTime, nlpAnnotator);
 			
 			Time[][] times = timesFromLines(document, fileTimexExtents, fileTimexAttributes, fileToAnnotationTokenMap);
 			Event[][] events = eventsFromLines(document, fileEventExtents, fileEventAttributes, fileToAnnotationTokenMap);

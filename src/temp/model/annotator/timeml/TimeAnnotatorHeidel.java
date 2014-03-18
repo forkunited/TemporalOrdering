@@ -9,13 +9,16 @@ import org.jdom.Element;
 import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
 
+import ark.data.annotation.Language;
+import ark.model.annotator.nlp.NLPAnnotator;
+
 import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.HeidelTimeStandalone;
 import de.unihd.dbs.heideltime.standalone.OutputType;
-import temp.data.annotation.Language;
+
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.timeml.Time;
-import temp.model.annotator.nlp.NLPAnnotator;
+import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
 public class TimeAnnotatorHeidel extends TimeAnnotator {
@@ -73,14 +76,14 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 			this.heidelTime.setDocumentType(DocumentType.NEWS);
 		
 		if (document.getNLPAnnotator() == null && this.nlpAnnotator == null) {
-			this.nlpAnnotator = NLPAnnotator.forLanguage(this.properties, document.getLanguage());
+			this.nlpAnnotator = NLPAnnotatorMultiLanguage.forLanguage(this.properties, document.getLanguage());
 		} else if (document.getNLPAnnotator() == null && this.nlpAnnotator != null) {
 			// Keep it	
 		} else if (document.getNLPAnnotator() != null && this.nlpAnnotator == null) {
-			this.nlpAnnotator = NLPAnnotator.fromString(this.properties, document.getNLPAnnotator());
+			this.nlpAnnotator = NLPAnnotatorMultiLanguage.fromString(this.properties, document.getNLPAnnotator());
 		} else if (document.getNLPAnnotator() != null && this.nlpAnnotator != null) {
 			if (!document.getNLPAnnotator().equals(this.nlpAnnotator))
-				this.nlpAnnotator = NLPAnnotator.fromString(this.properties, document.getNLPAnnotator());
+				this.nlpAnnotator = NLPAnnotatorMultiLanguage.fromString(this.properties, document.getNLPAnnotator());
 		}
 		
 		return true;

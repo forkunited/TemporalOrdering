@@ -12,11 +12,12 @@ import edu.stanford.nlp.ling.RVFDatum;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 
+import ark.data.annotation.nlp.TokenSpan;
+import ark.data.annotation.nlp.TypedDependency;
+import ark.data.annotation.nlp.WordNet;
+
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
-import temp.data.annotation.nlp.TokenSpan;
-import temp.data.annotation.nlp.TypedDependency;
-import temp.data.annotation.nlp.WordNet;
 import temp.data.annotation.timeml.Event;
 import temp.model.annotator.nlp.NLPAnnotatorFreeLing;
 import temp.util.TempProperties;

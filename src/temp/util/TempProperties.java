@@ -1,8 +1,8 @@
 package temp.util;
 
-import ark.util.ARKProperties;
+import ark.util.Properties;
 
-public class TempProperties extends ARKProperties {
+public class TempProperties extends Properties {
 	private String freeLingLibraryPath;
 	private String freeLingDataDirectoryPath;
 	private String timeSieveDataDirectoryPath;

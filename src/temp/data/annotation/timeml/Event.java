@@ -8,7 +8,7 @@ import org.jdom.Element;
 
 import net.sf.json.JSONObject;
 import temp.data.annotation.TempDocument;
-import temp.data.annotation.nlp.TokenSpan;
+import ark.data.annotation.nlp.TokenSpan;
 
 public class Event implements TLinkable {	
 	public enum TimeMLTense {

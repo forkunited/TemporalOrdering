@@ -1,11 +1,15 @@
 package temp.model.annotator.nlp;
 
-import temp.data.annotation.Language;
-import temp.data.annotation.nlp.PoSTag;
-import temp.data.annotation.nlp.TypedDependency;
+import ark.data.annotation.Language;
+import ark.data.annotation.nlp.PoSTag;
+import ark.data.annotation.nlp.TypedDependency;
+import ark.model.annotator.nlp.NLPAnnotator;
+import ark.model.annotator.nlp.NLPAnnotatorStanford;
+
 import temp.util.TempProperties;
 
 public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
+	private TempProperties properties;
 	private NLPAnnotator spanishAnnotator;
 	private NLPAnnotator englishAnnotator;
 	
@@ -19,9 +23,9 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 	public boolean setLanguage(Language language) {
 		this.language = language;
 		if (this.language == Language.English)
-			this.englishAnnotator = NLPAnnotator.forLanguage(properties, Language.English);
+			this.englishAnnotator = NLPAnnotatorMultiLanguage.forLanguage(properties, Language.English);
 		else if (this.language == Language.Spanish)
-			this.spanishAnnotator = NLPAnnotator.forLanguage(properties, Language.Spanish);
+			this.spanishAnnotator = NLPAnnotatorMultiLanguage.forLanguage(properties, Language.Spanish);
 		else
 			return false;
 		setText(this.text);
@@ -88,5 +92,23 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		} else {
 			return null;
 		}
+	}
+	
+	public static NLPAnnotator forLanguage(TempProperties properties, Language language) {
+		if (language == Language.English)
+			return new NLPAnnotatorStanford();
+		else if (language == Language.Spanish)
+			return new NLPAnnotatorFreeLing(properties);
+		else
+			return null;
+	}
+	
+	public static NLPAnnotator fromString(TempProperties properties, String str) {
+		if (str.equals("Stanford"))
+			return new NLPAnnotatorStanford();
+		else if (str.equals("FreeLing"))
+			return new NLPAnnotatorFreeLing(properties);
+		else
+			return null;
 	}
 }
