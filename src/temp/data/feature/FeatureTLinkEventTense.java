@@ -18,8 +18,6 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 		ONLY_INTERACTION
 	}
 	
-	private InteractionMode interactionMode;
-	
 	public FeatureTLinkEventTense() {
 		
 	}
