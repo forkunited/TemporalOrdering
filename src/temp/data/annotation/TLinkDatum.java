@@ -7,7 +7,8 @@ import ark.data.annotation.nlp.TokenSpan;
 public class TLinkDatum<L> extends Datum<L> {
 	protected TLink tlink;
 	
-	public TLinkDatum(TLink tlink, L label) {
+	public TLinkDatum(int id, TLink tlink, L label) {
+		this.id = id;
 		this.tlink = tlink;
 		this.label = label;
 	}

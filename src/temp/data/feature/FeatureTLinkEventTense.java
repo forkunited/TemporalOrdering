@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import temp.data.annotation.TLinkDatum;
+import ark.data.DataTools;
+import ark.data.annotation.DataSet;
+import ark.data.annotation.Datum.Tools;
 import ark.data.feature.Feature;
 
 /**
@@ -26,19 +29,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	public String getGenericShortName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	protected String[] getParameterNames() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected String[] getParameterShortNames() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -50,7 +41,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	protected int getVocabularySize() {
+	public int getVocabularySize() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -62,7 +53,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	public boolean init(List<TLinkDatum<L>> arg0, boolean arg1) {
+	public boolean init(DataSet<TLinkDatum<L>, L> arg0) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -74,10 +65,18 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	protected boolean setParameterValue(String arg0, String arg1) {
+	protected boolean setParameterValue(String arg0, String arg1,
+			DataTools arg2, Tools<TLinkDatum<L>, L> arg3) {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	protected boolean setVocabularyTerm(int arg0, String arg1) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	
 
 
