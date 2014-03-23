@@ -1,6 +1,7 @@
 package temp.data.annotation;
 
 import temp.data.annotation.timeml.TLink;
+import ark.data.DataTools;
 import ark.data.annotation.Datum;
 import ark.data.annotation.nlp.TokenSpan;
 
@@ -17,8 +18,8 @@ public class TLinkDatum<L> extends Datum<L> {
 		return this.tlink;
 	}
 	
-	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools() {
-		return new Tools<TLink.TimeMLRelType>() {
+	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools(DataTools dataTools) {
+		return new Tools<TLink.TimeMLRelType>(dataTools) {
 			@Override
 			public TLink.TimeMLRelType labelFromString(String str) {
 				return TLink.TimeMLRelType.valueOf(str);
@@ -27,8 +28,8 @@ public class TLinkDatum<L> extends Datum<L> {
 	}
 	
 	private static abstract class Tools<L> extends Datum.Tools<TLinkDatum<L>, L> {
-		public Tools() {
-			super();
+		public Tools(DataTools dataTools) {
+			super(dataTools);
 			
 			this.addTokenSpanExtractor(new TokenSpanExtractor<TLinkDatum<L>, L>() {
 				@Override

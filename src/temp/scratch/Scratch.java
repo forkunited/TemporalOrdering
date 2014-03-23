@@ -12,10 +12,8 @@ import java.util.regex.Pattern;
 
 import ark.data.DataTools;
 import ark.data.annotation.nlp.WordNet;
-import ark.data.annotation.Datum;
 import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Language;
-import ark.data.feature.Feature;
 import ark.data.feature.FeatureNGramSentence;
 import ark.data.feature.FeaturizedDataSet;
 import ark.util.OutputWriter;
@@ -36,20 +34,21 @@ public class Scratch {
 		TempDocumentSet set = TempDocumentSet.loadFromJSONDirectory("");
 		List<TempDocument> documents = set.getDocuments();
 		
-		DataTools dataTools = new DataTools();
-		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools();
-		FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>("test", 1, null);
+		OutputWriter output = new OutputWriter();
+		DataTools dataTools = new DataTools(output);
+		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
+		FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>("test", 1, null, null);
 		for (TempDocument document : documents) {
 			List<TLink> tlinks = document.getTLinks();
 			for (int i = 0; i < tlinks.size(); i++) {
 				TLinkDatum<TLink.TimeMLRelType> datum = new TLinkDatum<TLink.TimeMLRelType>(i, tlinks.get(i), tlinks.get(i).getTimeMLRelType());
-				data.addDatum(datum);
+				data.add(datum);
 			}
 		}
 		
 		FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType> feature = new FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType>();
 		StringReader reader = new StringReader("NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)");
-		feature.deserialize(reader, true, dataTools, datumTools);
+		feature.deserialize(reader, true, datumTools);
 		data.addFeature(feature);
 
 		for (TLinkDatum<TimeMLRelType> datum : data) {

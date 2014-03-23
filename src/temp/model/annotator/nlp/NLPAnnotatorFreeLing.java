@@ -89,7 +89,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 	}
 	
 	private void loadWordNetHypernymMap() {
-		String wordNetFilePath = new File(this.properties.getFreeLingDataDirectoryPath(), "common/wn30.src").getAbsolutePath();
+		String wordNetFilePath = new File(this.properties.getFreeLingDataDirPath(), "common/wn30.src").getAbsolutePath();
 		this.wordNetHypernymMap = new HashMap<String, List<WordNet.Hypernym>>();
 		
 		try {
@@ -142,8 +142,8 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			                               true, true, true, 
 			                               true, true, true);
 
-	    String langPath = new File(this.properties.getFreeLingDataDirectoryPath(), langStr).getAbsolutePath();
-	    String commonPath = new File(this.properties.getFreeLingDataDirectoryPath(), "common").getAbsolutePath();
+	    String langPath = new File(this.properties.getFreeLingDataDirPath(), langStr).getAbsolutePath();
+	    String commonPath = new File(this.properties.getFreeLingDataDirPath(), "common").getAbsolutePath();
 	    this.options.setDataFiles(
 		  "", 
 		  langPath + "/locucions.dat", 

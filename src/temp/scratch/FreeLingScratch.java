@@ -11,7 +11,7 @@ import edu.upc.freeling.*;
 public class FreeLingScratch {
   // Modify this line to be your FreeLing installation directory
   private static final TempProperties properties = new TempProperties();
-  private static final String DATA = properties.getFreeLingDataDirectoryPath();
+  private static final String DATA = properties.getFreeLingDataDirPath();
   private static final String LANG = "es";
 
   public static void main( String argv[] ) throws IOException {

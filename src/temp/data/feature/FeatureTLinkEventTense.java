@@ -1,10 +1,8 @@
 package temp.data.feature;
 
-import java.util.List;
 import java.util.Map;
 
 import temp.data.annotation.TLinkDatum;
-import ark.data.DataTools;
 import ark.data.annotation.DataSet;
 import ark.data.annotation.Datum.Tools;
 import ark.data.feature.Feature;
@@ -66,7 +64,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 
 	@Override
 	protected boolean setParameterValue(String arg0, String arg1,
-			DataTools arg2, Tools<TLinkDatum<L>, L> arg3) {
+			Tools<TLinkDatum<L>, L> arg2) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -76,8 +74,6 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	
 
 
 }
