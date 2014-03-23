@@ -1,7 +1,5 @@
 package temp.util;
 
-import java.io.File;
-
 import ark.util.Properties;
 
 public class TempProperties extends Properties {

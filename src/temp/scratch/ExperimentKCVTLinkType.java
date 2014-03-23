@@ -17,7 +17,7 @@ import ark.util.OutputWriter;
 
 public class ExperimentKCVTLinkType {
 	public static void main(String[] args) {
-		String experimentName = args[0];
+		String experimentName = "KCVTLinkType/" + args[0];
 		String documentSetName = args[1];
 		
 		TempProperties properties = new TempProperties();
@@ -28,7 +28,7 @@ public class ExperimentKCVTLinkType {
 				new File(experimentOutputPath + ".debug.out"),
 				new File(experimentOutputPath + ".results.out"),
 				new File(experimentOutputPath + ".data.out"),
-				new File(experimentOutputPath +  ".model.out")
+				new File(experimentOutputPath + ".model.out")
 			);
 		
 		DataTools dataTools = new DataTools(output);
