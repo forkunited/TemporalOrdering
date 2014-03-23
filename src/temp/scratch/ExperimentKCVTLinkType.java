@@ -39,12 +39,17 @@ public class ExperimentKCVTLinkType {
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>(datumTools, null);
 		
 		List<TempDocument> documents = documentSet.getDocuments();
+		int i = 0;
 		for (TempDocument document : documents) {
 			List<TLink> tlinks = document.getTLinks();
 			for (TLink tlink : tlinks) {
-				int id = Integer.valueOf(tlink.getId().substring(1));
+				String tlinkId = tlink.getId();
+				int id = (tlinkId == null) ? i : Integer.valueOf(tlinkId.substring(1));
+				
 				TLinkDatum<TimeMLRelType> tlinkDatum = new TLinkDatum<TimeMLRelType>(id, tlink, tlink.getTimeMLRelType());
 				data.add(tlinkDatum);
+				
+				i++;
 			}
 		}
 		
