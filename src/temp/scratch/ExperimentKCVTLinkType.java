@@ -3,13 +3,13 @@ package temp.scratch;
 import java.io.File;
 import java.util.List;
 
+import temp.data.TempDataTools;
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.util.TempProperties;
-import ark.data.DataTools;
 import ark.data.annotation.DataSet;
 import ark.data.annotation.Datum.Tools;
 import ark.experiment.ExperimentKCV;
@@ -19,7 +19,7 @@ public class ExperimentKCVTLinkType {
 	public static void main(String[] args) {
 		String experimentName = "KCVTLinkType/" + args[0];
 		String documentSetName = args[1];
-		
+
 		TempProperties properties = new TempProperties();
 		String experimentInputPath = new File(properties.getExperimentInputDirPath(), experimentName + ".experiment").getAbsolutePath();
 		String experimentOutputPath = new File(properties.getExperimentOutputDirPath(), experimentName).getAbsolutePath(); 
@@ -31,7 +31,7 @@ public class ExperimentKCVTLinkType {
 				new File(experimentOutputPath + ".model.out")
 			);
 		
-		DataTools dataTools = new DataTools(output);
+		TempDataTools dataTools = new TempDataTools(output, properties);
 		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
 		
 		String documentSetPath = (new File(properties.getTempDocumentDataDirPath(), documentSetName)).getAbsolutePath();

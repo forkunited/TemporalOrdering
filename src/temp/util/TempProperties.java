@@ -16,7 +16,7 @@ public class TempProperties extends Properties {
 	
 	public TempProperties() {
 		super(new String[] { "temp.properties" } );
-
+		
 		this.freeLingLibraryPath = loadProperty("freeLingLibraryPath");
 		this.freeLingDataDirPath = loadProperty("freeLingDataDirPath");
 		

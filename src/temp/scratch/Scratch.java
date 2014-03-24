@@ -1,6 +1,7 @@
 package temp.scratch;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Calendar;
@@ -47,8 +48,8 @@ public class Scratch {
 		}
 		
 		FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType> feature = new FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType>();
-		StringReader reader = new StringReader("NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)");
-		feature.deserialize(reader, true, datumTools);
+		BufferedReader reader = new BufferedReader(new StringReader("NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)"));
+		feature.deserialize(reader, true, false, datumTools);
 		data.addFeature(feature);
 
 		for (TLinkDatum<TimeMLRelType> datum : data) {
