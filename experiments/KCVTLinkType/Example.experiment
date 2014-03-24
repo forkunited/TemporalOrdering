@@ -1,0 +1,11 @@
+randomSeed=1
+maxThreads=4
+crossValidationFolds=4
+errorExampleExtractor=SourceTokenSpan
+gridSearchParameterValues=l1(1.0, 10.0)
+model=Creg(cmdPath=CregCmd, modelPath=CregModel/KCVTLinkType/Example_Fold-${FOLD}, l2=0, warmRestart=true)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+}
+feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+feature=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
