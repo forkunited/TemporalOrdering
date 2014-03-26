@@ -19,10 +19,11 @@ public class ExperimentKCVTLinkType {
 	public static void main(String[] args) {
 		String experimentName = "KCVTLinkType/" + args[0];
 		String documentSetName = args[1];
+		String experimentOutputName = documentSetName + "/" + experimentName;
 
 		TempProperties properties = new TempProperties();
 		String experimentInputPath = new File(properties.getExperimentInputDirPath(), experimentName + ".experiment").getAbsolutePath();
-		String experimentOutputPath = new File(properties.getExperimentOutputDirPath(), experimentName).getAbsolutePath(); 
+		String experimentOutputPath = new File(properties.getExperimentOutputDirPath(), experimentOutputName).getAbsolutePath(); 
 		
 		OutputWriter output = new OutputWriter(
 				new File(experimentOutputPath + ".debug.out"),
@@ -32,6 +33,8 @@ public class ExperimentKCVTLinkType {
 			);
 		
 		TempDataTools dataTools = new TempDataTools(output, properties);
+		dataTools.addToParameterEnvironment("DOCUMENT_SET", documentSetName);
+		
 		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
 		
 		String documentSetPath = (new File(properties.getTempDocumentDataDirPath(), documentSetName)).getAbsolutePath();
@@ -54,7 +57,7 @@ public class ExperimentKCVTLinkType {
 		}
 		
 		ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
-				new ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentName, experimentInputPath, datumTools);
+				new ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, datumTools);
 	
 		if (!experiment.run(data))
 			output.debugWriteln("Error: Experiment run failed.");

@@ -3,7 +3,14 @@ maxThreads=4
 crossValidationFolds=4
 errorExampleExtractor=SourceTokenSpan
 gridSearchParameterValues=l1(1.0, 10.0)
-model=Creg(cmdPath=CregCmd, modelPath=CregModel/KCVTLinkType/Example_Fold-${FOLD}, l2=0, warmRestart=true)
+evaluation=F(Beta=1.0, weighted=false)
+evaluation=Precision(weighted=false)
+evaluation=Recall(weighted=false)
+evaluation=F(Beta=1.0, weighted=true)
+evaluation=Precision(weighted=true)
+evaluation=Recall(weighted=true)
+evaluation=Accuracy()
+model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/Example_Fold-${FOLD}, l2=0, warmRestart=false)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 }

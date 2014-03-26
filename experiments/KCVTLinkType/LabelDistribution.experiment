@@ -1,0 +1,16 @@
+randomSeed=1
+maxThreads=4
+crossValidationFolds=4
+errorExampleExtractor=SourceTokenSpan
+evaluation=F(Beta=1.0, weighted=false)
+evaluation=Precision(weighted=false)
+evaluation=Recall(weighted=false)
+evaluation=F(Beta=1.0, weighted=true)
+evaluation=Precision(weighted=true)
+evaluation=Recall(weighted=true)
+evaluation=Accuracy()
+model=LabelDistribution()
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+}
+
