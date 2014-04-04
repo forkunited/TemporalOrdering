@@ -291,7 +291,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			Sentence sentence = iterator.next();
 			Queue<TreeDepnode> treeNodes = new LinkedList<TreeDepnode>();
 			
-			Map<Integer, Pair<DependencyParse.Dependency, List<DependencyParse.Dependency>>> nodesToDeps = new HashMap<Integer, Pair<DependencyParse.Dependency, List<DependencyParse.Dependency>>>();
+			Map<Integer, Pair<List<DependencyParse.Dependency>, List<DependencyParse.Dependency>>> nodesToDeps = new HashMap<Integer, Pair<List<DependencyParse.Dependency>, List<DependencyParse.Dependency>>>();
 			parses[i] = new DependencyParse(null, i, null, null);
 			int maxIndex = 0;
 
@@ -313,12 +313,12 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 				DependencyParse.Dependency dependency = parses[i].new Dependency(govIndex, depIndex, type);
 				
 				if (!nodesToDeps.containsKey(govIndex))
-					nodesToDeps.put(govIndex, new Pair<Dependency, List<Dependency>>(null, new ArrayList<Dependency>()));
+					nodesToDeps.put(govIndex, new Pair<List<Dependency>, List<Dependency>>(new ArrayList<Dependency>(), new ArrayList<Dependency>()));
 				if (!nodesToDeps.containsKey(depIndex))
-					nodesToDeps.put(depIndex, new Pair<Dependency, List<Dependency>>(null, new ArrayList<Dependency>()));
+					nodesToDeps.put(depIndex, new Pair<List<Dependency>, List<Dependency>>(new ArrayList<Dependency>(), new ArrayList<Dependency>()));
 				
 				nodesToDeps.get(govIndex).getSecond().add(dependency);
-				nodesToDeps.get(depIndex).setFirst(dependency);
+				nodesToDeps.get(depIndex).getFirst().add(dependency);
 				
 				int numChildren = (int)nextNode.numChildren();
 				for (int j = 0; j < numChildren; j++) {
@@ -331,9 +331,9 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			Node[] tokenNodes = new Node[maxIndex+1];
 			for (int j = 0; j < tokenNodes.length; j++)
 				if (nodesToDeps.containsKey(j))
-					tokenNodes[j] = parses[i].new Node(j, nodesToDeps.get(j).getFirst(), nodesToDeps.get(j).getSecond().toArray(new Dependency[0]));
+					tokenNodes[j] = parses[i].new Node(j, nodesToDeps.get(j).getFirst().toArray(new Dependency[0]), nodesToDeps.get(j).getSecond().toArray(new Dependency[0]));
 			
-			Node rootNode = parses[i].new Node(-1, null, nodesToDeps.get(-1).getSecond().toArray(new Dependency[0]));
+			Node rootNode = parses[i].new Node(-1, new Dependency[0], nodesToDeps.get(-1).getSecond().toArray(new Dependency[0]));
 			parses[i] = new DependencyParse(null, i, rootNode, tokenNodes);
 			
 			i++;

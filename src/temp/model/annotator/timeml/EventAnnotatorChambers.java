@@ -180,8 +180,9 @@ public class EventAnnotatorChambers extends EventAnnotator {
 			features.incrementCount("DC_" + dependency.getType());
 		}
 		
-		DependencyParse.Dependency parentDependency = parse.getGoverningDependency(tokenIndex);
-		features.incrementCount("DP_" + parentDependency.getType());
+		List<DependencyParse.Dependency> parentDependencies = parse.getGoverningDependencies(tokenIndex);
+		for (DependencyParse.Dependency dependency : parentDependencies)
+			features.incrementCount("DP_" + dependency.getType());
 		
 		return features;
 	}
