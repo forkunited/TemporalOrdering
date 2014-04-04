@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.jdom.Element;
+import org.jdom.Text;
 
 import ark.model.annotator.nlp.NLPAnnotator;
+import ark.util.Pair;
 import ark.data.annotation.Language;
 import ark.data.annotation.DocumentInMemory;
+import ark.data.annotation.nlp.TokenSpan;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -51,9 +54,10 @@ public class TempDocument extends DocumentInMemory {
 	public TempDocument(String name, String text, Language language, Time creationTime, NLPAnnotator annotator) {
 		super(name, text, language, annotator);
 		
-		this.creationTime = creationTime;
-		
 		initializeTimeML();
+
+		this.creationTime = creationTime;
+		this.timeMap.put(this.creationTime.getId(), this.creationTime);
 	}
 	
 	public TempDocument(String name, String text, Language language, Date creationTime, NLPAnnotator annotator) {		
@@ -66,10 +70,11 @@ public class TempDocument extends DocumentInMemory {
 	
 	public TempDocument(String name, String[] sentences, Language language, Time creationTime, NLPAnnotator annotator) {
 		super(name, sentences, language, annotator);
-	
-		this.creationTime = creationTime;
 		
 		initializeTimeML();
+		
+		this.creationTime = creationTime;
+		this.timeMap.put(this.creationTime.getId(), this.creationTime);
 	}
 	
 	public TempDocument(String name, String[] sentences, Language language, Date creationTime, NLPAnnotator annotator) {		
@@ -216,6 +221,10 @@ public class TempDocument extends DocumentInMemory {
 	public boolean setTimes(Time[][] times) {
 		this.times = new Time[times.length][];
 		this.timeMap = new HashMap<String, Time>();
+		
+		if (this.creationTime != null)
+			this.timeMap.put(this.creationTime.getId(), this.creationTime);
+		
 		for (int i = 0; i < times.length; i++) {
 			this.times[i] = new Time[times[i].length];
 			for (int j = 0; j < times[i].length; j++) {
@@ -242,7 +251,7 @@ public class TempDocument extends DocumentInMemory {
 	}
 	
 	public boolean setTLinks(List<TLink> tlinks) {
-		return setTLinks((TLink[])(tlinks.toArray()));
+		return setTLinks(tlinks.toArray(new TLink[0]));
 	}
 	
 	public boolean setTLinks(TLink[] tlinks) {
@@ -323,6 +332,106 @@ public class TempDocument extends DocumentInMemory {
 			element.addContent(this.tlinks[i].toXML());
 		}
 		
+		return element;
+	}
+	
+	public Element toTimeML() {
+		Element element = new Element("TimeML");
+		Element extraInfoElement = new Element("EXTRAINFO");
+		StringBuilder extraInfoText = new StringBuilder();
+		if (this.name != null) {
+			Element docIDElement = new Element("DOCID");
+			docIDElement.setText(this.name);
+			extraInfoText.append(this.name);
+			element.addContent(docIDElement);
+		}
+		
+		if (this.creationTime != null) {
+			Element dctElement = new Element("DCT");
+			dctElement.addContent(this.creationTime.toTimeML());
+			extraInfoText.append(" ").append(this.creationTime.getValue().toString());
+			element.addContent(dctElement);
+		}
+
+		element.addContent(extraInfoElement);
+
+		Element textElement = new Element("TEXT");
+		Map<String, Pair<Element, TokenSpan>> sourceEvents = new HashMap<String, Pair<Element, TokenSpan>>();
+		List<Element> eventInstances = new ArrayList<Element>();
+		String[][] tokensToSourceEvents = new String[this.tokens.length][];
+		String[][] tokensToTimes = new String[this.tokens.length][];
+		String[][] tokensToSignals = new String[this.tokens.length][];
+		
+		for (int i = 0; i < this.tokens.length; i++) {
+			tokensToSourceEvents[i] = new String[this.tokens[i].length];
+			tokensToTimes[i] = new String[this.tokens[i].length];
+			tokensToSignals[i] = new String[this.tokens[i].length];
+		
+			// Collect events for sentence
+			for (int j = 0; j < this.events.length; j++) {
+				eventInstances.add(this.events[i][j].toTimeML(sourceEvents));
+				TokenSpan tokenSpan = this.events[i][j].getTokenSpan();
+				for (int k = tokenSpan.getStartTokenIndex(); k < tokenSpan.getEndTokenIndex(); k++)
+					tokensToSourceEvents[i][k] = this.events[i][j].getSourceId();
+			}
+			
+			// Collect times for sentence
+			for (int j = 0; j < this.times.length; j++) {
+				TokenSpan tokenSpan = this.times[i][j].getTokenSpan();
+				for (int k = tokenSpan.getStartTokenIndex(); k < tokenSpan.getEndTokenIndex(); k++)
+					tokensToTimes[i][k] = this.times[i][j].getId();
+			}
+			
+			// Collect signals for sentence
+			for (int j = 0; j < this.signals.length; j++) {
+				TokenSpan tokenSpan = this.signals[i][j].getTokenSpan();
+				for (int k = tokenSpan.getStartTokenIndex(); k < tokenSpan.getEndTokenIndex(); k++)
+					tokensToSignals[i][k] = this.signals[i][j].getId();
+			}
+			
+			// Build text with events and times for sentence
+			StringBuilder segmentText = new StringBuilder();
+			for (int j = 0; j < this.tokens.length; j++) {
+				if (tokensToSourceEvents[i][j] == null && tokensToTimes[i][j] == null) {
+					segmentText = segmentText.append(this.tokens[i][j]).append(" ");
+				} else if (tokensToSourceEvents[i][j] != null) {
+					if (j != 0 && !tokensToSourceEvents[i][j].equals(tokensToSourceEvents[i][j-1]))
+						continue;
+					
+					textElement.addContent(segmentText.toString());
+					segmentText = new StringBuilder();
+					textElement.addContent(sourceEvents.get(tokensToSourceEvents[i][j]).getFirst());
+				} else if (tokensToTimes[i][j] != null) {
+					if (j != 0 && !tokensToTimes[i][j].equals(tokensToTimes[i][j-1]))
+						continue;			
+					
+					textElement.addContent(segmentText.toString());
+					segmentText = new StringBuilder();
+					textElement.addContent(this.timeMap.get(tokensToTimes[i][j]).toTimeML());
+				} else if (tokensToSignals[i][j] != null) {
+					if (j != 0 && !tokensToSignals[i][j].equals(tokensToSignals[i][j-1]))
+						continue;			
+					
+					textElement.addContent(segmentText.toString());
+					segmentText = new StringBuilder();
+					textElement.addContent(this.signalMap.get(tokensToSignals[i][j]).toTimeML());
+				}
+			}
+			
+			textElement.addContent(segmentText.toString());
+		}
+		
+		element.addContent(textElement);
+		
+		Element lastExtraInfoElement = new Element("LASTEXTRAINFO");
+		element.addContent(lastExtraInfoElement);
+		
+		for (Element eventInstance : eventInstances)
+			element.addContent(eventInstance);
+		
+		for (TLink tlink : this.tlinks)
+			element.addContent(tlink.toTimeML());
+			
 		return element;
 	}
 	
@@ -497,5 +606,142 @@ public class TempDocument extends DocumentInMemory {
 		setTLinks(tlinks);
 		
 		return true;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static TempDocument fromTimeML(Element element, NLPAnnotator nlpAnnotator, Language language) {
+		String name = element.getChild("DOCID").getText() + ".tml";
+		Time creationTime = Time.fromTimeML(element.getChild("DCT").getChild("TIMEX3"), null, null);
+		
+		Element textElement = element.getChild("TEXT"); 
+		StringBuilder text = new StringBuilder();
+		List textParts = textElement.getContent();
+		for (int i = 0; i < textParts.size(); i++) {
+			if (textParts.get(i).getClass() == Element.class) {
+				text.append(((Element)textParts.get(i)).getText());
+			} else { // Outside Timex
+				text.append(((Text)textParts.get(i)).getText());
+			}
+		}
+		
+		TempDocument document = new TempDocument(name, text.toString(), language, creationTime, nlpAnnotator);
+
+		int docTokenIndex = 0;
+		int docSentenceIndex = 0;
+		Map<Integer, List<Pair<Element, TokenSpan>>> sentenceSignals = new HashMap<Integer, List<Pair<Element, TokenSpan>>>();
+		Map<Integer, List<Pair<Element, TokenSpan>>> sentenceTimes = new HashMap<Integer, List<Pair<Element, TokenSpan>>>();
+		Map<String, Pair<Element, TokenSpan>> sourceEvents = new HashMap<String, Pair<Element, TokenSpan>>();
+		for (int i = 0; i < textParts.size(); i++) {
+			String textPart = null;
+			Element tmlElement = null;
+			if (textParts.get(i).getClass() == Element.class) { // event, signal, or time
+				tmlElement = (Element)textParts.get(i);
+				textPart = tmlElement.getText();
+			} else { // Outside event, signal, or time
+				textPart = ((Text)textParts.get(i)).getText();
+			}
+			
+			if (!nlpAnnotator.setText(textPart))
+				return null;			
+				
+			String[][] tokens = nlpAnnotator.makeTokens();
+			if (tokens.length > 1) {
+				if (tmlElement != null) // Shouldn't have sentence splits inside event, signal, or time
+					return null;
+				docSentenceIndex += (tokens.length - 1);
+			}
+			
+			if (tmlElement != null) {
+				TokenSpan tokenSpan = new TokenSpan(document, docSentenceIndex, docTokenIndex, docTokenIndex + tokens[0].length);
+				if (tmlElement.getName().equals("SIGNAL")) {
+					if (!sentenceSignals.containsKey(docSentenceIndex))
+						sentenceSignals.put(docSentenceIndex, new ArrayList<Pair<Element, TokenSpan>>());
+					sentenceSignals.get(docSentenceIndex).add(new Pair<Element, TokenSpan>(tmlElement, tokenSpan));
+				} else if (tmlElement.getName().equals("TIMEX3")) {
+					if (!sentenceTimes.containsKey(docSentenceIndex))
+						sentenceTimes.put(docSentenceIndex, new ArrayList<Pair<Element, TokenSpan>>());
+					sentenceTimes.get(docSentenceIndex).add(new Pair<Element, TokenSpan>(tmlElement, tokenSpan));
+				} else if (tmlElement.getName().equals("EVENT")) {
+					sourceEvents.put(tmlElement.getAttributeValue("eid"), new Pair<Element, TokenSpan>(tmlElement, tokenSpan));
+				}
+			}
+			
+			if (tokens.length > 0)
+				docTokenIndex += tokens[0].length;
+		}
+		
+		Signal[][] signals = new Signal[document.tokens.length][];
+		for (int i = 0; i < document.tokens.length; i++) {
+			if (!sentenceSignals.containsKey(i)) {
+				signals[i] = new Signal[0];
+				continue;
+			}
+			
+			signals[i] = new Signal[sentenceSignals.get(i).size()];
+			for (int j = 0; j < signals[i].length; j++)
+				signals[i][j] = Signal.fromTimeML(sentenceSignals.get(i).get(j).getFirst(), document, sentenceSignals.get(i).get(j).getSecond());
+		}
+		document.setSignals(signals);
+		
+		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
+		 * possible that if they are added in the wrong order, the references will be empty.  The 
+		 * following code fixes this issue by repeatedly trying to add all of the times, 
+		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
+		 * to do this, but it should be alright, for now, given that the number of times that reference other 
+		 * times is small.
+		 */
+		boolean failedToAddTime;
+		do {
+			failedToAddTime = false;
+			Time[][] times = new Time[document.tokens.length][];
+			for (int i = 0; i < document.tokens.length; i++) {
+				if (!sentenceTimes.containsKey(i)) {
+					times[i] = new Time[0];
+					continue;
+				}
+				
+				times[i] = new Time[sentenceTimes.get(i).size()];
+				for (int j = 0; j < times[i].length; j++) {
+					if (times[i][j] != null)
+						times[i][j] = document.times[i][j];
+					else {
+						times[i][j] = Time.fromTimeML(sentenceTimes.get(i).get(j).getFirst(), document, sentenceTimes.get(i).get(j).getSecond());
+					}
+						
+					if (times[i][j] == null)
+						failedToAddTime = true;
+				}
+			}
+			document.setTimes(times);
+		} while (failedToAddTime);
+		
+		List<Element> instanceElements = element.getChildren("MAKEINSTANCE");
+		Map<Integer, List<Event>> sentenceEvents = new HashMap<Integer, List<Event>>();
+		for (Element instanceElement : instanceElements) {
+			Event event = Event.fromTimeML(instanceElement, document, sourceEvents);
+			if (!sentenceEvents.containsKey(event.getTokenSpan().getSentenceIndex()))
+				sentenceEvents.put(event.getTokenSpan().getSentenceIndex(), new ArrayList<Event>());
+			sentenceEvents.get(event.getTokenSpan().getSentenceIndex()).add(event);
+		}
+		
+		Event[][] events = new Event[document.tokens.length][];
+		for (int i = 0; i < events.length; i++) {
+			if (!sentenceEvents.containsKey(i)) {
+				events[i] = new Event[0];
+				continue;
+			}
+			
+			events[i] = sentenceEvents.get(i).toArray(new Event[0]);
+		}
+		document.setEvents(events);
+		
+		List<Element> tlinkElements = element.getChildren("TLINK");
+		List<TLink> tlinks = new ArrayList<TLink>();
+		for (Element tlinkElement : tlinkElements) {
+			tlinks.add(TLink.fromTimeML(tlinkElement, document));
+		}
+		document.setTLinks(tlinks);
+		
+		return document;
 	}
 }

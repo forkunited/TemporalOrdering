@@ -137,6 +137,35 @@ public class TLink {
 		return element;
 	}
 	
+	public Element toTimeML() {
+		Element element = new Element("TLINK");
+		
+		if (this.id != null)
+			element.setAttribute("lid", this.id);
+		if (this.origin != null)
+			element.setAttribute("origin", this.origin);
+		
+		if (this.source != null && this.source.getTLinkableType() == TLinkable.Type.EVENT)
+			element.setAttribute("eventInstanceID", this.source.getId());
+		else if (this.source != null && this.source.getTLinkableType() == TLinkable.Type.TIME)
+			element.setAttribute("timeID", this.source.getId());
+			
+		if (this.target != null && this.target.getTLinkableType() == TLinkable.Type.EVENT)
+			element.setAttribute("relatedToEventInstance", this.target.getId());
+		else if (this.target != null && this.target.getTLinkableType() == TLinkable.Type.TIME)
+			element.setAttribute("relatedToTime", this.target.getId());
+		
+		if (this.signal != null)
+			element.setAttribute("signalID", this.signal.getId());
+		if (this.timeMLRelType != null)
+			element.setAttribute("relType", this.timeMLRelType.toString());
+		
+		if (this.syntax != null)
+			element.setAttribute("syntax", this.syntax);
+		
+		return element;
+	}
+	
 	public static TLink fromJSON(JSONObject json, TempDocument document) {
 		TLink tlink = new TLink();
 		
@@ -224,6 +253,41 @@ public class TLink {
 			else
 				tlink.target = document.getTime(targetId);
 		}
+		
+		return tlink;
+	}
+	
+	public static TLink fromTimeML(Element element, TempDocument document) {
+		TLink tlink = new TLink();
+
+		String id = element.getAttributeValue("lid");
+		String origin = element.getAttributeValue("origin");
+		String eventInstanceID = element.getAttributeValue("eventInstanceID");
+		String timeID = element.getAttributeValue("timeID");
+		String relatedToEventInstance = element.getAttributeValue("relatedToEventInstance");
+		String relatedToTime = element.getAttributeValue("relatedToTime");
+		String signalId = element.getAttributeValue("signalId");
+		String relType = element.getAttributeValue("relType");
+		String syntax = element.getAttributeValue("syntax");
+		
+		if (id != null)
+			tlink.id = id;
+		if (origin != null)
+			tlink.origin = origin;
+		if (eventInstanceID != null) 
+			tlink.source = document.getEvent(eventInstanceID);
+		if (timeID != null)
+			tlink.source = document.getTime(timeID);
+		if (relatedToEventInstance != null)
+			tlink.target = document.getEvent(relatedToEventInstance);
+		if (relatedToTime != null)
+			tlink.target = document.getTime(relatedToTime);
+		if (signalId != null)
+			tlink.signal = document.getSignal(signalId);
+		if (relType != null)
+			tlink.timeMLRelType = TimeMLRelType.valueOf(relType);
+		if (syntax != null)
+			tlink.syntax = syntax;
 		
 		return tlink;
 	}

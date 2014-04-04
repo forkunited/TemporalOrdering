@@ -310,7 +310,7 @@ public class ConstructTempDocumentsTempEval2 {
 		int id = 0;
 		
 		for (int i = 0; i < tlinksDctEvent.length; i++) {
-			String eventId = tlinksDctEvent[i][1];
+			String eventId = "ei" + tlinksDctEvent[i][1].substring(1);
 			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksDctEvent[i][3].toUpperCase().replaceAll("\\-",  "_"));
 			Event event = document.getEvent(eventId);
 			Time creationTime = document.getCreationTime();
@@ -321,7 +321,7 @@ public class ConstructTempDocumentsTempEval2 {
 		}
 		
 		for (int i = 0; i < tlinksEventTimex.length; i++) {
-			String eventId = tlinksEventTimex[i][1];
+			String eventId = "ei" + tlinksEventTimex[i][1].substring(1);
 			String timeId = tlinksEventTimex[i][2];
 			TLink.TimeMLRelType type = TLink.TimeMLRelType.valueOf(tlinksEventTimex[i][3].toUpperCase().replaceAll("\\-", "_"));
 			

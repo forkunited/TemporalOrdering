@@ -1,8 +1,9 @@
 package temp.model.annotator.nlp;
 
 import ark.data.annotation.Language;
+import ark.data.annotation.nlp.ConstituencyParse;
+import ark.data.annotation.nlp.DependencyParse;
 import ark.data.annotation.nlp.PoSTag;
-import ark.data.annotation.nlp.TypedDependency;
 import ark.model.annotator.nlp.NLPAnnotator;
 import ark.model.annotator.nlp.NLPAnnotatorStanford;
 
@@ -82,13 +83,25 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 			return null;
 		}
 	}
+	
+	@Override
+	public DependencyParse[] makeDependencyParses() {
+		if (this.language == Language.English) {
+			return this.englishAnnotator.makeDependencyParses();
+		} else if (this.language == Language.Spanish) {
+			return this.spanishAnnotator.makeDependencyParses();
+		} else {
+			return null;
+		}
+	}
+
 
 	@Override
-	public TypedDependency[][] makeDependencies() {
+	public ConstituencyParse[] makeConstituencyParses() {
 		if (this.language == Language.English) {
-			return this.englishAnnotator.makeDependencies();
+			return this.englishAnnotator.makeConstituencyParses();
 		} else if (this.language == Language.Spanish) {
-			return this.spanishAnnotator.makeDependencies();
+			return this.spanishAnnotator.makeConstituencyParses();
 		} else {
 			return null;
 		}

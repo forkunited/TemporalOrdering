@@ -206,6 +206,42 @@ public class Time implements TLinkable {
 		return element;
 	}
 	
+	public Element toTimeML() {
+		Element element = new Element("TIMEX3");
+		
+		if (this.id != null)
+			element.setAttribute("tid", this.id);
+		if (this.timeMLType != null)
+			element.setAttribute("type", this.timeMLType.toString());
+		if (this.timeMLDocumentFunction != null)
+			element.setAttribute("functionInDocument", this.timeMLDocumentFunction.toString());
+		if (this.startTime != null)
+			element.setAttribute("startPoint", this.startTime.getId());
+		if (this.endTime != null)
+			element.setAttribute("endPoint", this.endTime.getId());
+		if (this.quant != null)
+			element.setAttribute("quant", this.quant);
+		if (this.freq != null)
+			element.setAttribute("freq", this.freq);
+		
+		element.setAttribute("temporalFunction", String.valueOf(this.temporalFunction));
+		
+		if (this.value != null)
+			element.setAttribute("value", this.value.toString());
+		else if (this.valueFromFunction != null)
+			element.setAttribute("valueFromFunction", this.valueFromFunction.getId());
+		
+		if (this.timeMLMod != null)
+			element.setAttribute("mod", this.timeMLMod.toString());
+		if (this.anchorTime != null)
+			element.setAttribute("anchorTimeID", this.anchorTime.getId());
+		
+		if (this.tokenSpan != null)
+			element.setText(this.tokenSpan.toString());
+		
+		return element;
+	}
+	
 	public static Time fromJSON(JSONObject json, TempDocument document, int sentenceIndex) {
 		Time time = new Time();
 		
@@ -302,7 +338,7 @@ public class Time implements TLinkable {
 				hasFreq = true;
 			else if (attribute.getName().equals("value"))
 				hasValue = true;
-			else if (attribute.getName().equals("mod"))
+			else if (attribute.getName().equals("mod") && attribute.getValue().length() > 0)
 				hasTimeMLMod = true;
 		}
 
@@ -368,6 +404,66 @@ public class Time implements TLinkable {
 		}
 		if (hasTimeMLMod)
 			time.timeMLMod = TimeMLMod.valueOf(element.getAttributeValue("mod"));
+		
+		return time;
+	}
+	
+	public static Time fromTimeML(Element element, TempDocument document, TokenSpan tokenSpan) {
+		Time time = new Time();
+		
+		String id = element.getAttributeValue("tid");
+		String type = element.getAttributeValue("type");
+		String functionInDocument = element.getAttributeValue("functionInDocument");
+		String startPoint = element.getAttributeValue("startPoint");
+		String endPoint = element.getAttributeValue("endPoint");
+		String quant = element.getAttributeValue("quant");
+		String freq = element.getAttributeValue("freq");
+		String temporalFunction = element.getAttributeValue("temporalFunction");
+		String value = element.getAttributeValue("value");
+		String valueFromFunction = element.getAttributeValue("valueFromFunction");
+		String mod = element.getAttributeValue("mod");
+		String anchorTimeID = element.getAttributeValue("anchorTimeID");
+		
+		if (id != null)
+			time.id = id;
+		if (type != null)
+			time.timeMLType = TimeMLType.valueOf(type);
+		if (functionInDocument != null)
+			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(functionInDocument);
+		if (startPoint != null) {
+			time.startTime = document.getTime(startPoint);
+			if (time.startTime == null)
+				return null;
+		}
+		if (endPoint != null) {
+			time.endTime = document.getTime(endPoint);
+			if (time.endTime == null)
+				return null;
+		}
+		if (quant != null)
+			time.quant = quant;
+		if (freq != null)
+			time.freq = freq;
+		if (temporalFunction != null)
+			time.temporalFunction = Boolean.valueOf(temporalFunction);
+		
+		if (value != null)
+			time.value = new NormalizedTimeValue(value);
+		else if (valueFromFunction != null) {
+			time.valueFromFunction = document.getTime(valueFromFunction);
+			if (time.valueFromFunction == null)
+				return null;
+		}
+		
+		if (mod != null)
+			time.timeMLMod = TimeMLMod.valueOf(mod);
+		if (anchorTimeID != null) {
+			time.anchorTime = document.getTime(anchorTimeID);
+			if (time.anchorTime == null)
+				return null;
+		}
+		
+		time.tokenSpan = tokenSpan;
 		
 		return time;
 	}

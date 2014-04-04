@@ -3,28 +3,30 @@ package temp.model.annotator.timeml.tlink;
 import java.util.*;
 
 import temp.data.annotation.TempDocument;
-import ark.data.annotation.nlp.TypedDependency;
+//import ark.data.annotation.nlp.TypedDependency;
 import temp.data.annotation.timeml.TLinkable;
 
+
+// FIXME: Need to refactor this if we are using it for something.
 public class EdgeFeatures {
 	Set<String> indicatorFeatures;
-	private final TLinkable first;
+/*	private final TLinkable first;
 	private final TLinkable second;
-
+*/
 	public EdgeFeatures(TLinkable first, TLinkable second, TempDocument doc, int sentenceNum){
 		indicatorFeatures = new HashSet<String>();
-		this.first = first;
+/*		this.first = first;
 		this.second = second;
-		
+	*/	
 		computeFeatures(doc, sentenceNum);
 	}
 	
 	
 	private void computeFeatures(TempDocument doc, int sentenceNum){
-		computeDependencyPath(doc, sentenceNum);
+		//computeDependencyPath(doc, sentenceNum);
 	}
-
-
+/*
+	
 	private void computeDependencyPath(TempDocument doc, int sentenceNum) {
 		List<TypedDependency> childrenOfFirst = 
 				doc.getChildDependencies(sentenceNum, first.getTokenSpan().getStartTokenIndex());
@@ -45,5 +47,5 @@ public class EdgeFeatures {
 			}
 		}
 		
-	}
+	}*/
 }

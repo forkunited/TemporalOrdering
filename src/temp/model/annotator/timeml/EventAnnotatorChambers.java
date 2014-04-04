@@ -12,8 +12,8 @@ import edu.stanford.nlp.ling.RVFDatum;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 
+import ark.data.annotation.nlp.DependencyParse;
 import ark.data.annotation.nlp.TokenSpan;
-import ark.data.annotation.nlp.TypedDependency;
 import ark.data.annotation.nlp.WordNet;
 
 import temp.data.annotation.TempDocument;
@@ -174,15 +174,14 @@ public class EventAnnotatorChambers extends EventAnnotator {
 			}
 		}
 		
-		List<TypedDependency> childDependencies = document.getChildDependencies(sentenceIndex, tokenIndex);
-		for (TypedDependency dependency : childDependencies) {
+		DependencyParse parse = document.getDependencyParse(sentenceIndex);
+		List<DependencyParse.Dependency> childDependencies = parse.getGovernedDependencies(tokenIndex);
+		for (DependencyParse.Dependency dependency : childDependencies) {
 			features.incrementCount("DC_" + dependency.getType());
 		}
 		
-		List<TypedDependency> parentDependencies = document.getParentDependencies(sentenceIndex, tokenIndex);
-		for (TypedDependency dependency : parentDependencies) {
-			features.incrementCount("DP_" + dependency.getType());
-		}
+		DependencyParse.Dependency parentDependency = parse.getGoverningDependency(tokenIndex);
+		features.incrementCount("DP_" + parentDependency.getType());
 		
 		return features;
 	}

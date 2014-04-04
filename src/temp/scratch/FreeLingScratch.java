@@ -12,7 +12,7 @@ public class FreeLingScratch {
   // Modify this line to be your FreeLing installation directory
   private static final TempProperties properties = new TempProperties();
   private static final String DATA = properties.getFreeLingDataDirPath();
-  private static final String LANG = "es";
+  private static final String LANG = "en";
 
   public static void main( String argv[] ) throws IOException {
 	  System.loadLibrary( "freeling-3.1-win/bin/zlibwapi" );

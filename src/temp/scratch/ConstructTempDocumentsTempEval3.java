@@ -2,8 +2,6 @@ package temp.scratch;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -14,6 +12,8 @@ import ark.data.annotation.Language;
 
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
+import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
+import temp.util.TempProperties;
 
 
 public class ConstructTempDocumentsTempEval3 {
@@ -24,23 +24,25 @@ public class ConstructTempDocumentsTempEval3 {
 		
 		File inputDirectory = new File(inputPath);
 		File[] files = inputDirectory.listFiles();
+		NLPAnnotatorMultiLanguage nlpAnnotator = new NLPAnnotatorMultiLanguage(new TempProperties(), language);
 		for (File file : files) {
-			if (!file.getName().endsWith(".tml"))
+			if (!file.getName().endsWith(".tml")) {
+				System.out.println(file.getName() + " does not end with '.tml'.  Skipping...");
 				continue;
+			}
 			
-			TempDocument document = constructFromFile(file);
+			if ((new File(outputPath, file.getName() + ".json")).exists()) {
+				System.out.println("Output for " + file.getName() + " already exists.  Skipping...");
+				continue;
+			}
+			
+				
+			TempDocument document = TempDocument.fromTimeML(loadXMLFromFile(file), nlpAnnotator, language);
 			
 			TempDocumentSet documentSet = new TempDocumentSet();
 			documentSet.addDocument(document);
 			documentSet.saveToJSONDirectory(outputPath);
 		}
-	}
-
-	private static TempDocument constructFromFile(File inputFile) {
-		Element timeMLElement = loadXMLFromFile(inputFile);
-		
-		
-		return null;
 	}
 	
 	private static Element loadXMLFromFile(File file) {

@@ -47,6 +47,17 @@ public class Signal {
 		return element;
 	}
 	
+	public Element toTimeML() {
+		Element element = new Element("SIGNAL");
+		
+		if (this.id != null)
+			element.setAttribute("sid", this.id);
+		if (this.tokenSpan != null)
+			element.setText(this.tokenSpan.toString());
+		
+		return element;
+	}
+	
 	public static Signal fromJSON(JSONObject json, TempDocument document, int sentenceIndex) {
 		Signal signal = new Signal();
 		
@@ -87,6 +98,15 @@ public class Signal {
 		
 		if (hasId)
 			signal.id = element.getAttributeValue("id");
+		
+		return signal;
+	}
+	
+	public static Signal fromTimeML(Element element, TempDocument document, TokenSpan tokenSpan) {
+		Signal signal = new Signal();
+		
+		signal.id = element.getAttributeValue("sid");
+		signal.tokenSpan = tokenSpan;
 		
 		return signal;
 	}

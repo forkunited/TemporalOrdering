@@ -11,13 +11,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
 import ark.util.FileUtil;
+import ark.util.Pair;
 import ark.model.annotator.nlp.NLPAnnotator;
 import ark.data.annotation.Language;
+import ark.data.annotation.nlp.ConstituencyParse;
+import ark.data.annotation.nlp.DependencyParse;
 import ark.data.annotation.nlp.PoSTag;
-import ark.data.annotation.nlp.TypedDependency;
+import ark.data.annotation.nlp.TokenSpan;
 import ark.data.annotation.nlp.WordNet;
+import ark.data.annotation.nlp.ConstituencyParse.Constituent;
+import ark.data.annotation.nlp.DependencyParse.Dependency;
+import ark.data.annotation.nlp.DependencyParse.Node;
 
 import edu.upc.freeling.ChartParser;
 import edu.upc.freeling.DepTxala;
@@ -33,6 +40,7 @@ import edu.upc.freeling.Sentence;
 import edu.upc.freeling.Splitter;
 import edu.upc.freeling.Tokenizer;
 import edu.upc.freeling.TreeDepnode;
+import edu.upc.freeling.TreeNode;
 import edu.upc.freeling.Ukb;
 import edu.upc.freeling.Util;
 import edu.upc.freeling.VectorWord;
@@ -275,29 +283,42 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tags;
 	}
 	
-	public TypedDependency[][] makeDependencies() {
-		TypedDependency[][] dependencies = new TypedDependency[(int)this.textSentences.size()][];
+	public DependencyParse[] makeDependencyParses() {
+		DependencyParse[] parses = new DependencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;
-		while (iterator.hasNext()) {
-			List<TypedDependency> dependencyList = new LinkedList<TypedDependency>(); 
+		while (iterator.hasNext()) { 
 			Sentence sentence = iterator.next();
 			Queue<TreeDepnode> treeNodes = new LinkedList<TreeDepnode>();
-			treeNodes.add(sentence.getDepTree());
 			
+			Map<Integer, Pair<DependencyParse.Dependency, List<DependencyParse.Dependency>>> nodesToDeps = new HashMap<Integer, Pair<DependencyParse.Dependency, List<DependencyParse.Dependency>>>();
+			parses[i] = new DependencyParse(null, i, null, null);
+			int maxIndex = 0;
+
+			treeNodes.add(sentence.getDepTree());
 			boolean isRoot = true;
 			while (!treeNodes.isEmpty()) {
 				TreeDepnode nextNode = treeNodes.remove();
 				
-				int parentTokenIndex = -1;
+				int govIndex = -1;
 				if (!isRoot) {
-					parentTokenIndex = (int)nextNode.getParent().getInfo().getWord().getPosition();
+					govIndex = (int)nextNode.getParent().getInfo().getWord().getPosition();
 				}
 				
-				int childTokenIndex = (int)nextNode.getInfo().getWord().getPosition();
+				int depIndex = (int)nextNode.getInfo().getWord().getPosition();
 				String type = nextNode.getInfo().getLabel();
 					
-				dependencyList.add(new TypedDependency(null, i, parentTokenIndex, childTokenIndex, type));
+				maxIndex = Math.max(depIndex, Math.max(govIndex, maxIndex));
+				
+				DependencyParse.Dependency dependency = parses[i].new Dependency(govIndex, depIndex, type);
+				
+				if (!nodesToDeps.containsKey(govIndex))
+					nodesToDeps.put(govIndex, new Pair<Dependency, List<Dependency>>(null, new ArrayList<Dependency>()));
+				if (!nodesToDeps.containsKey(depIndex))
+					nodesToDeps.put(depIndex, new Pair<Dependency, List<Dependency>>(null, new ArrayList<Dependency>()));
+				
+				nodesToDeps.get(govIndex).getSecond().add(dependency);
+				nodesToDeps.get(depIndex).setFirst(dependency);
 				
 				int numChildren = (int)nextNode.numChildren();
 				for (int j = 0; j < numChildren; j++) {
@@ -307,12 +328,68 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 				isRoot = false;
 			}
 			
-			dependencies[i] = new TypedDependency[dependencyList.size()];
-			dependencies[i] = dependencyList.toArray(dependencies[i]);
+			Node[] tokenNodes = new Node[maxIndex+1];
+			for (int j = 0; j < tokenNodes.length; j++)
+				if (nodesToDeps.containsKey(j))
+					tokenNodes[j] = parses[i].new Node(j, nodesToDeps.get(j).getFirst(), nodesToDeps.get(j).getSecond().toArray(new Dependency[0]));
+			
+			Node rootNode = parses[i].new Node(-1, null, nodesToDeps.get(-1).getSecond().toArray(new Dependency[0]));
+			parses[i] = new DependencyParse(null, i, rootNode, tokenNodes);
 			
 			i++;
 		}
-		return dependencies;
+		return parses;
+	}
+
+	public ConstituencyParse[] makeConstituencyParses() {
+		ConstituencyParse[] parses = new ConstituencyParse[(int)this.textSentences.size()];
+		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
+		int i = 0;
+		while (iterator.hasNext()) { 
+			Sentence sentence = iterator.next();
+			Queue<TreeNode> treeNodes = new LinkedList<TreeNode>();
+			Constituent root = null;
+			Stack<Pair<TreeNode, List<Constituent>>> constituents = new Stack<Pair<TreeNode, List<Constituent>>>();
+			
+			parses[i] = new ConstituencyParse(null, i, null);
+			treeNodes.add(sentence.getParseTree());
+			while (!treeNodes.isEmpty()) {
+				TreeNode nextNode = treeNodes.remove();
+				
+				if (!constituents.isEmpty() && !nextNode.equals(constituents.peek().getFirst())) {
+					Pair<TreeNode, List<Constituent>> currentNeighbor = constituents.pop();
+					ConstituencyParse.Constituent constituent = parses[i].new Constituent(currentNeighbor.getFirst().getInfo().getLabel(), currentNeighbor.getSecond().toArray(new ConstituencyParse.Constituent[0]));
+					constituents.peek().getSecond().add(constituent);
+				}
+				
+				if (nextNode.numChildren() == 0) {
+					int tokenIndex = (int)nextNode.getInfo().getWord().getPosition();
+					String label = nextNode.getInfo().getWord().getTag();
+					
+					ConstituencyParse.Constituent constituent = parses[i].new Constituent(label, new TokenSpan(null, i, tokenIndex, tokenIndex + 1));
+					if (!constituents.isEmpty())
+						constituents.peek().getSecond().add(constituent);
+					else
+						root = constituent;
+				} else {
+					constituents.push(new Pair<TreeNode, List<Constituent>>(nextNode, new ArrayList<Constituent>()));
+					int numChildren = (int)nextNode.numChildren();
+					for (int j = numChildren - 1; j >= 0 ; j--) {
+						treeNodes.add(nextNode.nthChildRef(j));
+					}
+				}
+			}
+			
+			if (!constituents.isEmpty()) {
+				Pair<TreeNode, List<Constituent>> rootTree = constituents.pop();
+				root = parses[i].new Constituent(rootTree.getFirst().getInfo().getLabel(), rootTree.getSecond().toArray(new ConstituencyParse.Constituent[0]));
+			}
+			
+			parses[i] = new ConstituencyParse(null, i, root);
+			
+			i++;
+		}
+		return parses;
 	}
 	
 	public WordNet.Hypernym[][][] makeTokenHypernyms() {

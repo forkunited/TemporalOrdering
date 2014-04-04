@@ -45,9 +45,22 @@ public class ConstructTempDocumentsTimeSieve {
 		int i = 0;
 		for (Element fileElement : fileElements) {
 			TempDocument tempDocument = new TempDocument(fileElement);
-			nlpAnnotator.setText(tempDocument.getText());
-			PoSTag[][] tags = nlpAnnotator.makePoSTags();
-			if (!tempDocument.setPoSTags(tags))
+			
+			PoSTag[][] documentTags = new PoSTag[tempDocument.getSentenceCount()][];
+			for (int j = 0; j < tempDocument.getSentenceCount(); j++) {
+				nlpAnnotator.setText(tempDocument.getSentence(j));
+				PoSTag[][] sentenceTags = nlpAnnotator.makePoSTags();
+				documentTags[j] = new PoSTag[tempDocument.getSentenceTokenCount(j)];
+				int k = 0;
+				for (int r = 0; r < sentenceTags.length; r++) {
+					for (int c = 0; c < sentenceTags[r].length; c++) {
+						documentTags[j][k] = sentenceTags[r][c];
+						k++;
+					}
+				}
+			}
+
+			if (!tempDocument.setPoSTags(documentTags))
 				return null;
 			
 			documentSet.addDocument(tempDocument);

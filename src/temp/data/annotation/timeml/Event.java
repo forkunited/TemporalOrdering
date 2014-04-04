@@ -2,6 +2,7 @@ package temp.data.annotation.timeml;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -9,6 +10,7 @@ import org.jdom.Element;
 import net.sf.json.JSONObject;
 import temp.data.annotation.TempDocument;
 import ark.data.annotation.nlp.TokenSpan;
+import ark.util.Pair;
 
 public class Event implements TLinkable {	
 	public enum TimeMLTense {
@@ -98,8 +100,16 @@ public class Event implements TLinkable {
 	}
 	
 	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity, TimeMLMood timeMLMood, TimeMLVerbForm timeMLVerbForm) {
+		this(id, tokenSpan, timeMLTense, timeMLAspect, timeMLClass, timeMLPolarity, timeMLMood, timeMLVerbForm, null);
+	}
+	
+	public Event(int id, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity, TimeMLMood timeMLMood, TimeMLVerbForm timeMLVerbForm, TimeMLPoS timeMLPoS) {
+		this(id, id, tokenSpan, timeMLTense, timeMLAspect, timeMLClass, timeMLPolarity, timeMLMood, timeMLVerbForm, timeMLPoS);
+	}
+	
+	public Event(int id, int sourceId, TokenSpan tokenSpan, TimeMLTense timeMLTense, TimeMLAspect timeMLAspect, TimeMLClass timeMLClass, TimeMLPolarity timeMLPolarity, TimeMLMood timeMLMood, TimeMLVerbForm timeMLVerbForm, TimeMLPoS timeMLPoS) {
 		this.id = "ei" + id;
-		this.sourceId = "e" + id;
+		this.sourceId = "e" + sourceId;
 		this.tokenSpan = tokenSpan;
 		this.timeMLTense = timeMLTense;
 		this.timeMLAspect = timeMLAspect;
@@ -107,6 +117,7 @@ public class Event implements TLinkable {
 		this.timeMLPolarity = timeMLPolarity;
 		this.timeMLMood = timeMLMood;
 		this.timeMLVerbForm = timeMLVerbForm;
+		this.timeMLPoS = timeMLPoS;
 	}
 	
 	public TLinkable.Type getTLinkableType() {
@@ -234,6 +245,45 @@ public class Event implements TLinkable {
 		return element;
 	}
 	
+	public Element toTimeML(Map<String, Pair<Element, TokenSpan>> sourceEvents) {
+		Element eventElement = new Element("EVENT");
+		Element instanceElement = new Element("MAKEINSTANCE");
+		
+		if (this.id != null)
+			instanceElement.setAttribute("eiid", this.id);
+		if (this.sourceId != null) {
+			eventElement.setAttribute("eid", this.sourceId);
+			instanceElement.setAttribute("eventID", this.sourceId);
+		}
+		if (this.signal != null)
+			instanceElement.setAttribute("signalID", this.signal.getId()); 
+		if (this.timeMLTense != null)
+			instanceElement.setAttribute("tense", this.timeMLTense.toString());
+		if (this.timeMLAspect != null)
+			instanceElement.setAttribute("aspect", this.timeMLAspect.toString());
+		if (this.timeMLPolarity != null)
+			instanceElement.setAttribute("polarity", this.timeMLPolarity.toString());
+		if (this.timeMLClass != null)
+			eventElement.setAttribute("class", this.timeMLClass.toString());
+		if (this.timeMLPoS != null)
+			instanceElement.setAttribute("pos", this.timeMLPoS.toString());
+		if (this.timeMLMood != null)
+			instanceElement.setAttribute("mood", this.timeMLMood.toString());
+		if (this.timeMLVerbForm != null)
+			instanceElement.setAttribute("vform", this.timeMLVerbForm.toString());
+		if (this.modality != null)
+			instanceElement.setAttribute("modality", this.modality);
+		if (this.cardinality != null)
+			instanceElement.setAttribute("cardinality", this.cardinality);
+		
+		if (this.sourceId != null && this.tokenSpan != null && !sourceEvents.containsKey(this.sourceId)) {
+			eventElement.setText(this.tokenSpan.toString());
+			sourceEvents.put(this.sourceId, new Pair<Element, TokenSpan>(eventElement, this.tokenSpan));
+		}
+		
+		return instanceElement;
+	}
+	
 	public static Event fromJSON(JSONObject json, TempDocument document, int sentenceIndex) {
 		Event event = new Event();
 		
@@ -348,5 +398,58 @@ public class Event implements TLinkable {
 			events.add(event);
 		}
 		return events;
+	}
+	
+	public static Event fromTimeML(Element instanceElement, TempDocument document, Map<String, Pair<Element, TokenSpan>> sourceEvents) {
+		Event event = new Event();
+		String eiid = instanceElement.getAttributeValue("eiid");
+		String eventID = instanceElement.getAttributeValue("eventID");
+		String signalID = instanceElement.getAttributeValue("signalID");
+		String tense = instanceElement.getAttributeValue("tense");
+		String aspect = instanceElement.getAttributeValue("aspect");
+		String polarity = instanceElement.getAttributeValue("polarity");
+		String pos = instanceElement.getAttributeValue("pos");
+		String mood = instanceElement.getAttributeValue("mood");
+		String vform = instanceElement.getAttributeValue("vform");
+		String modality = instanceElement.getAttributeValue("modality");
+		String cardinality = instanceElement.getAttributeValue("cardinality");
+		
+		if (eiid != null)
+			event.id = eiid;
+		
+		if (eventID != null) {
+			if (!sourceEvents.containsKey(eventID))
+				return null;
+			Pair<Element, TokenSpan> sourceEvent = sourceEvents.get(eventID);
+			String timeMLClass = sourceEvent.getFirst().getAttributeValue("class");
+			event.sourceId = eventID;
+			event.timeMLClass = TimeMLClass.valueOf(timeMLClass);
+			event.tokenSpan = sourceEvent.getSecond();
+		}
+		
+		if (signalID != null) {
+			event.signal = document.getSignal(signalID);
+			if (event.signal == null)
+				return null;
+		}
+		
+		if (tense != null)
+			event.timeMLTense = TimeMLTense.valueOf(tense);
+		if (aspect != null)
+			event.timeMLAspect = TimeMLAspect.valueOf(aspect);
+		if (polarity != null)
+			event.timeMLPolarity = TimeMLPolarity.valueOf(polarity);
+		if (pos != null)
+			event.timeMLPoS = TimeMLPoS.valueOf(pos);
+		if (mood != null)
+			event.timeMLMood = TimeMLMood.valueOf(mood);
+		if (vform != null)
+			event.timeMLVerbForm = TimeMLVerbForm.valueOf(vform);
+		if (modality != null)
+			event.modality = modality;
+		if (cardinality != null)
+			event.cardinality = cardinality;
+		
+		return event;
 	}
 }
