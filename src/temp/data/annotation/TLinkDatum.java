@@ -39,9 +39,10 @@ public class TLinkDatum<L> extends Datum<L> {
 				
 				@Override
 				public TokenSpan[] extract(TLinkDatum<L> tlinkDatum) {
-					return new TokenSpan[] { 
-						tlinkDatum.getTLink().getSource().getTokenSpan()
-					};
+					if (tlinkDatum.getTLink().getSource().getTokenSpan() == null)
+						return new TokenSpan[0];
+					else 
+						return new TokenSpan[] { tlinkDatum.getTLink().getSource().getTokenSpan() };
 				}
 			});
 			
@@ -53,9 +54,10 @@ public class TLinkDatum<L> extends Datum<L> {
 				
 				@Override
 				public TokenSpan[] extract(TLinkDatum<L> tlinkDatum) {
-					return new TokenSpan[] { 
-						tlinkDatum.getTLink().getTarget().getTokenSpan()
-					};
+					if (tlinkDatum.getTLink().getTarget().getTokenSpan() == null)
+						return new TokenSpan[0];
+					else
+						return new TokenSpan[] { tlinkDatum.getTLink().getTarget().getTokenSpan() };
 				}
 			});
 			
@@ -67,11 +69,10 @@ public class TLinkDatum<L> extends Datum<L> {
 				
 				@Override
 				public TokenSpan[] extract(TLinkDatum<L> tlinkDatum) {
-					if (tlinkDatum.getTLink().getSignal() == null)
-						return null;
-					return new TokenSpan[] { 
-						tlinkDatum.getTLink().getSignal().getTokenSpan()
-					};
+					if (tlinkDatum.getTLink().getSignal() == null || tlinkDatum.getTLink().getSignal().getTokenSpan() == null)
+						return new TokenSpan[0];
+					else
+						return new TokenSpan[] { tlinkDatum.getTLink().getSignal().getTokenSpan() };
 				}
 			});
 		}
