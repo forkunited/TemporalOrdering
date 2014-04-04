@@ -2,18 +2,11 @@ randomSeed=1
 maxThreads=4
 crossValidationFolds=4
 errorExampleExtractor=SourceTokenSpan
-evaluation=F(Beta=1.0, weighted=true)
-evaluation=Precision(weighted=true)
-evaluation=Recall(weighted=true)
-evaluation=F(Beta=1.0, weighted=false)
-evaluation=Precision(weighted=false)
-evaluation=Recall(weighted=false)
 evaluation=Accuracy()
-gridSearchParameterValues=l1(1.0, 2.0)
-gridSearchParameterValues=l2(1.0, 2.0)
+gridSearchParameterValues=l1(.5, 1)
+gridSearchParameterValues=l2(.5, 1)
 model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregExample_Fold-${FOLD}, l2=0, warmRestart=false)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 }
 feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
-feature=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
