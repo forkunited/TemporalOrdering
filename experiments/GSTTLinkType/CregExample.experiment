@@ -1,0 +1,12 @@
+randomSeed=1
+maxThreads=4
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+gridSearchParameterValues=l1(1,2)
+gridSearchParameterValues=l2(1,2)
+model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/GSTTLinkType/CregExample, l2=0, warmRestart=false)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+}
+feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+feature=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)

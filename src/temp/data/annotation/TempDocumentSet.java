@@ -2,6 +2,7 @@ package temp.data.annotation;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -48,13 +49,19 @@ public class TempDocumentSet {
 		try {
 			if (!directory.exists() || !directory.isDirectory())
 				throw new IllegalArgumentException("Invalid directory: " + directory.getAbsolutePath());
-
-			File[] files = directory.listFiles();
+			
+			List<File> files = new ArrayList<File>();
+			files.addAll(Arrays.asList(directory.listFiles()));
+			int numTopLevelFiles = files.size();
+			for (int i = 0; i < numTopLevelFiles; i++)
+				if (files.get(i).isDirectory())
+					files.addAll(Arrays.asList(files.get(i).listFiles()));
+			
 			List<File> tempFiles = new ArrayList<File>();
 			for (File file : files) {
-				if (!file.getName().endsWith(".json"))
-					continue;
-				tempFiles.add(file);
+				if (!file.isDirectory() && file.getName().endsWith(".json")) {
+					tempFiles.add(file);
+				}
 			}
 			
 			Collections.sort(tempFiles, new Comparator<File>() { // Ensure determinism
@@ -82,10 +89,16 @@ public class TempDocumentSet {
 			if (!directory.exists() || !directory.isDirectory())
 				throw new IllegalArgumentException("Invalid directory: " + directory.getAbsolutePath());
 
-			File[] files = directory.listFiles();
+			List<File> files = new ArrayList<File>();
+			files.addAll(Arrays.asList(directory.listFiles()));
+			int numTopLevelFiles = files.size();
+			for (int i = 0; i < numTopLevelFiles; i++)
+				if (files.get(i).isDirectory())
+					files.addAll(Arrays.asList(files.get(i).listFiles()));
+			
 			List<File> tempFiles = new ArrayList<File>();
 			for (File file : files) {
-				if (!file.getName().endsWith(".xml"))
+				if (!file.isDirectory() && !file.getName().endsWith(".xml"))
 					continue;
 				tempFiles.add(file);
 			}

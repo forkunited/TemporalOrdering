@@ -1,0 +1,8 @@
+randomSeed=1
+maxThreads=4
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+model=LabelDistribution()
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+}
