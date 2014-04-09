@@ -3,9 +3,9 @@ package temp.data.feature;
 import java.util.Map;
 
 import temp.data.annotation.TLinkDatum;
-import ark.data.annotation.DataSet;
 import ark.data.annotation.Datum.Tools;
 import ark.data.feature.Feature;
+import ark.data.feature.FeaturizedDataSet;
 
 /**
  * Don't implement.  Delete later. 
@@ -51,7 +51,7 @@ public class FeatureTLinkEventTense<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	public boolean init(DataSet<TLinkDatum<L>, L> arg0) {
+	public boolean init(FeaturizedDataSet<TLinkDatum<L>, L> arg0) {
 		// TODO Auto-generated method stub
 		return false;
 	}

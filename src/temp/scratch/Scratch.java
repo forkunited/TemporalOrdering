@@ -49,7 +49,7 @@ public class Scratch {
 		
 		FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType> feature = new FeatureNGramSentence<TLinkDatum<TimeMLRelType>, TimeMLRelType>();
 		BufferedReader reader = new BufferedReader(new StringReader("NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)"));
-		feature.deserialize(reader, true, false, datumTools);
+		feature.deserialize(reader, true, false, datumTools, null, false);
 		data.addFeature(feature);
 
 		for (TLinkDatum<TimeMLRelType> datum : data) {

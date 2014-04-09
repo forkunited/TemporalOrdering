@@ -1,0 +1,28 @@
+randomSeed=1
+maxThreads=4
+crossValidationFolds=4
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+gridSearchParameterValues=dct_l1(.5, 1)
+gridSearchParameterValues=dct_l2(.5, 1)
+
+feature_constituencyPath_ignore=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)  !!!!!!!!!!!
+feature_tlinkPosition=TLinkPosition()
+feature_sourceTlinkableType_ignore=TLinkTLinkableType(tlinkable=Source)  !!!!!!!!!!!!!!!!!!!!!!!!!!!
+feature_targetTlinkableType_ignore=TLinkTLinkableType(tlinkable=Target)  !!!!!!!!!!!!!!!!!!!!!!!!!!!
+feature_tlinkType_ignore=Conjunction(sourceTlinkableType, targetTlinkableType)
+
+model=Partition(defaultLabel=VAGUE)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	
+	feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)  !!!!!!!!!!!!! Features for DCT model go here
+	constraint_dct=And(FeatureMatch(tlinkPosition, 1.0,"DCT"), FeatureMatch(tlinkType, 1.0, "*EVENT*")) !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	model_dct=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregExample_Fold-${FOLD}, warmRestart=false)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES
+		labelMapping= !!!!! Map other relations to VAGUE
+	}
+	!!!!!!!!!!!!!!!!! Other models go here
+}
+
