@@ -7,7 +7,7 @@ gridSearchParameterValues=dct_l1(.5, 1)
 gridSearchParameterValues=dct_l2(.5, 1)
 
 feature_constituencyPath_ignore=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)  !!!!!!!!!!!
-feature_tlinkPosition=TLinkPosition()
+feature_tlinkPosition=TLinkPosition()  !!!!!!!!!!!!!!!!!!!!!!!!!!!
 feature_sourceTlinkableType_ignore=TLinkTLinkableType(tlinkable=Source)  !!!!!!!!!!!!!!!!!!!!!!!!!!!
 feature_targetTlinkableType_ignore=TLinkTLinkableType(tlinkable=Target)  !!!!!!!!!!!!!!!!!!!!!!!!!!!
 feature_tlinkType_ignore=Conjunction(sourceTlinkableType, targetTlinkableType)
