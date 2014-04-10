@@ -160,7 +160,7 @@ def runinfer(alldat=None):
     print "=== end"
 
 
-    for itr in range(3):
+    for itr in range(5):
         saved_values = {n.id: n.value for n in nodes_by_id.values()}
         for node in sorted(nodes_by_id.values()):
             if node.type=='time': continue
@@ -171,7 +171,10 @@ def runinfer(alldat=None):
 
         new_values = {n.id:n.value for n in nodes_by_id.values()}
         if saved_values==new_values:
-            print "CONVERGED"
+            print "CONVERGED in {} iters".format(itr)
+            print "\n=== final at iter",itr-1
+            for nodeid in sorted(nodes_by_id): print "{}\t{}".format(nodeid, nodes_by_id[nodeid].value)
+            print "=== end"
             return
 
         print "\n=== after iter",itr
@@ -193,10 +196,13 @@ def read_graph(alldat):
 
     nodes = []
     for evt in evts:
+        if not evt['id']:
+            print "SKIPPING",evt
+            continue
         node = Node()
         node.id = evt['id']
         node.type = 'time' if node.id.startswith("t") else 'event' if node.id.startswith("ei") else None
-        assert node.type is not None
+        assert node.type is not None, repr(evt)
         if node.type=='time':
             node.value = parse_value(evt.get('value'))
             node.orig_value = node.value
