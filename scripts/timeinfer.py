@@ -57,10 +57,6 @@ def apply_constraint(relation, leftarg=None, rightarg=None):
         relation(X,rightarg)
     depending which is passed in as None"""
 
-    print "RELATION", relation
-    print "LEFTARG",leftarg
-    print "RIGHTARG",rightarg
-
     assert sum([leftarg is None, rightarg is None])==1
     assert relation in ('SIMULTANEOUS','AFTER','INCLUDES'), "only can do normalized relations"
     input_arg = leftarg if leftarg is not None else rightarg
@@ -69,14 +65,14 @@ def apply_constraint(relation, leftarg=None, rightarg=None):
     if relation=='SIMULTANEOUS':
         return deepcopy(input_arg)
     elif relation=='AFTER':
-        if rightarg is None:
-            return Interval(leftarg.start, FUTURE_INF)
-        elif leftarg is None:
-            return Interval(PAST_INF, rightarg.end)
-    elif relation=='INCLUDES' and rightarg is None:     # wtf
+        if leftarg is None:
+            return Interval(rightarg.start, FUTURE_INF)
+        elif rightarg is None:
+            return Interval(PAST_INF, leftarg.end)
+    elif relation=='INCLUDES' and rightarg is None:
+        return deepcopy(leftarg)
+    elif relation=='INCLUDES' and leftarg is None:
         raise CantResolveConstraint()
-    elif relation=='INCLUDES' and leftarg is None:      # wtf
-        return deepcopy(rightarg)
     else:
         assert False
 
@@ -132,11 +128,13 @@ def update_node(node, edge, is_incoming, nodes_by_id):
         return
     if is_incoming:
         other = nodes_by_id[edge['sourceId']]
-        f = lambda oo: apply_constraint(edge['timeMLRelType'], None, oo)
+        f = lambda oo: apply_constraint(edge['timeMLRelType'], oo, None)
     else:
         other = nodes_by_id[edge['targetId']]
-        f = lambda oo: apply_constraint(edge['timeMLRelType'], oo, None)
+        f = lambda oo: apply_constraint(edge['timeMLRelType'], None, oo)
+
     print "\n",node,"||",other,"||",repr_edge(edge)
+
     if other.value is None:
         print "no update"
         return
