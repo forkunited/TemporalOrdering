@@ -10,6 +10,18 @@ import org.jdom.Element;
 import temp.data.annotation.TempDocument;
 
 public class TLink {
+	public enum Type {
+		EVENT_EVENT,
+		EVENT_TIME,
+		TIME_TIME
+	}
+	
+	public enum Position {
+		DCT,
+		WITHIN_SENTENCE,
+		BETWEEN_SENTENCE
+	}
+	
 	public enum TimeMLRelType {
 		OVERLAP, // TempEval2
 		BEFORE_OR_OVERLAP, // TempEval2
@@ -77,6 +89,30 @@ public class TLink {
 	
 	public String getSyntax() {
 		return this.syntax;
+	}
+	
+	public Position getPosition() {
+		int sourceSentenceIndex = this.source.getTokenSpan().getSentenceIndex();
+		int targetSentenceIndex = this.target.getTokenSpan().getSentenceIndex();
+		
+		if (sourceSentenceIndex < 0 || targetSentenceIndex < 0)
+			return Position.DCT;
+		else if (sourceSentenceIndex != targetSentenceIndex)
+			return Position.BETWEEN_SENTENCE;
+		else 
+			return Position.WITHIN_SENTENCE;
+	}
+	
+	public Type getType() {
+		TLinkable.Type sourceType = this.source.getTLinkableType();
+		TLinkable.Type targetType = this.target.getTLinkableType();
+		
+		if (sourceType == TLinkable.Type.EVENT && targetType == TLinkable.Type.EVENT)
+			return Type.EVENT_EVENT;
+		else if (sourceType == TLinkable.Type.TIME && targetType == TLinkable.Type.TIME)
+			return Type.TIME_TIME;
+		else
+			return Type.EVENT_TIME;
 	}
 	
 	public JSONObject toJSON() {

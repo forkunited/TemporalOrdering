@@ -3,11 +3,8 @@ maxThreads=4
 crossValidationFolds=4
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
-gridSearchParameterValues=l1(.5, 1)
-gridSearchParameterValues=l2(.5, 1)
 model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregExample_Fold-${FOLD}, l2=0, warmRestart=false)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 }
-feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
-feature=Prepositions(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, POS=IN)
+feature_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan, useRelationTypes=true)

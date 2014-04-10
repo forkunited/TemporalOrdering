@@ -13,6 +13,7 @@ public class TempDataTools extends DataTools {
 		
 		this.properties = properties;
 		this.addPath("CregCmd", new Path("CregCmd", properties.getCregCommandPath()));
+	
 	}
 	
 	public Path getPath(String name) {

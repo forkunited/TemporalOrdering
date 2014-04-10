@@ -1,6 +1,7 @@
 package temp.data.annotation;
 
 import temp.data.annotation.timeml.TLink;
+import temp.data.feature.FeatureTLinkAttribute;
 import ark.data.DataTools;
 import ark.data.annotation.Datum;
 import ark.data.annotation.nlp.TokenSpan;
@@ -30,6 +31,8 @@ public class TLinkDatum<L> extends Datum<L> {
 	private static abstract class Tools<L> extends Datum.Tools<TLinkDatum<L>, L> {
 		public Tools(DataTools dataTools) {
 			super(dataTools);
+			
+			this.addGenericFeature(new FeatureTLinkAttribute<L>());
 			
 			this.addTokenSpanExtractor(new TokenSpanExtractor<TLinkDatum<L>, L>() {
 				@Override
