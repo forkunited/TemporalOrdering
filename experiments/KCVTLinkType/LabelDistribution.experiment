@@ -1,6 +1,6 @@
 randomSeed=1
-maxThreads=4
-crossValidationFolds=4
+maxThreads=8
+crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 model=LabelDistribution()

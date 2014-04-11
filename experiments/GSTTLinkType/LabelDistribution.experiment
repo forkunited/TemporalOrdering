@@ -1,6 +1,7 @@
 randomSeed=1
 maxThreads=4
 errorExampleExtractor=SourceTokenSpan
+trainOnDev=true
 evaluation=Accuracy()
 model=LabelDistribution()
 {

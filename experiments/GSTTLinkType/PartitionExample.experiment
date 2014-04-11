@@ -1,21 +1,17 @@
 randomSeed=1
 maxThreads=4
-crossValidationFolds=4
 errorExampleExtractor=SourceTokenSpan
+trainOnDev=true
 evaluation=Accuracy()
+
+gridSearchParameterValues=wset_l1(1,2,4,8,16)
+gridSearchParameterValues=wset_l2(1,2,4,8,16)
 
 feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
 feature_tlinkType_ignore=TLinkAttribute(attribute=TYPE)
 model=Partition(defaultLabel=VAGUE)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	
-	feature_dct_sourceTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
-	constraint_dct=And(FeatureMatch(tlinkPosition, 1.0,"DCT"), FeatureMatch(tlinkType, 1.0, ".*EVENT.*"))
-	model_dct=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/PartitionExample-DCT_Fold-${FOLD}, warmRestart=false)
-	{
-		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	}
 	
 	feature_wset_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
 	feature_wset_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
@@ -29,7 +25,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_wset_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
 	feature_wset_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
 	constraint_wset=And(FeatureMatch(tlinkPosition, 1.0, "WITHIN_SENTENCE"), FeatureMatch(tlinkType, 1.0, "EVENT_TIME"))
-	model_wset=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/ClearTK-WSET_Fold-${FOLD}, warmRestart=false)
+	model_wset=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/PartitionExample-WSET, warmRestart=false)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	}

@@ -1,6 +1,7 @@
 randomSeed=1
 maxThreads=4
 errorExampleExtractor=SourceTokenSpan
+trainOnDev=true
 evaluation=Accuracy()
 gridSearchParameterValues=l1(1,2)
 gridSearchParameterValues=l2(1,2)
