@@ -81,9 +81,9 @@ public class Event implements TLinkable {
 	private TimeMLAspect timeMLAspect;
 	private TimeMLPolarity timeMLPolarity = TimeMLPolarity.POS;
 	private TimeMLClass timeMLClass;
+	private TimeMLPoS timeMLPoS;
 	private TimeMLMood timeMLMood;
 	private TimeMLVerbForm timeMLVerbForm;
-	private TimeMLPoS timeMLPoS;
 	private String modality;
 	private String cardinality;
 	
