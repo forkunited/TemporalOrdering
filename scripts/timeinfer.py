@@ -151,16 +151,15 @@ def update_node(node, edge, is_incoming, nodes_by_id):
     node.value = updated_value
     print "new:", node
 
-def runinfer(alldat=None):
-    if alldat is None: alldat = json.loads(sys.stdin.read())
-    nodes_by_id = read_graph(alldat)
-
-    print "=== initial values"
-    for nodeid in sorted(nodes_by_id): print "{}\t{}".format(nodeid, nodes_by_id[nodeid].value)
+def print_node_values(nodes_by_id, message):
+    print "\n===", message
+    for nodeid in sorted(nodes_by_id): 
+        print "{}\t{}".format(nodeid, nodes_by_id[nodeid].value)
     print "=== end"
 
-
-    for itr in range(5):
+def runinfer(nodes_by_id, niter):
+    print_node_values(nodes_by_id, "initial values")
+    for itr in range(niter):
         saved_values = {n.id: n.value for n in nodes_by_id.values()}
         for node in sorted(nodes_by_id.values()):
             if node.type=='time': continue
@@ -168,25 +167,21 @@ def runinfer(alldat=None):
                 update_node(node,edge,True, nodes_by_id)
             for edge in node.outgoing:
                 update_node(node,edge,False, nodes_by_id)
-
         new_values = {n.id:n.value for n in nodes_by_id.values()}
         if saved_values==new_values:
             print "CONVERGED in {} iters".format(itr)
-            print "\n=== final at iter",itr-1
-            for nodeid in sorted(nodes_by_id): print "{}\t{}".format(nodeid, nodes_by_id[nodeid].value)
-            print "=== end"
-            return
+            break
+        print_node_values(nodes_by_id, "after iter %s" % itr)
+    print_node_values(nodes_by_id, "final at iter %s" % (itr-1))
 
-        print "\n=== after iter",itr
-        for nodeid in sorted(nodes_by_id): print "{}\t{}".format(nodeid, nodes_by_id[nodeid].value)
-        print "=== end"
-
-def read_graph(alldat):
+def read_graph(alldat, only_timeevent_links=False, exclude_after=False):
     edges = alldat['tlinks']
     print "{} edges in data".format(len(edges))
-    edges = [e for e in edges if e['timeMLRelType'] in ('BEFORE','AFTER','SIMULTANEOUS','INCLUDES','IS_INCLUDED')]
+    relation_whitelist = ('BEFORE','AFTER','SIMULTANEOUS','INCLUDES','IS_INCLUDED') if not exclude_after else ('SIMULTANEOUS','INCLUDES','IS_INCLUDED')
+    edges = [e for e in edges if e['timeMLRelType'] in relation_whitelist]
     edges = [normalize_edge(e) for e in edges]
     print "{} edges after reltype filter".format(len(edges))
+
 
     evts = [alldat['creationTime']]
     for sent in alldat['sentences']:
@@ -217,12 +212,17 @@ def read_graph(alldat):
     for edge in edges:
         if not (edge['sourceId'] in nodes_by_id and edge['targetId'] in nodes_by_id):
             continue
+        if only_timeevent_links:
+            type1 = nodes_by_id[edge['sourceId']].type
+            type2 = nodes_by_id[edge['targetId']].type
+            if (type1,type2) not in [('time','event'),('event','time')]:
+                continue
         if edge['sourceId'] in nodes_by_id:
             nodes_by_id[edge['sourceId']].outgoing.append(edge)
         if edge['targetId'] in nodes_by_id:
             nodes_by_id[edge['targetId']].incoming.append(edge)
 
-    nodes_by_id = {n.id:n for n in nodes if n.incoming or n.outgoing}
+    # nodes_by_id = {n.id:n for n in nodes if n.incoming or n.outgoing}
     edges = [e for e in edges if e['sourceId'] in nodes_by_id and e['targetId'] in nodes_by_id]
     print "{} nodes, {} edges".format(len(nodes_by_id), len(edges))
 
@@ -240,6 +240,58 @@ def dump():
             v = evt.get('value')
             if v:
                 print evt['id'], "||", v, "||", parse_value(v)
+
+def print_textview(nodes_by_id, alldat):
+    out = sys.stdout
+    dct = nodes_by_id.get('t0')
+    value = dct.value if dct else None
+    out.write("DCT: %s\n" % value)
+    for snum,sent in enumerate(alldat['sentences']):
+        out.write("(S%d)\n" % snum)
+        tokens = sent['tokens']
+        chunks = get_chunks(sent)
+        for (start,end),evt in chunks:
+            if evt is not None:
+                node = nodes_by_id.get(evt['id'])
+                value = node and node.value
+                value = repr(value) if value is not None else ""
+                info = "%-10s %s" % (evt['id'], value)
+            else:
+                info = ""
+            out.write("%-45s " % info)
+            out.write(" ".join(tokens[start:end]))
+            out.write("\n")
+
+def get_chunks(sent):
+    tokens = sent['tokens']
+    N = len(tokens)
+    chunks = []
+    in_spans = [False for i in range(N)]
+
+    for evt in (sent['events'] + sent['times']):
+        span = (evt['tokenSpan']['startTokenIndex'], evt['tokenSpan']['endTokenIndex'])
+        chunks.append( (span, evt) )
+        for i in range(span[0],span[1]):
+            in_spans[i] = True
+    i=0
+    while i<N:
+        if not in_spans[i]:
+            for j in range(i,N):
+                if in_spans[j]: break
+            endpoint = N if j==N-1 else j
+            chunks.append( ((i,endpoint),None) )
+            i = endpoint
+        i += 1
+    chunks.sort()
+    return chunks
+
+def goinfer(niter, *args):
+    alldat = json.loads(sys.stdin.read())
+    niter=int(niter)
+    nodes_by_id = read_graph(alldat, only_timeevent_links='-onehop' in args, exclude_after='-noafter' in args)
+    runinfer(nodes_by_id, niter=niter)
+    print "=== text view"
+    print_textview(nodes_by_id, alldat)
 
 eval(sys.argv[1])(*sys.argv[2:])
 
