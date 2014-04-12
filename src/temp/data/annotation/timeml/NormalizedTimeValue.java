@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.util.Pair;
+import ark.util.Pair;
 
 /**
  * 
@@ -17,6 +17,13 @@ import edu.stanford.nlp.util.Pair;
  * 
  */
 public class NormalizedTimeValue {
+	public enum Reference {
+		FUTURE,
+		PRESENT,
+		PAST,
+		NONE
+	}
+	
 	private class TimePattern {
 		private Pattern pattern;
 		
@@ -100,6 +107,8 @@ public class NormalizedTimeValue {
 	private TimePattern PART_OF_YEAR_PATTERN = new TimePattern(
   		"([0-9X]{1,4})-(H[1-2X]|Q[1-4X])",
   				1,0,0,0,0,0,2,0,0,0,0);
+	private TimePattern REFERENCE_PATTERN = new TimePattern("PAST_REF|PRESENT_REF|FUTURE_REF",
+			0,0,0,0,0,0,0,0,0,0,0);
 	
 	private String value;
 	private TimePattern pattern; 
@@ -114,6 +123,7 @@ public class NormalizedTimeValue {
 		Matcher weekTimeMatcher = this.WEEK_TIME_PATTERN.getMatcher(this.value);
 		Matcher seasonMatcher = this.SEASON_PATTERN.getMatcher(this.value);
 		Matcher partOfYearMatcher = this.PART_OF_YEAR_PATTERN.getMatcher(this.value);
+		Matcher referenceMatcher = this.REFERENCE_PATTERN.getMatcher(this.value);
 		
 		if (dateMatcher.matches()) {
 			this.pattern = this.DATE_PATTERN;
@@ -133,8 +143,10 @@ public class NormalizedTimeValue {
 		} else if (partOfYearMatcher.matches()) {
 			this.pattern = this.PART_OF_YEAR_PATTERN;
 			this.matcher = partOfYearMatcher;	
+		} else if (referenceMatcher.matches()) {
+			this.pattern = this.REFERENCE_PATTERN;
+			this.matcher = referenceMatcher;
 		}
-		
 	}
 	
 	public Pair<Integer, Integer> getYears() { 
@@ -305,24 +317,35 @@ public class NormalizedTimeValue {
 		Calendar minTime = Calendar.getInstance();
 		minTime.set(Calendar.MILLISECOND, 0);
 		minTime.set(
-						years.first(), 
-						months == null ? 1 : months.first(), 
-						days == null ? 1 : days.first(), 
-						hours == null ? 0 : hours.first(), 
-						minutes == null ? 0 : minutes.first(), 
-						seconds == null ? 0 : seconds.first());
+						years.getFirst(), 
+						months == null ? 1 : months.getFirst(), 
+						days == null ? 1 : days.getFirst(), 
+						hours == null ? 0 : hours.getFirst(), 
+						minutes == null ? 0 : minutes.getFirst(), 
+						seconds == null ? 0 : seconds.getFirst());
 		
 		Calendar maxTime = Calendar.getInstance();
 		maxTime.set(Calendar.MILLISECOND, 0);
 		maxTime.set(
-				years.second(), 
-				months == null ? maxTime.getLeastMaximum(Calendar.MONTH) : months.second(), 
-				days == null ?  maxTime.getLeastMaximum(Calendar.DAY_OF_MONTH) : days.second(), 
-				hours == null ?  maxTime.getLeastMaximum(Calendar.HOUR_OF_DAY) : hours.second(), 
-				minutes == null ?  maxTime.getLeastMaximum(Calendar.MINUTE) : minutes.second(), 
-				seconds == null ?  maxTime.getLeastMaximum(Calendar.SECOND) : seconds.second());
+				years.getSecond(), 
+				months == null ? maxTime.getLeastMaximum(Calendar.MONTH) : months.getSecond(), 
+				days == null ?  maxTime.getLeastMaximum(Calendar.DAY_OF_MONTH) : days.getSecond(), 
+				hours == null ?  maxTime.getLeastMaximum(Calendar.HOUR_OF_DAY) : hours.getSecond(), 
+				minutes == null ?  maxTime.getLeastMaximum(Calendar.MINUTE) : minutes.getSecond(), 
+				seconds == null ?  maxTime.getLeastMaximum(Calendar.SECOND) : seconds.getSecond());
 
 		return new Pair<Calendar, Calendar>(minTime, maxTime);
+	}
+	
+	public Reference getReference() {
+		if (this.value.equals("FUTURE_REF"))
+			return Reference.FUTURE;
+		else if (this.value.equals("PRESENT_REF"))
+			return Reference.PRESENT;
+		else if (this.value.equals("PAST_REF"))
+			return Reference.PAST;
+		else
+			return Reference.NONE;
 	}
 	
 	public String toString() {

@@ -23,6 +23,9 @@ public class TLink {
 	}
 	
 	public enum TimeMLRelType {
+		OVERLAPS,      // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+		OVERLAPPED_BY, // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+		
 		OVERLAP, // TempEval2
 		BEFORE_OR_OVERLAP, // TempEval2
 		OVERLAP_OR_AFTER, // TempEval2

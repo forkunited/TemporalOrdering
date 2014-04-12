@@ -1,6 +1,7 @@
 package temp.data.annotation.timeml;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.jdom.Element;
 
 import temp.data.annotation.TempDocument;
 import ark.data.annotation.nlp.TokenSpan;
+import ark.util.Pair;
 
 public class Time implements TLinkable {
 	public enum TimeMLType {
@@ -132,6 +134,103 @@ public class Time implements TLinkable {
 	
 	public TimeMLMod getTimeMLMod() {
 		return this.timeMLMod;
+	}
+	
+	public TLink.TimeMLRelType getRelationToTime(Time time) {
+		if (this.timeMLType != Time.TimeMLType.DATE && this.timeMLType != Time.TimeMLType.TIME)
+			return TLink.TimeMLRelType.VAGUE;
+		if (time.timeMLType != Time.TimeMLType.DATE && this.timeMLType != Time.TimeMLType.TIME)
+			return TLink.TimeMLRelType.VAGUE;
+		
+		Time creationTime = null;
+		if (time.getTokenSpan().getDocument().getName().equals(this.getTokenSpan().getDocument().getName())) {
+			// FIXME: This only gets document creation time if they're in the same document...
+			// But it's also possible to draw inferences if in separate documents
+			creationTime = ((TempDocument)time.getTokenSpan().getDocument()).getCreationTime();
+		}
+		
+		if (this.value.getReference() != NormalizedTimeValue.Reference.NONE 
+				|| time.value.getReference() != NormalizedTimeValue.Reference.NONE) {
+			if (creationTime == null)
+				return TLink.TimeMLRelType.VAGUE;
+			// Relate this to creation and time to creation based on past
+			// and future references
+			int thisCt = 0, timeCt = 0; 
+			
+			if (this.value.getReference() != NormalizedTimeValue.Reference.NONE) {
+				if (this.value.getReference() == NormalizedTimeValue.Reference.FUTURE)
+					thisCt = 1;
+				else if (this.value.getReference() == NormalizedTimeValue.Reference.PAST)
+					thisCt = -1;
+				else
+					return TLink.TimeMLRelType.VAGUE;
+			} else {
+				TLink.TimeMLRelType thisCtRelation = getRelationToTime(creationTime);
+				if (thisCtRelation == TLink.TimeMLRelType.VAGUE)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (thisCtRelation == TLink.TimeMLRelType.BEFORE)
+					thisCt = -1;
+				else if (thisCtRelation == TLink.TimeMLRelType.AFTER)
+					thisCt = 1;
+				else
+					return TLink.TimeMLRelType.VAGUE;
+			}
+			
+			if (time.value.getReference() != NormalizedTimeValue.Reference.NONE) {
+				if (time.value.getReference() == NormalizedTimeValue.Reference.FUTURE)
+					timeCt = 1;
+				else if (time.value.getReference() == NormalizedTimeValue.Reference.PAST)
+					timeCt = -1;
+				else
+					return TLink.TimeMLRelType.VAGUE;
+			} else {
+				TLink.TimeMLRelType timeCtRelation = time.getRelationToTime(creationTime);
+				if (timeCtRelation == TLink.TimeMLRelType.VAGUE)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (timeCtRelation == TLink.TimeMLRelType.BEFORE)
+					timeCt = -1;
+				else if (timeCtRelation == TLink.TimeMLRelType.AFTER)
+					timeCt = 1;
+				else
+					return TLink.TimeMLRelType.VAGUE;
+			}
+			
+			if (thisCt < timeCt)
+				return TLink.TimeMLRelType.BEFORE;
+			else if (timeCt < thisCt)
+				return TLink.TimeMLRelType.AFTER;
+			else
+				return TLink.TimeMLRelType.VAGUE;
+		}
+		
+		
+		Pair<Calendar, Calendar> thisInterval = this.value.getRange();
+		Pair<Calendar, Calendar> timeInterval = time.value.getRange();
+		
+		if (thisInterval == null || timeInterval == null)
+			return TLink.TimeMLRelType.VAGUE;
+		
+		int startStart = thisInterval.getFirst().compareTo(timeInterval.getFirst());
+		int startEnd = thisInterval.getFirst().compareTo(timeInterval.getSecond());
+		int endStart = thisInterval.getSecond().compareTo(timeInterval.getFirst());
+		int endEnd = thisInterval.getSecond().compareTo(timeInterval.getSecond());
+		
+		if (startStart == 0 && endEnd == 0)
+			return TLink.TimeMLRelType.SIMULTANEOUS;
+		else if (endStart <= 0)
+			return TLink.TimeMLRelType.BEFORE;
+		else if (startEnd >= 0)
+			return TLink.TimeMLRelType.AFTER;
+		else if (startStart < 0 && endEnd > 0)
+			return TLink.TimeMLRelType.INCLUDES;
+		else if (startStart > 0 && endEnd < 0)
+			return TLink.TimeMLRelType.IS_INCLUDED;
+		else if (startStart > 0 && startEnd < 0 && endEnd > 0)
+			return TLink.TimeMLRelType.OVERLAPPED_BY;
+		else if (startStart < 0 && endStart > 0 && endEnd < 0)
+			return TLink.TimeMLRelType.OVERLAPS;
+		else
+			return TLink.TimeMLRelType.VAGUE;
 	}
 	
 	public JSONObject toJSON() {
