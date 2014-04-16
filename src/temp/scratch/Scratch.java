@@ -32,6 +32,47 @@ import temp.util.TempProperties;
 
 public class Scratch {
 	public static void main(String[] args) throws IOException {		
+		/*TempProperties properties = new TempProperties();
+		TempDataTools dataTools = new TempDataTools(new OutputWriter(), properties);
+		
+		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
+		
+		String documentSetPath = (new File(properties.getTempDocumentDataDirPath(), "TimeBankDenseUnofficial")).getAbsolutePath();
+		TempDocumentSet documentSet = TempDocumentSet.loadFromJSONDirectory(documentSetPath);
+		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>(datumTools, null);
+		List<TempDocument> documents = documentSet.getDocuments();
+		int i = 0;
+		for (TempDocument document : documents) {
+			List<TLink> tlinks = document.getTLinks();
+			for (TLink tlink : tlinks) {
+				String tlinkId = tlink.getId();
+				int id = (tlinkId == null) ? i : Integer.valueOf(tlinkId.substring(1));
+				
+				TLinkDatum<TimeMLRelType> tlinkDatum = new TLinkDatum<TimeMLRelType>(id, tlink, tlink.getTimeMLRelType());
+				data.add(tlinkDatum);
+				
+				i++;
+				
+				if (i > 25)
+					break;
+			}
+			
+			if (i > 25)
+				break;
+		}
+		
+		
+		List<DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>> partition = data.makePartition(new double[] {1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8 }, new Random());
+		for (int j = 0; j < partition.size(); j++) {
+			for (TLinkDatum<TimeMLRelType> datum : partition.get(j)) {
+				System.out.print(datum.getId() + " ");
+			}
+			System.out.flush();
+			System.out.print("\n");
+		}*/
+		
+		///
+		
 		TempDocumentSet set = TempDocumentSet.loadFromJSONDirectory("");
 		List<TempDocument> documents = set.getDocuments();
 		

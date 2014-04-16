@@ -1,5 +1,6 @@
 package temp.data.annotation;
 
+import temp.data.annotation.cost.TimeMLRelTypeSplit;
 import temp.data.annotation.timeml.TLink;
 import temp.data.feature.FeatureTLinkAttribute;
 import temp.data.feature.FeatureTLinkEventAttribute;
@@ -7,6 +8,7 @@ import temp.data.feature.FeatureTLinkTimeAttribute;
 import temp.data.feature.FeatureTLinkTimeRelation;
 import ark.data.DataTools;
 import ark.data.annotation.Datum;
+import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.nlp.TokenSpan;
 
 public class TLinkDatum<L> extends Datum<L> {
@@ -29,6 +31,33 @@ public class TLinkDatum<L> extends Datum<L> {
 				return TLink.TimeMLRelType.valueOf(str);
 			}
 		};
+	}
+	
+	public static Tools<TimeMLRelTypeSplit> getTimeMLRelTypeSplitTools(DataTools dataTools) {
+		Tools<TimeMLRelTypeSplit> tools =  new Tools<TimeMLRelTypeSplit>(dataTools) {
+			@Override
+			public TimeMLRelTypeSplit labelFromString(String str) {
+				return TimeMLRelTypeSplit.valueOf(str);
+			}
+		};
+		
+		tools.addLabelMapping(
+			new LabelMapping<TimeMLRelTypeSplit>() {
+				@Override
+				public String toString() {
+					return "NoSplit";
+				}
+				
+				@Override
+				public TimeMLRelTypeSplit map(TimeMLRelTypeSplit label) {
+					String labelPrefix = label.toString().split("_")[0];
+					return TimeMLRelTypeSplit.valueOf(labelPrefix + "_0");
+				}
+			}
+		);
+		
+		
+		return tools;
 	}
 	
 	private static abstract class Tools<L> extends Datum.Tools<TLinkDatum<L>, L> {

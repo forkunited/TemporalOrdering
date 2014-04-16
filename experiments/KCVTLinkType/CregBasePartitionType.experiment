@@ -1,0 +1,86 @@
+randomSeed=1
+maxThreads=8
+crossValidationFolds=8
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+
+feature_tlinkType_ignore=TLinkAttribute(attribute=TYPE)
+model=Partition(defaultLabel=VAGUE)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+
+	constraint_ee=And(FeatureMatch(tlinkType, 1.0, "EVENT_EVENT"))
+	feature_ee_tlinkPosition=TLinkAttribute(attribute=POSITION)
+	feature_ee_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_ee_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_ee_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_ee_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_ee_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_ee_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_ee_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_ee_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_ee_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_ee_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_ee_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_ee_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_ee_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_ee_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_ee_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_ee_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_ee_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_ee_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_ee_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	model_ee=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionType-EE_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_et=And(FeatureMatch(tlinkType, 1.0, "EVENT_TIME"))
+	feature_et_tlinkPosition=TLinkAttribute(attribute=POSITION)
+	feature_et_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_et_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_et_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_et_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_et_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_et_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_et_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_et_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_et_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_et_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_et_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_et_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_et_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_et_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_et_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_et_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_et_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_et_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_et_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_et_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_et_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	model_et=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionType-ET_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_tt=And(FeatureMatch(tlinkType, 1.0, "TIME_TIME"))
+	feature_tt_tlinkPosition=TLinkAttribute(attribute=POSITION)
+	feature_tt_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_tt_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_tt_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_tt_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_tt_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_tt_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_tt_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_tt_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_tt_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_tt_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_tt_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_tt_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_tt_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	feature_tt_ttdctRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
+	model_tt=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionType-TT_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+}

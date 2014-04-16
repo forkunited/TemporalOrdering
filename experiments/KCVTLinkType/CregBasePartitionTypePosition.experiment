@@ -1,0 +1,202 @@
+randomSeed=1
+maxThreads=8
+crossValidationFolds=8
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+
+feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
+feature_tlinkType_ignore=TLinkAttribute(attribute=TYPE)
+model=Partition(defaultLabel=VAGUE)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	
+	constraint_eews=And(FeatureMatch(tlinkType, 1.0, "EVENT_EVENT"), FeatureMatch(tlinkPosition, 1.0, "WITHIN_SENTENCE"))
+	feature_eews_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_eews_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_eews_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_eews_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_eews_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_eews_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_eews_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_eews_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_eews_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_eews_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_eews_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_eews_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_eews_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_eews_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_eews_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_eews_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_eews_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_eews_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_eews_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	model_eews=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-EEWS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_etws=And(FeatureMatch(tlinkType, 1.0, "EVENT_TIME"), FeatureMatch(tlinkPosition, 1.0, "WITHIN_SENTENCE"))
+	feature_etws_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_etws_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_etws_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_etws_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_etws_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_etws_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_etws_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_etws_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_etws_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_etws_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_etws_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_etws_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_etws_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_etws_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_etws_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_etws_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_etws_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_etws_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_etws_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_etws_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_etws_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_etws_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_etws_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	model_etws=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-ETWS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_ttws=And(FeatureMatch(tlinkType, 1.0, "TIME_TIME"), FeatureMatch(tlinkPosition, 1.0, "WITHIN_SENTENCE"))
+	feature_ttws_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_ttws_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_ttws_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_ttws_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_ttws_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_ttws_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_ttws_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_ttws_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_ttws_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_ttws_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_ttws_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_ttws_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_ttws_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
+	feature_ttws_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_ttws_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	feature_ttws_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
+	model_ttws=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-TTWS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_eebs=And(FeatureMatch(tlinkType, 1.0, "EVENT_EVENT"), FeatureMatch(tlinkPosition, 1.0, "BETWEEN_SENTENCE"))
+	feature_eebs_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_eebs_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_eebs_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_eebs_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_eebs_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_eebs_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_eebs_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_eebs_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_eebs_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_eebs_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_eebs_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_eebs_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_eebs_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_eebs_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_eebs_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_eebs_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_eebs_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	model_eebs=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionPosition-EEBS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_etbs=And(FeatureMatch(tlinkType, 1.0, "EVENT_TIME"), FeatureMatch(tlinkPosition, 1.0, "BETWEEN_SENTENCE"))
+	feature_etbs_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_etbs_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_etbs_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_etbs_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_etbs_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_etbs_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_etbs_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_etbs_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_etbs_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_etbs_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_etbs_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_etbs_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_etbs_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_etbs_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_etbs_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_etbs_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_etbs_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_etbs_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_etbs_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_etbs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_etbs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	model_etbs=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-ETBS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_ttbs=And(FeatureMatch(tlinkType, 1.0, "TIME_TIME"), FeatureMatch(tlinkPosition, 1.0, "BETWEEN_SENTENCE"))
+	feature_ttbs_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_ttbs_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_ttbs_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_ttbs_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_ttbs_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_ttbs_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_ttbs_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_ttbs_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_ttbs_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_ttbs_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_ttbs_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_ttbs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_ttbs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	feature_ttbs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
+	model_ttbs=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionPosition-TTBS_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_etdct=And(FeatureMatch(tlinkType, 1.0, "EVENT_TIME"), FeatureMatch(tlinkPosition, 1.0, "DCT"))
+	feature_etdct_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
+	feature_etdct_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
+	feature_etdct_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
+	feature_etdct_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+	feature_etdct_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
+	feature_etdct_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
+	feature_etdct_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
+	feature_etdct_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
+	feature_etdct_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_etdct_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_etdct_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_etdct_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_etdct_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_etdct_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_etdct_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_etdct_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_etdct_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_etdct_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_etdct_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	model_etbs=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-ETDCT_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+	
+	constraint_ttdct=And(FeatureMatch(tlinkType, 1.0, "TIME_TIME"), FeatureMatch(tlinkPosition, 1.0, "DCT"))
+	feature_ttdct_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
+	feature_ttdct_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+	feature_ttdct_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_ttdct_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_ttdct_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
+	feature_ttdct_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
+	feature_ttdct_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
+	feature_ttdct_verbsGerund=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBG)
+	feature_ttdct_verbsPart=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBN)
+	feature_ttdct_verbsNonThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBP)
+	feature_ttdct_verbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBZ)
+	feature_ttdct_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
+	feature_ttdct_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
+	model_ttdct=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregBasePartitionTypePosition-TTDCT_Fold-${FOLD}, warmRestart=false, l1=0.5, l2=0.5)
+	{
+		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	}
+}
