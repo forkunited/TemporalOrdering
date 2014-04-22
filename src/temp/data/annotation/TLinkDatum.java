@@ -6,6 +6,7 @@ import temp.data.feature.FeatureTLinkAttribute;
 import temp.data.feature.FeatureTLinkEventAttribute;
 import temp.data.feature.FeatureTLinkTimeAttribute;
 import temp.data.feature.FeatureTLinkTimeRelation;
+import temp.data.feature.FeatureTLinkableType;
 import ark.data.DataTools;
 import ark.data.annotation.Datum;
 import ark.data.annotation.Datum.Tools.LabelMapping;
@@ -68,6 +69,7 @@ public class TLinkDatum<L> extends Datum<L> {
 			this.addGenericFeature(new FeatureTLinkEventAttribute<L>());
 			this.addGenericFeature(new FeatureTLinkTimeAttribute<L>());
 			this.addGenericFeature(new FeatureTLinkTimeRelation<L>());
+			this.addGenericFeature(new FeatureTLinkableType<L>());
 			
 			this.addTokenSpanExtractor(new TokenSpanExtractor<TLinkDatum<L>, L>() {
 				@Override

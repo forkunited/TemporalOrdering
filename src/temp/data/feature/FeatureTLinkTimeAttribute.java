@@ -76,7 +76,7 @@ public class FeatureTLinkTimeAttribute<L> extends Feature<TLinkDatum<L>, L>{
 	}
 
 	@Override
-	protected String getVocabularyTerm(int index) {
+	public String getVocabularyTerm(int index) {
 		return this.vocabulary.reverseGet(index);
 	}
 

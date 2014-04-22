@@ -54,7 +54,7 @@ public class FeatureTLinkableType<L> extends Feature<TLinkDatum<L>, L> {
 	}
 
 	@Override
-	protected String getVocabularyTerm(int index) {
+	public String getVocabularyTerm(int index) {
 		return vocabulary.reverseGet(index);
 	}
 
@@ -72,7 +72,7 @@ public class FeatureTLinkableType<L> extends Feature<TLinkDatum<L>, L> {
 	@Override
 	protected String getParameterValue(String parameter) {
 		if (parameter.equals("sourceOrTarget"))
-			return sourceOrTarget.toString();
+			return (sourceOrTarget == null) ? null : sourceOrTarget.toString();
 		else
 			return null;
 	}
