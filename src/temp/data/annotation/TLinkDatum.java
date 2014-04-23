@@ -50,7 +50,7 @@ public class TLinkDatum<L> extends Datum<L> {
 				
 				@Override
 				public TimeMLRelTypeSplit map(TimeMLRelTypeSplit label) {
-					String labelPrefix = label.toString().split("_")[0];
+					String labelPrefix = label.toString().substring(0, label.toString().lastIndexOf("_"));
 					return TimeMLRelTypeSplit.valueOf(labelPrefix + "_0");
 				}
 			}
