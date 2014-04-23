@@ -1,0 +1,22 @@
+randomSeed=1
+maxThreads=4
+crossValidationFolds=4
+errorExampleExtractor=SourceTokenSpan
+evaluation=Accuracy()
+model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/CregExample_Fold-${FOLD}, l2=0, warmRestart=false)
+{
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+}
+feature_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan, useRelationTypes=true)
+feature_sourceType=TLinkableType(sourceOrTarget=SOURCE)
+feature_targetType=TLinkableType(sourceOrTarget=TARGET)
+feature_preceedingPrepSource=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN, tokensBeforeTokenSpan=2, tokensAfterTokenSpan=0)
+feature_preceedingPrepTarget=NGramPoS(minFeatureOccurrence=1, tokenExtractor=TargetTokenSpan, PoS=IN, tokensBeforeTokenSpan=2, tokensAfterTokenSpan=0)
+feature_sourceConj=Conjunction(minFeatureOccurrence=1, featureReferences=sourceType/preceedingPrepSource)
+feature_targetConj=Conjunction(minFeatureOccurrence=1, featureReferences=targetType/preceedingPrepTarget)
+feature_sourceTense=TLinkEventAttribute(sourceOrTarget=SOURCE, attribute=TIMEML_TENSE)
+feature_targetTense=TLinkEventAttribute(sourceOrTarget=TARGET, attribute=TIMEML_TENSE)
+feature_tenseConj=Conjunction(minFeatureOccurrence=1, featureReferences=sourceTense/targetTense)
+feature_sourceAspect=TLinkEventAttribute(sourceOrTarget=SOURCE, attribute=TIMEML_ASPECT)
+feature_targetAspect=TLinkEventAttribute(sourceOrTarget=TARGET, attribute=TIMEML_ASPECT)
+feature_aspectConj=Conjunction(minFeatureOccurrence=1, featureReferences=sourceAspect/targetAspect)

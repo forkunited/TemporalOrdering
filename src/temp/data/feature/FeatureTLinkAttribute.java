@@ -30,11 +30,11 @@ public class FeatureTLinkAttribute<L> extends Feature<TLinkDatum<L>, L>{
 		if (this.attribute == Attribute.POSITION) {
 			TLink.Position[] positions = TLink.Position.values();
 			for (int i = 0; i < positions.length; i++)
-				this.vocabulary.put(positions[i].toString(), i);
+				this.vocabulary.put(positions[i].toString(), vocabulary.size());
 		} else if (this.attribute == Attribute.TYPE) {
 			TLink.Type[] types = TLink.Type.values();
 			for (int i = 0; i < types.length; i++)
-				this.vocabulary.put(types[i].toString(), i);
+				this.vocabulary.put(types[i].toString(), vocabulary.size());
 		}
 		
 		return true;
