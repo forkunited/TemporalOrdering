@@ -4,7 +4,7 @@ crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
-gridSearchParameterValues=c(0.01,0.1,1,100)
+gridSearchParameterValues=c(1,100,1000,10000)
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
 feature_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
@@ -35,6 +35,6 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVMCostLearnerAlt()
 {
 	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
-	trainingIterations=15
+	trainingIterations=10
 	factoredCost=LabelPairUnordered(c=1)
 }
