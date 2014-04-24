@@ -612,7 +612,7 @@ public class TempDocument extends DocumentInMemory {
 		
 		TempDocument document = new TempDocument(name, text.toString(), language, creationTime, nlpAnnotator);
 
-		int docTokenIndex = 0;
+		int sentenceTokenIndex = 0;
 		int docSentenceIndex = 0;
 		Map<Integer, List<Pair<Element, TokenSpan>>> sentenceSignals = new HashMap<Integer, List<Pair<Element, TokenSpan>>>();
 		Map<Integer, List<Pair<Element, TokenSpan>>> sentenceTimes = new HashMap<Integer, List<Pair<Element, TokenSpan>>>();
@@ -635,10 +635,11 @@ public class TempDocument extends DocumentInMemory {
 				if (tmlElement != null) // Shouldn't have sentence splits inside event, signal, or time
 					return null;
 				docSentenceIndex += (tokens.length - 1);
+				sentenceTokenIndex = 0;
 			}
 			
 			if (tmlElement != null) {
-				TokenSpan tokenSpan = new TokenSpan(document, docSentenceIndex, docTokenIndex, docTokenIndex + tokens[0].length);
+				TokenSpan tokenSpan = new TokenSpan(document, docSentenceIndex, sentenceTokenIndex, sentenceTokenIndex + tokens[0].length);
 				if (tmlElement.getName().equals("SIGNAL")) {
 					if (!sentenceSignals.containsKey(docSentenceIndex))
 						sentenceSignals.put(docSentenceIndex, new ArrayList<Pair<Element, TokenSpan>>());
@@ -653,7 +654,7 @@ public class TempDocument extends DocumentInMemory {
 			}
 			
 			if (tokens.length > 0)
-				docTokenIndex += tokens[0].length;
+				sentenceTokenIndex += tokens[tokens.length - 1].length;
 		}
 		
 		Signal[][] signals = new Signal[document.tokens.length][];
