@@ -46,6 +46,13 @@ public class Time implements TLinkable {
 		END,
 		APPROX
 	}
+	
+	public enum ParseMode {
+		// Determines whether parsing from JSON, TimeML, XML looks at referenced times
+		// in source document when parsing
+		NO_REFERENCED_TIMES,
+		ALL
+	}
 
 	private String id;
 	private TokenSpan tokenSpan;
@@ -341,7 +348,7 @@ public class Time implements TLinkable {
 		return element;
 	}
 	
-	public static Time fromJSON(JSONObject json, TempDocument document, int sentenceIndex) {
+	public static Time fromJSON(JSONObject json, TempDocument document, int sentenceIndex, ParseMode parseMode) {
 		Time time = new Time();
 		
 		if (json.containsKey("id"))
@@ -350,13 +357,13 @@ public class Time implements TLinkable {
 			time.tokenSpan = TokenSpan.fromJSON(json.getJSONObject("tokenSpan"), document, sentenceIndex);
 		if (json.containsKey("timeMLType"))
 			time.timeMLType = TimeMLType.valueOf(json.getString("timeMLType"));
-		if (json.containsKey("startTimeId") && json.getString("startTimeId").length() > 0) {
+		if (json.containsKey("startTimeId") && json.getString("startTimeId").length() > 0  && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			Time startTime = document.getTime(json.getString("startTimeId"));
 			if (startTime == null)
 				return null;
 			time.startTime = startTime; 
 		}
-		if (json.containsKey("endTimeId") && json.getString("endTimeId").length() > 0) {
+		if (json.containsKey("endTimeId") && json.getString("endTimeId").length() > 0 && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			Time endTime = document.getTime(json.getString("endTimeId"));
 			if (endTime == null)
 				return null;
@@ -372,13 +379,13 @@ public class Time implements TLinkable {
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(json.getString("timeMLDocumentFunction"));
 		if (json.containsKey("temporalFunction"))
 			time.temporalFunction = json.getBoolean("temporalFunction");
-		if (json.containsKey("anchorTimeId") && json.getString("anchorTimeId").length() > 0) {
+		if (json.containsKey("anchorTimeId") && json.getString("anchorTimeId").length() > 0 && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			Time anchorTime = document.getTime(json.getString("anchorTimeId"));
 			if (anchorTime == null)
 				return null;
 			time.anchorTime = anchorTime;
 		}
-		if (json.containsKey("valueFromFunctionId") && json.getString("valueFromFunctionId").length() > 0) {
+		if (json.containsKey("valueFromFunctionId") && json.getString("valueFromFunctionId").length() > 0 && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			Time valueFromFunction = document.getTime(json.getString("valueFromFunctionId"));
 			if (valueFromFunction == null)
 				return null;
@@ -391,7 +398,7 @@ public class Time implements TLinkable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Time fromXML(Element element, TempDocument document, int sentenceIndex) {
+	public static Time fromXML(Element element, TempDocument document, int sentenceIndex, ParseMode parseMode) {
 		Time time = new Time();
 			
 		boolean hasOffset = false;
@@ -419,9 +426,9 @@ public class Time implements TLinkable {
 				hasId = true;
 			else if (attribute.getName().equals("type"))
 				hasTimeMLType = true;
-			else if (attribute.getName().equals("starttid"))
+			else if (attribute.getName().equals("starttid") && parseMode != ParseMode.NO_REFERENCED_TIMES)
 				hasStartTimeId = true;
-			else if (attribute.getName().equals("endtid"))
+			else if (attribute.getName().equals("endtid") && parseMode != ParseMode.NO_REFERENCED_TIMES)
 				hasEndTimeId = true;
 			else if (attribute.getName().equals("quant"))
 				hasQuant = true;
@@ -429,9 +436,9 @@ public class Time implements TLinkable {
 				hasTimeMLDocumentFunction = true;
 			else if (attribute.getName().equals("temporalFunction"))
 				hasTemporalFunction = true;
-			else if (attribute.getName().equals("anchortid"))
+			else if (attribute.getName().equals("anchortid") && parseMode != ParseMode.NO_REFERENCED_TIMES)
 				hasAnchorTimeId = true;
-			else if (attribute.getName().equals("valueFromFunctionTid"))
+			else if (attribute.getName().equals("valueFromFunctionTid") && parseMode != ParseMode.NO_REFERENCED_TIMES)
 				hasValueFromFunctionId = true;
 			else if (attribute.getName().equals("freq"))
 				hasFreq = true;
@@ -507,7 +514,7 @@ public class Time implements TLinkable {
 		return time;
 	}
 	
-	public static Time fromTimeML(Element element, TempDocument document, TokenSpan tokenSpan) {
+	public static Time fromTimeML(Element element, TempDocument document, TokenSpan tokenSpan, ParseMode parseMode) {
 		Time time = new Time();
 		
 		String id = element.getAttributeValue("tid");
@@ -529,12 +536,12 @@ public class Time implements TLinkable {
 			time.timeMLType = TimeMLType.valueOf(type);
 		if (functionInDocument != null)
 			time.timeMLDocumentFunction = TimeMLDocumentFunction.valueOf(functionInDocument);
-		if (startPoint != null) {
+		if (startPoint != null && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			time.startTime = document.getTime(startPoint);
 			if (time.startTime == null)
 				return null;
 		}
-		if (endPoint != null) {
+		if (endPoint != null && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			time.endTime = document.getTime(endPoint);
 			if (time.endTime == null)
 				return null;
@@ -548,7 +555,7 @@ public class Time implements TLinkable {
 		
 		if (value != null)
 			time.value = new NormalizedTimeValue(value);
-		else if (valueFromFunction != null) {
+		else if (valueFromFunction != null && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			time.valueFromFunction = document.getTime(valueFromFunction);
 			if (time.valueFromFunction == null)
 				return null;
@@ -556,7 +563,7 @@ public class Time implements TLinkable {
 		
 		if (mod != null)
 			time.timeMLMod = TimeMLMod.valueOf(mod);
-		if (anchorTimeID != null) {
+		if (anchorTimeID != null && parseMode != ParseMode.NO_REFERENCED_TIMES) {
 			time.anchorTime = document.getTime(anchorTimeID);
 			if (time.anchorTime == null)
 				return null;
@@ -594,6 +601,6 @@ public class Time implements TLinkable {
 		timeElement.setAttribute("docFunction", documentFunction.toString());
 		timeElement.setAttribute("temporalFunction", "false");
 		
-		return fromXML(timeElement, document, sentenceIndex);
+		return fromXML(timeElement, document, sentenceIndex, ParseMode.ALL);
 	}
 }

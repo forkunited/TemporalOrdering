@@ -36,8 +36,9 @@ public class ConstructTempDocumentsTempEval3 {
 				continue;
 			}
 			
-				
+			System.out.print("Loading TimeML document " + file.getName() + "... ");
 			TempDocument document = TempDocument.fromTimeML(loadXMLFromFile(file), nlpAnnotator, language);
+			System.out.println("Done.");
 			
 			TempDocumentSet documentSet = new TempDocumentSet();
 			documentSet.addDocument(document);

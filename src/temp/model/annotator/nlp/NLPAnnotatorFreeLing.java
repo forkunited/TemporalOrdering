@@ -16,6 +16,7 @@ import java.util.Stack;
 import ark.util.FileUtil;
 import ark.util.Pair;
 import ark.model.annotator.nlp.NLPAnnotator;
+import ark.data.annotation.Document;
 import ark.data.annotation.Language;
 import ark.data.annotation.nlp.ConstituencyParse;
 import ark.data.annotation.nlp.DependencyParse;
@@ -283,7 +284,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tags;
 	}
 	
-	public DependencyParse[] makeDependencyParses() {
+	public DependencyParse[] makeDependencyParses(Document document, int sentenceIndexOffset) {
 		DependencyParse[] parses = new DependencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;
@@ -292,7 +293,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			Queue<TreeDepnode> treeNodes = new LinkedList<TreeDepnode>();
 			
 			Map<Integer, Pair<List<DependencyParse.Dependency>, List<DependencyParse.Dependency>>> nodesToDeps = new HashMap<Integer, Pair<List<DependencyParse.Dependency>, List<DependencyParse.Dependency>>>();
-			parses[i] = new DependencyParse(null, i, null, null);
+			parses[i] = new DependencyParse(document, sentenceIndexOffset + i, null, null);
 			int maxIndex = 0;
 
 			treeNodes.add(sentence.getDepTree());
@@ -334,14 +335,14 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 					tokenNodes[j] = parses[i].new Node(j, nodesToDeps.get(j).getFirst().toArray(new Dependency[0]), nodesToDeps.get(j).getSecond().toArray(new Dependency[0]));
 			
 			Node rootNode = parses[i].new Node(-1, new Dependency[0], nodesToDeps.get(-1).getSecond().toArray(new Dependency[0]));
-			parses[i] = new DependencyParse(null, i, rootNode, tokenNodes);
+			parses[i] = new DependencyParse(document, i + sentenceIndexOffset, rootNode, tokenNodes);
 			
 			i++;
 		}
 		return parses;
 	}
 
-	public ConstituencyParse[] makeConstituencyParses() {
+	public ConstituencyParse[] makeConstituencyParses(Document document, int sentenceIndexOffset) {
 		ConstituencyParse[] parses = new ConstituencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;
@@ -351,7 +352,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 			Constituent root = null;
 			Stack<Pair<TreeNode, List<Constituent>>> constituents = new Stack<Pair<TreeNode, List<Constituent>>>();
 			
-			parses[i] = new ConstituencyParse(null, i, null);
+			parses[i] = new ConstituencyParse(document, i + sentenceIndexOffset, null);
 			treeNodes.add(sentence.getParseTree());
 			while (!treeNodes.isEmpty()) {
 				TreeNode nextNode = treeNodes.remove();
@@ -385,7 +386,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 				root = parses[i].new Constituent(rootTree.getFirst().getInfo().getLabel(), rootTree.getSecond().toArray(new ConstituencyParse.Constituent[0]));
 			}
 			
-			parses[i] = new ConstituencyParse(null, i, root);
+			parses[i] = new ConstituencyParse(document, sentenceIndexOffset + i, root);
 			
 			i++;
 		}

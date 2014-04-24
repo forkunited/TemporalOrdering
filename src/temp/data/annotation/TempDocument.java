@@ -444,7 +444,7 @@ public class TempDocument extends DocumentInMemory {
 		initializeTimeML();
 		
 		if (json.has("creationTime")) {
-			this.creationTime = Time.fromJSON(json.getJSONObject("creationTime"), this, -1);
+			this.creationTime = Time.fromJSON(json.getJSONObject("creationTime"), this, -1, Time.ParseMode.ALL);
 			if (this.creationTime != null)
 				this.timeMap.put(this.creationTime.getId(), this.creationTime);
 		}
@@ -473,32 +473,25 @@ public class TempDocument extends DocumentInMemory {
 
 		this.setSignals(signals);
 
-		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
-		 * possible that if they are added in the wrong order, the references will be empty.  The 
-		 * following code fixes this issue by repeatedly trying to add all of the times, 
-		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
-		 * to do this, but it should be alright, for now, given that the number of times that reference other 
-		 * times is small.
-		 */
-		boolean failedToAddTime;
-		do {
-			failedToAddTime = false;
-			Time[][] times = new Time[timesJson.length][];
-			for (int i = 0; i < timesJson.length; i++) {
-				times[i] = new Time[timesJson[i].size()];
-				for (int j = 0; j < timesJson[i].size(); j++) {
-					if (this.times[i].length > j && this.times[i][j] != null)
-						times[i][j] = this.times[i][j];
-					else {
-						times[i][j] = Time.fromJSON(timesJson[i].getJSONObject(j), this, i);
-					}
-					
-					if (times[i][j] == null)
-						failedToAddTime = true;
-				}
+		Time[][] times = new Time[timesJson.length][];
+		for (int i = 0; i < timesJson.length; i++) {
+			times[i] = new Time[timesJson[i].size()];
+			for (int j = 0; j < timesJson[i].size(); j++) {
+				times[i][j] = Time.fromJSON(timesJson[i].getJSONObject(j), this, i, Time.ParseMode.NO_REFERENCED_TIMES);
+				if (times[i][j] == null)
+					return false;
 			}
-			this.setTimes(times);
-		} while (failedToAddTime);
+		}
+		this.setTimes(times);
+		
+		for (int i = 0; i < times.length; i++) {
+			for (int j = 0; j < times[i].length; j++) {
+				times[i][j] = Time.fromJSON(timesJson[i].getJSONObject(j), this, i, Time.ParseMode.ALL);
+				if (times[i][j] == null)
+					return false;
+			}
+		}
+		this.setTimes(times);
 		
 		Event[][] events = new Event[eventsJson.length][];
 		for (int i = 0; i < events.length; i++) {
@@ -555,37 +548,30 @@ public class TempDocument extends DocumentInMemory {
 				
 		List<Element> creationTimeElements = (List<Element>)element.getChildren("timex");
 		if (creationTimeElements.size() > 0) {
-			this.creationTime = Time.fromXML(creationTimeElements.get(0), this, -1);
+			this.creationTime = Time.fromXML(creationTimeElements.get(0), this, -1, Time.ParseMode.ALL);
 			if (this.creationTime != null)
 				this.timeMap.put(this.creationTime.getId(), this.creationTime);
 		}
 		
-		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
-		 * possible that if they are added in the wrong order, the references will be empty.  The 
-		 * following code fixes this issue by repeatedly trying to add all of the times, 
-		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
-		 * to do this, but it should be alright, for now, given that the number of times that reference other 
-		 * times is small.
-		 */
-		boolean failedToAddTime;
-		do {
-			failedToAddTime = false;
-			Time[][] times = new Time[timexesXML.size()][];
-			for (int i = 0; i < timexesXML.size(); i++) {
-				times[i] = new Time[timexesXML.get(i).size()];
-				for (int j = 0; j < timexesXML.get(i).size(); j++) {
-					if (this.times[i].length > j && this.times[i][j] != null)
-						times[i][j] = this.times[i][j];
-					else {
-						times[i][j] = Time.fromXML(timexesXML.get(i).get(j), this, i);
-					}
-						
-					if (times[i][j] == null)
-						failedToAddTime = true;
-				}
+		Time[][] times = new Time[timexesXML.size()][];
+		for (int i = 0; i < timexesXML.size(); i++) {
+			times[i] = new Time[timexesXML.get(i).size()];
+			for (int j = 0; j < timexesXML.get(i).size(); j++) {
+				times[i][j] = Time.fromXML(timexesXML.get(i).get(j), this, i, Time.ParseMode.NO_REFERENCED_TIMES);
+				if (times[i][j] == null)
+					return false;
 			}
-			this.setTimes(times);
-		} while (failedToAddTime);
+		}
+		this.setTimes(times);
+		
+		for (int i = 0; i < times.length; i++) {
+			for (int j = 0; j < times[i].length; j++) {
+				times[i][j] = Time.fromXML(timexesXML.get(i).get(j), this, i, Time.ParseMode.ALL);
+				if (times[i][j] == null)
+					return false;
+			}
+		}
+		this.setTimes(times);
 			
 		Event[][] events = new Event[eventsXML.size()][];
 		for (int i = 0; i < eventsXML.size(); i++) {
@@ -611,7 +597,7 @@ public class TempDocument extends DocumentInMemory {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static TempDocument fromTimeML(Element element, NLPAnnotator nlpAnnotator, Language language) {
 		String name = element.getChild("DOCID").getText() + ".tml";
-		Time creationTime = Time.fromTimeML(element.getChild("DCT").getChild("TIMEX3"), null, null);
+		Time creationTime = Time.fromTimeML(element.getChild("DCT").getChild("TIMEX3"), null, null, Time.ParseMode.ALL);
 		
 		Element textElement = element.getChild("TEXT"); 
 		StringBuilder text = new StringBuilder();
@@ -683,37 +669,30 @@ public class TempDocument extends DocumentInMemory {
 		}
 		document.setSignals(signals);
 		
-		/* FIXME: Some times reference others within the same document (as anchors and stuff), so it's 
-		 * possible that if they are added in the wrong order, the references will be empty.  The 
-		 * following code fixes this issue by repeatedly trying to add all of the times, 
-		 * skipping over the ones which reference ones that haven't been added yet.  This isn't a good way 
-		 * to do this, but it should be alright, for now, given that the number of times that reference other 
-		 * times is small.
-		 */
-		boolean failedToAddTime;
-		do {
-			failedToAddTime = false;
-			Time[][] times = new Time[document.tokens.length][];
-			for (int i = 0; i < document.tokens.length; i++) {
-				if (!sentenceTimes.containsKey(i)) {
-					times[i] = new Time[0];
-					continue;
-				}
-				
-				times[i] = new Time[sentenceTimes.get(i).size()];
-				for (int j = 0; j < times[i].length; j++) {
-					if (times[i][j] != null)
-						times[i][j] = document.times[i][j];
-					else {
-						times[i][j] = Time.fromTimeML(sentenceTimes.get(i).get(j).getFirst(), document, sentenceTimes.get(i).get(j).getSecond());
-					}
-						
-					if (times[i][j] == null)
-						failedToAddTime = true;
-				}
+		Time[][] times = new Time[document.tokens.length][];
+		for (int i = 0; i < document.tokens.length; i++) {
+			if (!sentenceTimes.containsKey(i)) {
+				times[i] = new Time[0];
+				continue;
 			}
-			document.setTimes(times);
-		} while (failedToAddTime);
+			
+			times[i] = new Time[sentenceTimes.get(i).size()];
+			for (int j = 0; j < times[i].length; j++) {
+				times[i][j] = Time.fromTimeML(sentenceTimes.get(i).get(j).getFirst(), document, sentenceTimes.get(i).get(j).getSecond(), Time.ParseMode.NO_REFERENCED_TIMES);
+				if (times[i][j] == null)
+					return null;
+			}
+		}
+		document.setTimes(times);
+		
+		for (int i = 0; i < times.length; i++) {
+			for (int j = 0; j < times[i].length; j++) {
+				times[i][j] = Time.fromTimeML(sentenceTimes.get(i).get(j).getFirst(), document, sentenceTimes.get(i).get(j).getSecond(), Time.ParseMode.ALL);
+				if (times[i][j] == null)
+					return null;
+			}
+		}
+		document.setTimes(times);
 		
 		List<Element> instanceElements = element.getChildren("MAKEINSTANCE");
 		Map<Integer, List<Event>> sentenceEvents = new HashMap<Integer, List<Event>>();

@@ -1,5 +1,6 @@
 package temp.model.annotator.nlp;
 
+import ark.data.annotation.Document;
 import ark.data.annotation.Language;
 import ark.data.annotation.nlp.ConstituencyParse;
 import ark.data.annotation.nlp.DependencyParse;
@@ -85,11 +86,11 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 	}
 	
 	@Override
-	public DependencyParse[] makeDependencyParses() {
+	public DependencyParse[] makeDependencyParses(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {
-			return this.englishAnnotator.makeDependencyParses();
+			return this.englishAnnotator.makeDependencyParses(document, sentenceIndexOffset);
 		} else if (this.language == Language.Spanish) {
-			return this.spanishAnnotator.makeDependencyParses();
+			return this.spanishAnnotator.makeDependencyParses(document, sentenceIndexOffset);
 		} else {
 			return null;
 		}
@@ -97,11 +98,11 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 
 
 	@Override
-	public ConstituencyParse[] makeConstituencyParses() {
+	public ConstituencyParse[] makeConstituencyParses(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {
-			return this.englishAnnotator.makeConstituencyParses();
+			return this.englishAnnotator.makeConstituencyParses(document, sentenceIndexOffset);
 		} else if (this.language == Language.Spanish) {
-			return this.spanishAnnotator.makeConstituencyParses();
+			return this.spanishAnnotator.makeConstituencyParses(document, sentenceIndexOffset);
 		} else {
 			return null;
 		}

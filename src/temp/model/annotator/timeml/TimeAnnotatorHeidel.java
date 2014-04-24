@@ -126,6 +126,6 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 	private Time buildTimeFromTimexElement(Element timexElement, TempDocument document, int sentenceIndex, int startTokenIndex, int length) {
 		timexElement.setAttribute("offset", String.valueOf(startTokenIndex + 1));
 		timexElement.setAttribute("length", String.valueOf(length));
-		return Time.fromXML(timexElement, document, sentenceIndex);
+		return Time.fromXML(timexElement, document, sentenceIndex, Time.ParseMode.ALL);
 	}
 }
