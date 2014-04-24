@@ -3,7 +3,7 @@ maxThreads=8
 crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
-gridSearchParameterValues=l1(.1,1,10,100)
+gridSearchParameterValues=l1(0,1,10,100)
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
 feature_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
