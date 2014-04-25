@@ -1,6 +1,5 @@
 package temp.data.annotation;
 
-import cost.data.annotation.TestLabel;
 import temp.data.annotation.cost.TimeMLRelTypeSplit;
 import temp.data.annotation.timeml.TLink;
 import temp.data.feature.FeatureTLinkAttribute;
@@ -74,6 +73,8 @@ public class TLinkDatum<L> extends Datum<L> {
 					return label;
 			}
 		});
+		
+		return tools;
 	}
 	
 	public static Tools<TimeMLRelTypeSplit> getTimeMLRelTypeSplitTools(DataTools dataTools) {
