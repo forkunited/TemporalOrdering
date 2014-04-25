@@ -1,5 +1,6 @@
 package temp.data.annotation;
 
+import cost.data.annotation.TestLabel;
 import temp.data.annotation.cost.TimeMLRelTypeSplit;
 import temp.data.annotation.timeml.TLink;
 import temp.data.feature.FeatureTLinkAttribute;
@@ -26,12 +27,53 @@ public class TLinkDatum<L> extends Datum<L> {
 	}
 	
 	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools(DataTools dataTools) {
-		return new Tools<TLink.TimeMLRelType>(dataTools) {
+		Tools<TLink.TimeMLRelType> tools = new Tools<TLink.TimeMLRelType>(dataTools) {
 			@Override
 			public TLink.TimeMLRelType labelFromString(String str) {
 				return TLink.TimeMLRelType.valueOf(str);
 			}
 		};
+		
+		tools.addLabelMapping(new LabelMapping<TLink.TimeMLRelType>() {
+			@Override
+			public String toString() {
+				return "TE3ToDense";
+			}
+			
+			@Override
+			public TLink.TimeMLRelType map(TLink.TimeMLRelType label) {
+				if (label == TLink.TimeMLRelType.BEFORE_OR_OVERLAP)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (label == TLink.TimeMLRelType.BEGINS)
+					return TLink.TimeMLRelType.BEFORE;
+				else if (label == TLink.TimeMLRelType.BEGUN_BY)
+					return TLink.TimeMLRelType.AFTER;
+				else if (label == TLink.TimeMLRelType.DURING)
+					return TLink.TimeMLRelType.SIMULTANEOUS;
+				else if (label == TLink.TimeMLRelType.DURING_INV)
+					return TLink.TimeMLRelType.SIMULTANEOUS;
+				else if (label == TLink.TimeMLRelType.ENDED_BY)
+					return TLink.TimeMLRelType.BEFORE;
+				else if (label == TLink.TimeMLRelType.ENDS)
+					return TLink.TimeMLRelType.AFTER;
+				else if (label == TLink.TimeMLRelType.IAFTER)
+					return TLink.TimeMLRelType.AFTER;
+				else if (label == TLink.TimeMLRelType.IBEFORE)
+					return TLink.TimeMLRelType.BEFORE;
+				else if (label == TLink.TimeMLRelType.IDENTITY)
+					return TLink.TimeMLRelType.SIMULTANEOUS;
+				else if (label == TLink.TimeMLRelType.OVERLAP)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (label == TLink.TimeMLRelType.OVERLAP_OR_AFTER)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (label == TLink.TimeMLRelType.OVERLAPPED_BY)
+					return TLink.TimeMLRelType.VAGUE;
+				else if (label == TLink.TimeMLRelType.OVERLAPS)
+					return TLink.TimeMLRelType.VAGUE;
+				else 
+					return label;
+			}
+		});
 	}
 	
 	public static Tools<TimeMLRelTypeSplit> getTimeMLRelTypeSplitTools(DataTools dataTools) {
@@ -56,7 +98,6 @@ public class TLinkDatum<L> extends Datum<L> {
 				}
 			}
 		);
-		
 		
 		return tools;
 	}
