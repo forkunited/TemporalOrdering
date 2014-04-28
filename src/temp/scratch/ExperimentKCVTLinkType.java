@@ -60,7 +60,6 @@ public class ExperimentKCVTLinkType {
 				new ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, data);
 	
 		if (!experiment.run())
-			output.debugWriteln("Error: Experiment run failed.");
-		
+			output.debugWriteln("Error: Experiment run failed.");		
 	}
 }
