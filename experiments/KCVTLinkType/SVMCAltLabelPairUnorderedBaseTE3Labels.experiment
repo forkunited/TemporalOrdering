@@ -34,7 +34,7 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=SVMCostLearnerAlt()
+model=SVMCAlt()
 {
 	validLabels=BEFORE,AFTER,INCLUDES,IS_INCLUDED,DURING,SIMULTANEOUS,IAFTER,IBEFORE,IDENTITY,BEGINS,ENDS,BEGUN_BY,ENDED_BY,DURING_INV
 	trainingIterations=20
