@@ -2,7 +2,7 @@ randomSeed=1
 maxThreads=8
 crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
-gridSearchParameterValues=n(1,2,4,8,16)
+gridSearchParameterValues=n(1,2,4,8)
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=TE3ToDense)
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
@@ -35,6 +35,6 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVMC()
 {
 	validLabels=BEFORE,AFTER,INCLUDES,IS_INCLUDED,DURING,SIMULTANEOUS,IAFTER,IBEFORE,IDENTITY,BEGINS,ENDS,BEGUN_BY,ENDED_BY,DURING_INV
-	trainingIterations=30
+	trainingIterations=50
 	factoredCost=Constant(c=100)
 }
