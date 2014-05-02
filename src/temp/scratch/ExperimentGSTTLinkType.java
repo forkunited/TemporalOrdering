@@ -21,6 +21,7 @@ public class ExperimentGSTTLinkType {
 	public static void main(String[] args) {
 		String experimentName = "GSTTLinkType/" + args[0];
 		String documentSetName = args[1];
+		boolean useTestData = Boolean.valueOf(args[2]);
 		String experimentOutputName = documentSetName + "/" + experimentName;
 
 		TempProperties properties = new TempProperties();
@@ -42,7 +43,9 @@ public class ExperimentGSTTLinkType {
 		String documentSetPath = (new File(properties.getTempDocumentDataDirPath(), documentSetName)).getAbsolutePath();
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> trainData = loadDataFromDirectory(documentSetPath + "/train", datumTools);
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> devData = loadDataFromDirectory(documentSetPath + "/dev", datumTools);
-		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> testData = loadDataFromDirectory(documentSetPath + "/test", datumTools);
+		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> testData = null;
+		if (useTestData)
+			testData = loadDataFromDirectory(documentSetPath + "/test", datumTools);
 		
 		ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
 				new ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, trainData, devData, testData);
