@@ -38,6 +38,6 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVMCAlt(n=3, epsilon=10)
 {
 	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
-	trainingIterations=80
+	trainingIterations=100
 	factoredCost=LabelPairUnordered(c=100)
 }
