@@ -23,6 +23,7 @@ import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
 
+import temp.data.annotation.structure.InferenceRulesTimeMLRelType;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.Time;
@@ -78,7 +79,7 @@ public class Scratch {
 		
 		OutputWriter output = new OutputWriter();
 		DataTools dataTools = new DataTools(output);
-		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
+		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools, new InferenceRulesTimeMLRelType());
 		FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new FeaturizedDataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>("test", 1, null, null);
 		for (TempDocument document : documents) {
 			List<TLink> tlinks = document.getTLinks();

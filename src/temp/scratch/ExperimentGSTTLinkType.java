@@ -7,6 +7,7 @@ import temp.data.TempDataTools;
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
+import temp.data.annotation.structure.InferenceRulesTimeMLRelType;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.util.TempProperties;
@@ -38,7 +39,7 @@ public class ExperimentGSTTLinkType {
 		TempDataTools dataTools = new TempDataTools(output, properties);
 		dataTools.addToParameterEnvironment("DOCUMENT_SET", documentSetName);
 		
-		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools);
+		Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools = TLinkDatum.getTimeMLRelTypeTools(dataTools, new InferenceRulesTimeMLRelType());
 		
 		String documentSetPath = (new File(properties.getTempDocumentDataDirPath(), documentSetName)).getAbsolutePath();
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> trainData = loadDataFromDirectory(documentSetPath + "/train", datumTools);

@@ -1,7 +1,12 @@
 package temp.data.annotation;
 
 import temp.data.annotation.cost.TimeMLRelTypeSplit;
+import temp.data.annotation.structure.TLinkGraph;
+import temp.data.annotation.structure.TLinkGraphDocumentCollection;
+import temp.data.annotation.structure.TLinkGraphInterSentenceCollection;
+import temp.data.annotation.structure.TLinkGraphIntraSentenceCollection;
 import temp.data.annotation.timeml.TLink;
+import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.feature.FeatureTLinkAttribute;
 import temp.data.feature.FeatureTLinkEventAttribute;
 import temp.data.feature.FeatureTLinkTimeAttribute;
@@ -25,8 +30,8 @@ public class TLinkDatum<L> extends Datum<L> {
 		return this.tlink;
 	}
 	
-	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools(DataTools dataTools) {
-		Tools<TLink.TimeMLRelType> tools = new Tools<TLink.TimeMLRelType>(dataTools) {
+	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools(DataTools dataTools, TLinkGraph.LabelInferenceRules<TimeMLRelType> inferenceRules) {
+		Tools<TLink.TimeMLRelType> tools = new Tools<TLink.TimeMLRelType>(dataTools, inferenceRules) {
 			@Override
 			public TLink.TimeMLRelType labelFromString(String str) {
 				return TLink.TimeMLRelType.valueOf(str);
@@ -74,11 +79,31 @@ public class TLinkDatum<L> extends Datum<L> {
 			}
 		});
 		
+		tools.addLabelMapping(new LabelMapping<TLink.TimeMLRelType>() {
+			@Override
+			public String toString() {
+				return "OnlyTimeBankDense";
+			}
+			
+			@Override
+			public TLink.TimeMLRelType map(TLink.TimeMLRelType label) {
+				if (label == TLink.TimeMLRelType.BEFORE
+						|| label == TLink.TimeMLRelType.AFTER
+						|| label == TLink.TimeMLRelType.INCLUDES
+						|| label == TLink.TimeMLRelType.IS_INCLUDED
+						|| label == TLink.TimeMLRelType.SIMULTANEOUS
+						|| label == TLink.TimeMLRelType.VAGUE)
+					return label;
+				else
+					return TLink.TimeMLRelType.VAGUE;
+			}
+		});
+		
 		return tools;
 	}
 	
 	public static Tools<TimeMLRelTypeSplit> getTimeMLRelTypeSplitTools(DataTools dataTools) {
-		Tools<TimeMLRelTypeSplit> tools =  new Tools<TimeMLRelTypeSplit>(dataTools) {
+		Tools<TimeMLRelTypeSplit> tools =  new Tools<TimeMLRelTypeSplit>(dataTools, null) {
 			@Override
 			public TimeMLRelTypeSplit labelFromString(String str) {
 				return TimeMLRelTypeSplit.valueOf(str);
@@ -104,7 +129,7 @@ public class TLinkDatum<L> extends Datum<L> {
 	}
 	
 	private static abstract class Tools<L> extends Datum.Tools<TLinkDatum<L>, L> {
-		public Tools(DataTools dataTools) {
+		public Tools(DataTools dataTools, TLinkGraph.LabelInferenceRules<L> inferenceRules) {
 			super(dataTools);
 			
 			this.addGenericFeature(new FeatureTLinkAttribute<L>());
@@ -112,6 +137,10 @@ public class TLinkDatum<L> extends Datum<L> {
 			this.addGenericFeature(new FeatureTLinkTimeAttribute<L>());
 			this.addGenericFeature(new FeatureTLinkTimeRelation<L>());
 			this.addGenericFeature(new FeatureTLinkableType<L>());
+			
+			this.addGenericDatumStructureCollection(new TLinkGraphInterSentenceCollection<L>(inferenceRules));
+			this.addGenericDatumStructureCollection(new TLinkGraphIntraSentenceCollection<L>(inferenceRules));
+			this.addGenericDatumStructureCollection(new TLinkGraphDocumentCollection<L>(inferenceRules));
 			
 			this.addTokenSpanExtractor(new TokenSpanExtractor<TLinkDatum<L>, L>() {
 				@Override

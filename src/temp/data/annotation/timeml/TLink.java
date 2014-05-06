@@ -47,6 +47,130 @@ public class TLink {
 		VAGUE
 	}
 	
+	// NOTE: Currently only for TimeBank-Dense relations + overlaps/overlapped_by
+	// Each sub-array represents a rule of the form (r_1\wedge r_2)->(r_3\vee .. r_n)
+	// The first array in each sub-array contain r_1 and r_2
+	// The second array in each sub-array contsins r_3...r_n
+	// null means nothing can be inferred (disjunction over all)
+	private static final TimeMLRelType[][][] timeMLRelTypeCompositionRules = {
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.INCLUDES }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.AFTER }, { null } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.BEFORE, TimeMLRelType.VAGUE }, { null } },
+		
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.IS_INCLUDED} },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.INCLUDES }, { null } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.AFTER }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPS }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.IS_INCLUDED, TimeMLRelType.VAGUE }, { null } },
+
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.INCLUDES, TimeMLRelType.IS_INCLUDED, TimeMLRelType.SIMULTANEOUS, TimeMLRelType.OVERLAPS, TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.INCLUDES }, { TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.AFTER }, { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER} },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPS }, { TimeMLRelType.OVERLAPS, TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.INCLUDES, TimeMLRelType.VAGUE }, { null } },
+
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.INCLUDES }, { TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.SIMULTANEOUS } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.AFTER }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.OVERLAPS }, { TimeMLRelType.OVERLAPS } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.SIMULTANEOUS, TimeMLRelType.VAGUE }, { null } },
+
+		{ { TimeMLRelType.AFTER, TimeMLRelType.BEFORE }, { null } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.INCLUDES }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.AFTER }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.OVERLAPS }, { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.AFTER, TimeMLRelType.VAGUE }, { null } },
+
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.OVERLAPS, TimeMLRelType.IS_INCLUDED } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.INCLUDES }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.OVERLAPS } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.AFTER }, { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.OVERLAPS }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.INCLUDES, TimeMLRelType.IS_INCLUDED, TimeMLRelType.SIMULTANEOUS, TimeMLRelType.OVERLAPS, TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.OVERLAPS, TimeMLRelType.VAGUE }, { null } },
+
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.BEFORE }, { TimeMLRelType.BEFORE, TimeMLRelType.OVERLAPS, TimeMLRelType.INCLUDES } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.IS_INCLUDED }, { TimeMLRelType.IS_INCLUDED, TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.INCLUDES }, { TimeMLRelType.INCLUDES, TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.SIMULTANEOUS }, { TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER }, { TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.OVERLAPS }, { TimeMLRelType.INCLUDES, TimeMLRelType.IS_INCLUDED, TimeMLRelType.SIMULTANEOUS, TimeMLRelType.OVERLAPS, TimeMLRelType.OVERLAPPED_BY } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.OVERLAPPED_BY }, { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.AFTER } },
+		{ { TimeMLRelType.OVERLAPPED_BY, TimeMLRelType.VAGUE }, { null } },
+		
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.BEFORE }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.IS_INCLUDED }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.INCLUDES }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.SIMULTANEOUS }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.AFTER }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.OVERLAPS }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.OVERLAPPED_BY }, { null } },
+		{ { TimeMLRelType.VAGUE, TimeMLRelType.VAGUE }, { null } },
+	};
+	
+	public static final TimeMLRelType[][][] getTimeMLRelTypeCompositionRules() {
+		return TLink.timeMLRelTypeCompositionRules;
+	}
+	
+	public static TimeMLRelType getConverseTimeMLRelType(TimeMLRelType timeMLRelType) {
+		if (timeMLRelType == TimeMLRelType.OVERLAPS)
+			return TimeMLRelType.OVERLAPPED_BY;
+		else if (timeMLRelType == TimeMLRelType.OVERLAPPED_BY)
+			return TimeMLRelType.OVERLAPS;
+		else if (timeMLRelType == TimeMLRelType.OVERLAP)
+			return TimeMLRelType.OVERLAP;
+		else if (timeMLRelType == TimeMLRelType.BEFORE_OR_OVERLAP)
+			return TimeMLRelType.OVERLAP_OR_AFTER;
+		else if (timeMLRelType == TimeMLRelType.OVERLAP_OR_AFTER)
+			return TimeMLRelType.BEFORE_OR_OVERLAP;
+		else if (timeMLRelType == TimeMLRelType.BEFORE)
+			return TimeMLRelType.AFTER;
+		else if (timeMLRelType == TimeMLRelType.AFTER)
+			return TimeMLRelType.BEFORE;
+		else if (timeMLRelType == TimeMLRelType.INCLUDES)
+			return TimeMLRelType.IS_INCLUDED;
+		else if (timeMLRelType == TimeMLRelType.IS_INCLUDED)
+			return TimeMLRelType.INCLUDES;
+		else if (timeMLRelType == TimeMLRelType.DURING)
+			return TimeMLRelType.DURING_INV;
+		else if (timeMLRelType == TimeMLRelType.DURING_INV)
+			return TimeMLRelType.DURING;
+		else if (timeMLRelType == TimeMLRelType.SIMULTANEOUS)
+			return TimeMLRelType.SIMULTANEOUS;
+		else if (timeMLRelType == TimeMLRelType.IAFTER)
+			return TimeMLRelType.IBEFORE;
+		else if (timeMLRelType == TimeMLRelType.IDENTITY)
+			return TimeMLRelType.IDENTITY;
+		else if (timeMLRelType == TimeMLRelType.BEGINS)
+			return TimeMLRelType.BEGUN_BY;
+		else if (timeMLRelType == TimeMLRelType.BEGUN_BY)
+			return TimeMLRelType.BEGINS;
+		else if (timeMLRelType == TimeMLRelType.ENDS)
+			return TimeMLRelType.ENDED_BY;
+		else if (timeMLRelType == TimeMLRelType.ENDED_BY)
+			return TimeMLRelType.ENDS;
+		else
+			return TimeMLRelType.VAGUE;
+	}
+	
 	private String id;
 	private String origin;
 	private TLinkable source;
@@ -88,6 +212,10 @@ public class TLink {
 	
 	public TimeMLRelType getTimeMLRelType() {
 		return this.timeMLRelType;
+	}
+	
+	public TimeMLRelType getConverseTimeMLRelType() {
+		return TLink.getConverseTimeMLRelType(this.timeMLRelType);
 	}
 	
 	public String getSyntax() {
