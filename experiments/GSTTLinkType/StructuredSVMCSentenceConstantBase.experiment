@@ -4,9 +4,6 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 
-gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
-gridSearchParameterValues=bs_c(1,10,100,1000,10000)
-
 feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
 model=Partition(defaultLabel=VAGUE)
 {
@@ -43,8 +40,8 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=100
-		factoredCost=Constant(c=100)
+		trainingIterations=1
+		factoredCost=Constant(c=1)
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
 	}
@@ -80,8 +77,8 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=100
-		factoredCost=Constant(c=100)
+		trainingIterations=1
+		factoredCost=Constant(c=1)
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
 	}

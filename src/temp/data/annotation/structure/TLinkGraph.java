@@ -20,6 +20,7 @@ import net.sf.javailp.SolverFactoryLpSolve;
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.timeml.TLink;
 import ark.data.annotation.Datum.Tools.LabelMapping;
+import ark.data.annotation.Document;
 import ark.data.annotation.structure.DatumStructure;
 
 public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {	
@@ -180,7 +181,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			
 			SolverFactory factory = new SolverFactoryLpSolve(); // use lp_solve
 			factory.setParameter(Solver.VERBOSE, 0); 
-			factory.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
+			factory.setParameter(Solver.TIMEOUT, Integer.MAX_VALUE);
 			
 			Set<L> allLabels = new HashSet<L>();
 			allLabels.addAll(validLabels);
@@ -189,75 +190,40 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					if (label != null)
 						allLabels.add(label);
 			
+			Set<String> tlinkableIds = new HashSet<String>();
+			tlinkableIds.addAll(TLinkGraph.this.tlinkableIds);
+			tlinkableIds.add("t0"); // Add in dct even if not in graph
+			
 			Problem problem = new Problem();
 			
-			for (String tlinkableId1 : tlinkableIds) {
-				for (String tlinkableId2 : tlinkableIds) {
-					if (tlinkableId1.equals(tlinkableId2))
-						continue;
-					
-					String tlinkVarPrefix1 = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
-					String tlinkConverseVarPrefix1 = "t_" + tlinkableId2 + "_" + tlinkableId1 + "_";
-					
-					Linear singleLabelConstraint = new Linear();
-					
-					for (L label : allLabels) {
-						// t_id1_id2_l \in {0, 1}
-						String tlinkVar = tlinkVarPrefix1 + label;
-						problem.setVarType(tlinkVar, Integer.class);
-						problem.setVarUpperBound(tlinkVar, 1);
-						problem.setVarLowerBound(tlinkVar, 0);
-						
-						// Single label for each tlink
-						singleLabelConstraint.add(1, tlinkVar);
-						
-						// Converse constraint
-						String tlinkConverseVar = tlinkConverseVarPrefix1 + this.labelInferenceRules.getConverse(label);
-						Linear converseConstraint = new Linear();
-						converseConstraint.add(1, tlinkVar);
-						converseConstraint.add(-1, tlinkConverseVar);
-						problem.add(converseConstraint, "<=", 0);
-					}
-					
-					// Single label for each tlink
-					problem.add(singleLabelConstraint, "=", 1);
-					
-					// Transitive constraints
-					for (String tlinkableId3 : tlinkableIds) {
-						if (tlinkableId2.equals(tlinkableId3) || tlinkableId1.equals(tlinkableId3))
-							continue;
-								
-						String tlinkVarPrefix2 = "t_" + tlinkableId2 + "_" + tlinkableId3 + "_";
-						String tlinkVarPrefix3 = "t_" + tlinkableId1 + "_" + tlinkableId3 + "_";
-						
-						for (L[][] compositionRule : compositionRules) {
-							L firstConjunctLabel = compositionRule[0][0];
-							L secondConjunctLabel = compositionRule[0][1];
-							L[] consequentLabels = compositionRule[1];
-							
-							if (consequentLabels[0] == null || (!this.includeDisjunctiveRules && consequentLabels.length > 1))
-								continue;
-							
-							Linear transitivityConstraint = new Linear();
-							transitivityConstraint.add(1, tlinkVarPrefix1 + firstConjunctLabel);
-							transitivityConstraint.add(1, tlinkVarPrefix2 + secondConjunctLabel);
-							for (int i = 0; i < consequentLabels.length; i++)
-								transitivityConstraint.add(-1, tlinkVarPrefix3 + consequentLabels[i]);
-							problem.add(transitivityConstraint, "<=", 1);
-						}
-					}
-				}
-			}
+			Document graphDocument = TLinkGraph.this.iterator().next().getTLink().getSource().getTokenSpan().getDocument();
 			
-			// Fixed label contraints
+			Map<String, Map<String, L>> fixedAdjacencyMap = new HashMap<String, Map<String, L>>();
+			
+			// Fixed label constraints
 			for (Entry<TLinkDatum<L>, L> entry : fixedDatumLabels.entrySet()) {
 				String tlinkableId1 = entry.getKey().getTLink().getSource().getId();
 				String tlinkableId2 = entry.getKey().getTLink().getTarget().getId();
+				
+				Document entryDocument = entry.getKey().getTLink().getSource().getTokenSpan().getDocument();
+				if (!graphDocument.getName().equals(entryDocument.getName()))
+					continue;
+				
+				if (!tlinkableIds.contains(tlinkableId1) || !tlinkableIds.contains(tlinkableId2))
+					continue;
+			
 				String tlinkVar = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_" + entry.getValue();
 				
 				Linear fixedLabelConstraint = new Linear();
 				fixedLabelConstraint.add(1, tlinkVar);
 				problem.add(fixedLabelConstraint, ">=", 1);
+			
+				if (!fixedAdjacencyMap.containsKey(tlinkableId1))
+					fixedAdjacencyMap.put(tlinkableId1, new HashMap<String, L>());
+				if (!fixedAdjacencyMap.containsKey(tlinkableId2))
+					fixedAdjacencyMap.put(tlinkableId2, new HashMap<String, L>());
+				fixedAdjacencyMap.get(tlinkableId1).put(tlinkableId2, entry.getValue());
+				fixedAdjacencyMap.get(tlinkableId2).put(tlinkableId1, this.labelInferenceRules.getConverse(entry.getValue()));
 			}
 			
 			// Objective function and rule based constraints
@@ -285,18 +251,102 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 						Linear fixedLabelConstraint = new Linear();
 						fixedLabelConstraint.add(1, tlinkVarPrefix + label);
 						problem.add(fixedLabelConstraint, ">=", 1);
+						
+						if (!fixedAdjacencyMap.containsKey(tlinkableId1))
+							fixedAdjacencyMap.put(tlinkableId1, new HashMap<String, L>());
+						if (!fixedAdjacencyMap.containsKey(tlinkableId2))
+							fixedAdjacencyMap.put(tlinkableId2, new HashMap<String, L>());
+						fixedAdjacencyMap.get(tlinkableId1).put(tlinkableId2, label);
+						fixedAdjacencyMap.get(tlinkableId2).put(tlinkableId1, this.labelInferenceRules.getConverse(label));
 					}
 				}
 			}
 			
 			problem.setObjective(objective, OptType.MAX);
+			
+			for (String tlinkableId1 : tlinkableIds) {
+				for (String tlinkableId2 : tlinkableIds) {
+					if (tlinkableId1.equals(tlinkableId2))
+						continue;
+					
+					String tlinkVarPrefix1 = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
+					String tlinkConverseVarPrefix1 = "t_" + tlinkableId2 + "_" + tlinkableId1 + "_";
+					L fixedLabel1 = null;
+					if (fixedAdjacencyMap.containsKey(tlinkableId1) && fixedAdjacencyMap.get(tlinkableId1).containsKey(tlinkableId2))
+						fixedLabel1 = fixedAdjacencyMap.get(tlinkableId1).get(tlinkableId2);
+						
+					Linear singleLabelConstraint = new Linear();
+					
+					for (L label : allLabels) {
+						// t_id1_id2_l \in {0, 1}
+						String tlinkVar = tlinkVarPrefix1 + label;
+						problem.setVarType(tlinkVar, Integer.class);
+						problem.setVarUpperBound(tlinkVar, 1);
+						problem.setVarLowerBound(tlinkVar, 0);
+						
+						// Single label for each tlink
+						singleLabelConstraint.add(1, tlinkVar);
+						
+						// Converse constraint
+						String tlinkConverseVar = tlinkConverseVarPrefix1 + this.labelInferenceRules.getConverse(label);
+						Linear converseConstraint = new Linear();
+						converseConstraint.add(1, tlinkVar);
+						converseConstraint.add(-1, tlinkConverseVar);
+						problem.add(converseConstraint, "<=", 0);
+					}
+					
+					// Single label for each tlink
+					problem.add(singleLabelConstraint, "=", 1);
+					
+					// Transitive constraints
+					for (String tlinkableId3 : tlinkableIds) {
+						if (tlinkableId2.equals(tlinkableId3) || tlinkableId1.equals(tlinkableId3))
+							continue;
+						
+						// Don't infer relations unless there are datums for them in this graph
+						if (!(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId3)) 
+								&& !(adjacencyMap.containsKey(tlinkableId3) && adjacencyMap.get(tlinkableId3).containsKey(tlinkableId1)))
+							continue;
+							
+						String tlinkVarPrefix2 = "t_" + tlinkableId2 + "_" + tlinkableId3 + "_";
+						String tlinkVarPrefix3 = "t_" + tlinkableId1 + "_" + tlinkableId3 + "_";
+						
+						L fixedLabel2 = null;
+						if (fixedAdjacencyMap.containsKey(tlinkableId2) && fixedAdjacencyMap.get(tlinkableId2).containsKey(tlinkableId3))
+							fixedLabel2 = fixedAdjacencyMap.get(tlinkableId2).get(tlinkableId3);
+						
+						for (L[][] compositionRule : compositionRules) {
+							L firstConjunctLabel = compositionRule[0][0];
+							L secondConjunctLabel = compositionRule[0][1];
+							L[] consequentLabels = compositionRule[1];
+							
+							if (fixedLabel1 != null && !firstConjunctLabel.equals(fixedLabel1))
+								continue;
+							if (fixedLabel2 != null && !secondConjunctLabel.equals(fixedLabel2))
+								continue;
+							if (consequentLabels[0] == null || (!this.includeDisjunctiveRules && consequentLabels.length > 1))
+								continue;
+							
+							Linear transitivityConstraint = new Linear();
+							transitivityConstraint.add(1, tlinkVarPrefix1 + firstConjunctLabel);
+							transitivityConstraint.add(1, tlinkVarPrefix2 + secondConjunctLabel);
+							for (int i = 0; i < consequentLabels.length; i++)
+								transitivityConstraint.add(-1, tlinkVarPrefix3 + consequentLabels[i]);
+							problem.add(transitivityConstraint, "<=", 1);
+						}
+					}
+				}
+			}
+
 			Solver solver = factory.get(); 
 			Result result = solver.solve(problem);
 			Map<TLinkDatum<L>, L> resultLabels = new HashMap<TLinkDatum<L>, L>();
 			for (TLinkDatum<L> datum : TLinkGraph.this) {
 				String tlinkableId1 = datum.getTLink().getSource().getId();
 				String tlinkableId2 = datum.getTLink().getTarget().getId();
+					
 				String tlinkVarPrefix = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
+				
 				for (L label : allLabels) {
 					String tlinkVar = tlinkVarPrefix + label;
 					boolean datumHasLabel = result.getBoolean(tlinkVar);

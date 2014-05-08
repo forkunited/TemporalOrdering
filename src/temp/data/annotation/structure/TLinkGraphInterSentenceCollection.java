@@ -31,6 +31,9 @@ public class TLinkGraphInterSentenceCollection<L> extends DatumStructureCollecti
 				String documentName = datum.getTLink().getSource().getTokenSpan().getDocument().getName();
 				int sourceSentenceIndex = datum.getTLink().getSource().getTokenSpan().getSentenceIndex();
 				int targetSentenceIndex = datum.getTLink().getTarget().getTokenSpan().getSentenceIndex();
+				if (Math.abs(sourceSentenceIndex - targetSentenceIndex) != 1)
+					continue;
+				
 				int tlinkSentenceIndex = Math.max(sourceSentenceIndex, targetSentenceIndex);
 				String structureKey = documentName + "_" + tlinkSentenceIndex;
 				if (!datumStructures.containsKey(structureKey)) {
