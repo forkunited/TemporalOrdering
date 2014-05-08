@@ -4,6 +4,9 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 
+gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
+gridSearchParameterValues=wsdct_l1(0,.0000001,.000001,.00001,.0001)
+
 feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
 model=Partition(defaultLabel=VAGUE)
 {
@@ -36,7 +39,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_wsdct_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_wsdct_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_wsdct_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_wsdct=StructuredSVMC(n=3, epsilon=10)
+	model_wsdct=StructuredSVMC(n=3, epsilon=.01)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
@@ -73,7 +76,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_bs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_bs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_bs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_bs=StructuredSVMC(n=3, epsilon=10)
+	model_bs=StructuredSVMC(n=3, epsilon=.01)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
