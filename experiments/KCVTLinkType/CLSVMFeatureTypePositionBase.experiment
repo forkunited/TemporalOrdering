@@ -1,13 +1,9 @@
 randomSeed=1
 maxThreads=8
-trainOnDev=true
+crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
-evaluation=Accuracy(labelMapping=NoSplit)
-
-gridSearchParameterValues=c(1,10,100,1000,10000)
-gridSearchParameterValues=l1(0,.0000001,.000001,.00001,.0001)
-
+gridSearchParameterValues=c(1,100,1000,10000)
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
 feature_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
@@ -34,10 +30,10 @@ feature_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=Sour
 feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-
-model=SVMCAlt(n=3, epsilon=10)
+feature_tpConj_ignore=Conjunction(minFeatureOccurrence=1, featureReferences=tlinkPosition/tlinkType)
+model=CLSVM()
 {
-	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
-	trainingIterations=100
-	factoredCost=LabelPairUnordered(c=100)
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
+	trainingIterations=20
+	factoredCost=Feature(c=1, featureReference=tpConj)
 }

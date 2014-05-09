@@ -1,9 +1,12 @@
 randomSeed=1
 maxThreads=8
-trainOnDev=true
+crossValidationFolds=8
 errorExampleExtractor=SourceTokenSpan
+gridSearchParameterValues=c(1,100,1000)
+gridSearchParameterValues=l1(0,.00001,.0001)
+gridSearchParameterValues=l2(0,.00001,.0001)
 evaluation=Accuracy()
-
+evaluation=Accuracy(labelMapping=TE3ToDense)
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
 feature_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURCE)
@@ -31,12 +34,9 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=StructuredSVMC(n=3, epsilon=10)
+model=CLSVMAlt()
 {
-	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	labelMapping=OnlyTimeBankDense
-	trainingIterations=100
-	factoredCost=Constant(c=100)
-	datumStructureCollection=TLinkGraphDocument
-	datumStructureOptimizer=InferenceTimeMLRelType
+	validLabels=BEFORE,AFTER,INCLUDES,IS_INCLUDED,DURING,SIMULTANEOUS,IAFTER,IBEFORE,IDENTITY,BEGINS,ENDS,BEGUN_BY,ENDED_BY,DURING_INV
+	trainingIterations=20
+	factoredCost=LabelPairUnordered(c=1000)
 }

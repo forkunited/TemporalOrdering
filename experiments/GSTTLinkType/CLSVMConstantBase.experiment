@@ -34,9 +34,9 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=SVMCAlt(n=3, epsilon=10)
+model=CLSVM(n=3, epsilon=10)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	trainingIterations=100
-	factoredCost=LabelPairUnordered(c=100)
+	factoredCost=Constant(c=100)
 }

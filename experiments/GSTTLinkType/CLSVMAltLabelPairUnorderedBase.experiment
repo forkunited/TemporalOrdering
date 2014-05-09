@@ -3,7 +3,7 @@ maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
-evaluation=Accuracy(labelMapping=NoSplit)
+
 gridSearchParameterValues=c(1,10,100,1000,10000)
 gridSearchParameterValues=l1(0,.0000001,.000001,.00001,.0001)
 
@@ -34,9 +34,9 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=SVMC(n=3, epsilon=10)
+model=CLSVMAlt(n=3, epsilon=10)
 {
-	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
+	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	trainingIterations=100
 	factoredCost=LabelPairUnordered(c=100)
 }

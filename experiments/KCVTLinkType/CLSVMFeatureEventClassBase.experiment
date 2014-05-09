@@ -30,10 +30,10 @@ feature_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=Sour
 feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-feature_tpConj_ignore=Conjunction(minFeatureOccurrence=1, featureReferences=tlinkPosition/tlinkType)
-model=SVMC()
+feature_ecConj_ignore=Conjunction(minFeatureOccurrence=1, featureReferences=seClass/teClass)
+model=CLSVM()
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	trainingIterations=20
-	factoredCost=Feature(c=1, featureReference=tpConj)
+	factoredCost=Feature(c=1, featureReference=ecConj)
 }
