@@ -4,6 +4,8 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 
+gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
+
 feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
 model=Partition(defaultLabel=VAGUE)
 {
