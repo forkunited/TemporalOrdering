@@ -2,6 +2,9 @@ randomSeed=1
 maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
+
+evaluation=CLLoss()
+evaluation=CLLabelPairUnorderedAccuracy()
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
 gridSearchParameterValues=c(1,10,100,1000,10000)

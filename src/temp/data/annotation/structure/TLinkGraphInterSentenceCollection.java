@@ -37,7 +37,7 @@ public class TLinkGraphInterSentenceCollection<L> extends DatumStructureCollecti
 				int tlinkSentenceIndex = Math.max(sourceSentenceIndex, targetSentenceIndex);
 				String structureKey = documentName + "_" + tlinkSentenceIndex;
 				if (!datumStructures.containsKey(structureKey)) {
-					datumStructures.put(structureKey, new TLinkGraph<L>(structureKey, this.labelInferenceRules));
+					datumStructures.put(structureKey, new TLinkGraph<L>(structureKey, data.getDatumTools(), this.labelInferenceRules));
 				} 
 				datumStructures.get(structureKey).add(datum);
 			}

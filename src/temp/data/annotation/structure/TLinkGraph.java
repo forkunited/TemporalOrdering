@@ -19,9 +19,11 @@ import net.sf.javailp.SolverFactoryLpSolve;
 
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.timeml.TLink;
+import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.Document;
 import ark.data.annotation.structure.DatumStructure;
+import ark.util.OutputWriter;
 
 public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {	
 	public interface LabelInferenceRules<L> {
@@ -34,14 +36,14 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 	private Map<String, Map<String, TLinkDatum<L>>> adjacencyMap;
 	private Set<String> tlinkableIds;
 	
-	public TLinkGraph(String id, LabelInferenceRules<L> labelInferenceRules) {
+	public TLinkGraph(String id, Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules) {
 		super(id);
 		this.adjacencyMap = new HashMap<String, Map<String, TLinkDatum<L>>>();
 		this.tlinkableIds = new HashSet<String>();
-		addDatumStructureOptimizer(new OptimizerInference(labelInferenceRules, false, false));
-		addDatumStructureOptimizer(new OptimizerInference(labelInferenceRules, false, true));
-		addDatumStructureOptimizer(new OptimizerInference(labelInferenceRules, true, false));
-		addDatumStructureOptimizer(new OptimizerInference(labelInferenceRules, true, true));
+		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, false, false));
+		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, false, true));
+		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, true, false));
+		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, true, true));
 	}
 
 	// id1 and id2 unordered
@@ -168,20 +170,23 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		private LabelInferenceRules<L> labelInferenceRules;
 		private boolean includeDisjunctiveRules;
 		private boolean includeRuleBasedFixedLabels;
+		private Tools<TLinkDatum<L>, L> datumTools;
 		
-		public OptimizerInference(LabelInferenceRules<L> labelInferenceRules, boolean includeDisjunctiveRules, boolean includeRuleBasedFixedLabels) {
+		public OptimizerInference(Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules, boolean includeDisjunctiveRules, boolean includeRuleBasedFixedLabels) {
 			super();
 			this.labelInferenceRules = labelInferenceRules;
 			this.includeDisjunctiveRules = includeDisjunctiveRules;
 			this.includeRuleBasedFixedLabels = includeRuleBasedFixedLabels;
+			this.datumTools = datumTools;
 		}
 		
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
+			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules();
-			
+
 			SolverFactory factory = new SolverFactoryLpSolve(); // use lp_solve
 			factory.setParameter(Solver.VERBOSE, 1); 
-			factory.setParameter(Solver.TIMEOUT, Integer.MAX_VALUE);
+			factory.setParameter(Solver.TIMEOUT, 90);//Integer.MAX_VALUE);
 			
 			Set<L> allLabels = new HashSet<L>();
 			allLabels.addAll(validLabels);
@@ -350,10 +355,36 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			Solver solver = factory.get(); 
 			Result result = solver.solve(problem);
 			Map<TLinkDatum<L>, L> resultLabels = new HashMap<TLinkDatum<L>, L>();
+			
+			if (result == null) {
+				String document = TLinkGraph.this.iterator().next().getTLink().getTarget().getTokenSpan().getDocument().getName();
+				int sentence1 = TLinkGraph.this.iterator().next().getTLink().getSource().getTokenSpan().getSentenceIndex();
+				int sentence2 = TLinkGraph.this.iterator().next().getTLink().getTarget().getTokenSpan().getSentenceIndex();
+				output.debugWriteln("WARNING: TLinkGraph inference optimizer failed on " + document + "(" + sentence1 + "," + sentence2 + ").  "
+								  + "Outputting best unconstrained graph instead...");
+			
+				for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
+					Map<L, Double> labelValues = datumEntry.getValue();
+					
+					double maxValue = Double.MIN_VALUE;
+					L maxLabel = null;
+					for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
+						if (labelEntry.getValue() > maxValue) {
+							maxValue = labelEntry.getValue();
+							maxLabel = labelEntry.getKey();
+						}
+					}
+					
+					resultLabels.put(datumEntry.getKey(), maxLabel);
+				}
+				
+				return resultLabels;
+			}
+			
 			for (TLinkDatum<L> datum : TLinkGraph.this) {
 				String tlinkableId1 = datum.getTLink().getSource().getId();
 				String tlinkableId2 = datum.getTLink().getTarget().getId();
-					
+				
 				String tlinkVarPrefix = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
 				
 				for (L label : allLabels) {

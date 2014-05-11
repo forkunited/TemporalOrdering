@@ -29,7 +29,7 @@ public class TLinkGraphDocumentCollection<L> extends DatumStructureCollection<TL
 			String documentName = datum.getTLink().getSource().getTokenSpan().getDocument().getName();
 			String structureKey = documentName;
 			if (!datumStructures.containsKey(structureKey)) {
-				datumStructures.put(structureKey, new TLinkGraph<L>(structureKey, this.labelInferenceRules));
+				datumStructures.put(structureKey, new TLinkGraph<L>(structureKey, data.getDatumTools(), this.labelInferenceRules));
 			} 
 			datumStructures.get(structureKey).add(datum);
 		}
