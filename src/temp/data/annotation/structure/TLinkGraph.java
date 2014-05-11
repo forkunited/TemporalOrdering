@@ -226,6 +226,14 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				fixedAdjacencyMap.get(tlinkableId2).put(tlinkableId1, this.labelInferenceRules.getConverse(entry.getValue()));
 			}
 			
+			// Find value to scale datum's by in case of large coefficients that
+			// cause ILP solver instability
+			double maxLabelMagnitude = Double.NEGATIVE_INFINITY;
+			for (Map<L, Double> datumValue : scoredDatumLabels.values()) {
+				for (Double value : datumValue.values())
+					maxLabelMagnitude = Math.max(maxLabelMagnitude, Math.abs(value));
+			}
+			
 			// Objective function and rule based constraints
 			Linear objective = new Linear();
 			for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
@@ -237,8 +245,9 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				
 				double minValue = Double.MAX_VALUE;
 				for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
-					objective.add(labelEntry.getValue(), tlinkVarPrefix + labelEntry.getKey());
-					minValue = Math.min(minValue, labelEntry.getValue());
+					double value = labelEntry.getValue()/maxLabelMagnitude; // Scale value
+					objective.add(value, tlinkVarPrefix + labelEntry.getKey());
+					minValue = Math.min(minValue, value);
 				}
 				for (L label : allLabels) {
 					if (!labelValues.containsKey(label))
