@@ -3,8 +3,8 @@ maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
-evaluation=CLLoss()
 evaluation=Accuracy()
+evaluation=CLLoss()
 
 gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
 gridSearchParameterValues=wsdct_l1(0,.0000001,.000001,.00001,.0001)
@@ -45,7 +45,7 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=200
+		trainingIterations=150
 		factoredCost=Constant(c=1000)
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
@@ -82,7 +82,7 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=200
+		trainingIterations=150
 		factoredCost=Constant(c=1)
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType

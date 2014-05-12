@@ -35,7 +35,7 @@ model=CLStructuredSVM(n=3, epsilon=1)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	labelMapping=OnlyTimeBankDense
-	trainingIterations=200
+	trainingIterations=150
 	factoredCost=Constant(c=100)
 	datumStructureCollection=TLinkGraphDocument
 	datumStructureOptimizer=InferenceTimeMLRelType
