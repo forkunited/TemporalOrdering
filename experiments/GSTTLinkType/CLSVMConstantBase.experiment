@@ -4,7 +4,6 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
 evaluation=CLLoss()
-evaluation=CLLabelPairUnorderedAccuracy()
 evaluation=Accuracy()
 
 gridSearchParameterValues=c(1,10,100,1000,10000)
@@ -37,9 +36,9 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=CLSVM(n=3, epsilon=10)
+model=CLSVM(n=3, epsilon=1)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	trainingIterations=100
+	trainingIterations=200
 	factoredCost=Constant(c=100)
 }

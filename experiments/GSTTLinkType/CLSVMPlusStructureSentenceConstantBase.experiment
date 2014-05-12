@@ -4,7 +4,6 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
 evaluation=CLLoss()
-evaluation=CLLabelPairUnorderedAccuracy()
 evaluation=Accuracy()
 
 gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
@@ -42,11 +41,11 @@ model=Partition(defaultLabel=VAGUE)
 	feature_wsdct_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_wsdct_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_wsdct_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_wsdct=CLSVMPlusStructure(n=3, epsilon=.01)
+	model_wsdct=CLSVMPlusStructure(n=3, epsilon=1)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=100
+		trainingIterations=200
 		factoredCost=Constant(c=1000)
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
@@ -79,11 +78,11 @@ model=Partition(defaultLabel=VAGUE)
 	feature_bs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_bs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_bs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_bs=CLSVMPlusStructure(n=3, epsilon=.01)
+	model_bs=CLSVMPlusStructure(n=3, epsilon=1)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=100
+		trainingIterations=200
 		factoredCost=Constant(c=1)
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
