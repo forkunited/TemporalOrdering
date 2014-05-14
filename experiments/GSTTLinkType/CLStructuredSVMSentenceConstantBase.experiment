@@ -4,7 +4,6 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
-evaluation=CLLoss()
 
 gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
 gridSearchParameterValues=wsdct_l2(0,.0000001,.000001,.00001)

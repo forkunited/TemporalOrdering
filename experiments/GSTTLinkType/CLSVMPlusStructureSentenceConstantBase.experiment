@@ -3,7 +3,6 @@ maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
-evaluation=CLLoss()
 evaluation=Accuracy()
 
 gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
