@@ -3,7 +3,6 @@ maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
-evaluation=CLLoss()
 evaluation=Accuracy()
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)

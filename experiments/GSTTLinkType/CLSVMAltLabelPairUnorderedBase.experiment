@@ -3,8 +3,6 @@ maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
-evaluation=CLLabelPairUnorderedAccuracy()
-evaluation=CLLoss()
 evaluation=Accuracy()
 
 gridSearchParameterValues=c(1,10,100,1000,10000)

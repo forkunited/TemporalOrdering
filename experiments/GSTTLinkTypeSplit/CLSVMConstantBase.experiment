@@ -5,7 +5,6 @@ errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
-evaluation=CLLoss()
 
 gridSearchParameterValues=c(1,10,100,1000,10000)
 gridSearchParameterValues=l2(0,.0000001,.000001,.00001)
