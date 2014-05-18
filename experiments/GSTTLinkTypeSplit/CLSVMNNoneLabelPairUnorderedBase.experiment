@@ -7,7 +7,7 @@ evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
 
 gridSearchParameterValues=c(1,10,100,1000,10000)
-gridSearchParameterValues=l2(0,.0001,.001,.01)
+gridSearchParameterValues=l2(0,.0001,.001,.01,.1)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
@@ -36,10 +36,10 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=CLSVMN(n=3, epsilon=1)
+model=CLSVMN(n=4, epsilon=1)
 {
 	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
-	trainingIterations=150
+	trainingIterations=250
 	factoredCost=LabelPairUnordered(c=100, norm=NONE)
 
 }
