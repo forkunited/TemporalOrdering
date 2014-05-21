@@ -5,8 +5,7 @@ errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
 
-gridSearchParameterValues=wsdct_c(1,10,100,1000,10000)
-gridSearchParameterValues=wsdct_l2(0,.0000001,.000001,.00001)
+gridSearchParameterValues=wsdct_l2(.000001,.00001,.0001,.001,.01,.1,1,10,100,1000,10000)
 
 feature_tlinkPosition_ignore=TLinkAttribute(attribute=POSITION)
 model=Partition(defaultLabel=VAGUE)
@@ -40,14 +39,14 @@ model=Partition(defaultLabel=VAGUE)
 	feature_wsdct_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_wsdct_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_wsdct_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_wsdct=CLStructuredSVM(n=3, epsilon=1)
+	model_wsdct=SVMStructured(n=1)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=150
-		factoredCost=Constant(c=1000)
+		trainingIterations=201
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
+		includeStructuredTraining=false
 	}
 	
 	constraint_bs=And(FeatureMatch(tlinkPosition, 1.0, "BETWEEN_SENTENCE"))
@@ -77,13 +76,13 @@ model=Partition(defaultLabel=VAGUE)
 	feature_bs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_bs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_bs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_bs=CLStructuredSVM(n=3, epsilon=1)
+	model_bs=CLStructuredSVM(n=1)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=150
-		factoredCost=Constant(c=1)
+		trainingIterations=201
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
+		includeStructuredTraining=false
 	}
 }

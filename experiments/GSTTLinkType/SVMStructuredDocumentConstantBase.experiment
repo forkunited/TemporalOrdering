@@ -2,7 +2,6 @@ randomSeed=1
 maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
-
 evaluation=Accuracy()
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
@@ -32,12 +31,12 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=CLSVMPlusStructure(n=3, epsilon=1)
+model=SVMStructured(n=1)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	labelMapping=OnlyTimeBankDense
-	trainingIterations=150
-	factoredCost=Constant(c=100)
+	trainingIterations=201
 	datumStructureCollection=TLinkGraphDocument
 	datumStructureOptimizer=InferenceTimeMLRelType
+	includeStructuredTraining=false
 }
