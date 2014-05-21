@@ -393,12 +393,12 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				}
 			}
 			
-			/*try {
-				Thread.sleep(10);
+			try {
+				Thread.sleep(25);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}*/
+			}
 			
 			return resultLabels;
 		}
