@@ -185,7 +185,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules();
 
 			SolverFactory factory = new SolverFactoryGurobi();
-			factory.setParameter(Solver.VERBOSE, 2); 
+			factory.setParameter(Solver.VERBOSE, 1); 
 			factory.setParameter(Solver.TIMEOUT, Integer.MAX_VALUE);
 			
 			Set<L> allLabels = new HashSet<L>();
@@ -237,6 +237,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				TLink tlink = datumEntry.getKey().getTLink();
 				String tlinkableId1 = tlink.getSource().getId();
 				String tlinkableId2 = tlink.getTarget().getId();
+				
+				if (!tlinkableIds.contains(tlinkableId1) || !tlinkableIds.contains(tlinkableId2))
+					continue;
+				
 				String tlinkVarPrefix = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
 				Map<L, Double> labelValues = datumEntry.getValue();
 				
