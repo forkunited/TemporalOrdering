@@ -394,7 +394,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			}
 			
 			try {
-				Thread.sleep(10);
+				Thread.sleep(40);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
