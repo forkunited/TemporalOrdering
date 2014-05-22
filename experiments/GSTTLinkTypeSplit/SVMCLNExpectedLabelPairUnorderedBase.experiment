@@ -1,12 +1,12 @@
 randomSeed=1
-maxThreads=4
+maxThreads=6
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
 
-gridSearchParameterValues=l2(.0001,.001,.01,.1,1,10,100,1000)
+gridSearchParameterValues=l2(.5,1,2,4,8,16)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
@@ -35,10 +35,10 @@ feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 feature_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 
-model=SVMCLN(n=1)
+model=SVMCLN(n=3)
 {
 	validLabels=BEFORE_0, AFTER_0, INCLUDES_0, IS_INCLUDED_0, SIMULTANEOUS_0, VAGUE_0, BEFORE_1, AFTER_1, INCLUDES_1, IS_INCLUDED_1, SIMULTANEOUS_1, VAGUE_1
-	trainingIterations=201
+	trainingIterations=101
 	factoredCost=LabelPairUnordered(c=1, norm=EXPECTED)
 
 }
