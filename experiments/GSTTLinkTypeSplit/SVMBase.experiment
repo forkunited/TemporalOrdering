@@ -1,5 +1,5 @@
 randomSeed=1
-maxThreads=6
+maxThreads=8
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
