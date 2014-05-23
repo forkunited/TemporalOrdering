@@ -189,13 +189,15 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		this.textSentences = this.sentenceSplitter.split(this.textWords, false);
 		
 		this.morphologyAnalyzer.analyze(this.textSentences);
-		this.posTagger.analyze(this.textSentences);
+		if (!this.disabledPoSTags)
+			this.posTagger.analyze(this.textSentences);
 	    this.ner.analyze(this.textSentences);
 	    this.senseDictionary.analyze(this.textSentences);
 	    this.senseDisambiguator.analyze(this.textSentences);
-	    this.parser.analyze(this.textSentences);
-	    this.dependencyParser.analyze(this.textSentences);
-		
+	    if (!this.disabledConstituencyParses)
+	    	this.parser.analyze(this.textSentences);
+	    if (!this.disabledDependencyParses)
+	    	this.dependencyParser.analyze(this.textSentences);
 		return true;
 	}
 	
@@ -218,7 +220,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tokens;
 	}
 	
-	public PoSTag[][] makePoSTags() {
+	protected PoSTag[][] makePoSTagsInternal() {
 		PoSTag[][] tags = new PoSTag[(int)this.textSentences.size()][];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;
@@ -284,7 +286,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tags;
 	}
 	
-	public DependencyParse[] makeDependencyParses(Document document, int sentenceIndexOffset) {
+	protected DependencyParse[] makeDependencyParsesInternal(Document document, int sentenceIndexOffset) {
 		DependencyParse[] parses = new DependencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;
@@ -342,7 +344,7 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return parses;
 	}
 
-	public ConstituencyParse[] makeConstituencyParses(Document document, int sentenceIndexOffset) {
+	protected ConstituencyParse[] makeConstituencyParsesInternal(Document document, int sentenceIndexOffset) {
 		ConstituencyParse[] parses = new ConstituencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
 		int i = 0;

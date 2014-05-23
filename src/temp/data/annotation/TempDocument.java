@@ -1,6 +1,5 @@
 package temp.data.annotation;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,7 +18,6 @@ import ark.data.annotation.nlp.TokenSpan;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 
 import temp.data.annotation.timeml.Event;
 import temp.data.annotation.timeml.Signal;

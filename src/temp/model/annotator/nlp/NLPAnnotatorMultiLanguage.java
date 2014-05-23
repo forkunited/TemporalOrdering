@@ -75,7 +75,7 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 	}
 
 	@Override
-	public PoSTag[][] makePoSTags() {
+	protected PoSTag[][] makePoSTagsInternal() {
 		if (this.language == Language.English) {
 			return this.englishAnnotator.makePoSTags();
 		} else if (this.language == Language.Spanish) {
@@ -86,7 +86,7 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 	}
 	
 	@Override
-	public DependencyParse[] makeDependencyParses(Document document, int sentenceIndexOffset) {
+	protected DependencyParse[] makeDependencyParsesInternal(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {
 			return this.englishAnnotator.makeDependencyParses(document, sentenceIndexOffset);
 		} else if (this.language == Language.Spanish) {
@@ -98,7 +98,7 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 
 
 	@Override
-	public ConstituencyParse[] makeConstituencyParses(Document document, int sentenceIndexOffset) {
+	protected ConstituencyParse[] makeConstituencyParsesInternal(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {
 			return this.englishAnnotator.makeConstituencyParses(document, sentenceIndexOffset);
 		} else if (this.language == Language.Spanish) {
