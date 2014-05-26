@@ -5,8 +5,7 @@ errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
 
-gridSearchParameterValues=l2(2,8,32,64)
-gridSearchParameterValues=l1(0,.000002,.000008,.000032)
+gridSearchParameterValues=l2(.000001,.00001,.0001,.001,.01,.1,1,10)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
@@ -38,6 +37,6 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVMCLN(n=1)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	trainingIterations=701
+	trainingIterations=1001
 	factoredCost=LabelPairUnordered(c=1, norm=EXPECTED)
 }
