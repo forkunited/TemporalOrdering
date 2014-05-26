@@ -37,6 +37,6 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVMCLN()
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	trainingIterations=1001
+	trainingIterations=3001
 	factoredCost=LabelPairUnordered(c=1, norm=EXPECTED)
 }
