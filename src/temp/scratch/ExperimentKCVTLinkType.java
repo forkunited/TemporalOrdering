@@ -60,7 +60,14 @@ public class ExperimentKCVTLinkType {
 		ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
 				new ExperimentKCV<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, data);
 	
+		long startTime = System.currentTimeMillis();
 		if (!experiment.run())
-			output.debugWriteln("Error: Experiment run failed.");		
+			output.debugWriteln("Error: Experiment run failed.");
+		System.out.println();
+		System.out.println("The total runtime, in seconds: " + (System.currentTimeMillis() - startTime) / 1000);
+		System.out.println("The total runtime, in minutes: " + ((System.currentTimeMillis() - startTime) / 1000) / 60);
+		System.out.println("The total runtime, in hours: " + (((System.currentTimeMillis() - startTime) / 1000) / 60) / 60);
+
+
 	}
 }
