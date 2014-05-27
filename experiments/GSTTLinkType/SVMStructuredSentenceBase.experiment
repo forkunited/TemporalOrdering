@@ -38,7 +38,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_wsdct_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_wsdct_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_wsdct_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_wsdct=SVMStructured(n=1)
+	model_wsdct=SVMStructured()
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
@@ -75,7 +75,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_bs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_bs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_bs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_bs=CLStructuredSVM(n=1)
+	model_bs=CLStructuredSVM()
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
