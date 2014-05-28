@@ -15,7 +15,7 @@ import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
-import net.sf.javailp.SolverFactoryLpSolve;
+import net.sf.javailp.SolverFactoryCPLEX;
 
 
 import temp.data.annotation.TLinkDatum;
@@ -185,7 +185,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules();
 
-			SolverFactory factory = new SolverFactoryLpSolve();
+			SolverFactory factory = new SolverFactoryCPLEX();
 			factory.setParameter(Solver.VERBOSE, 0); 
 			factory.setParameter(Solver.TIMEOUT, Integer.MAX_VALUE);
 			
