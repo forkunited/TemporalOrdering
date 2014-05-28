@@ -75,7 +75,7 @@ model=Partition(defaultLabel=VAGUE)
 	feature_bs_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
 	feature_bs_ttdctRelation=TLinkTimeRelation(relation=TARGET_DCT)
 	feature_bs_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
-	model_bs=CLStructuredSVM(l2=1)
+	model_bs=StructuredSVM(l2=1)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
