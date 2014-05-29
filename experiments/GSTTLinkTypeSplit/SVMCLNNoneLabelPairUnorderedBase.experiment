@@ -1,12 +1,12 @@
 randomSeed=1
-maxThreads=8
+maxThreads=16
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
 evaluation=Accuracy()
 evaluation=Accuracy(labelMapping=NoSplit)
 
-gridSearchParameterValues=l2(.000001,.00001,.0001,.001,.01,.1, 1, 10)
+gridSearchParameterValues=l2(.0000005,.000001,.000005,.00001,.00005,.0001,.0005,.001,.005,.01,.05,.1,.5,1,5,10)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
