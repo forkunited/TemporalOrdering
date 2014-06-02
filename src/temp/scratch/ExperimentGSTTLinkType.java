@@ -51,8 +51,13 @@ public class ExperimentGSTTLinkType {
 		ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
 				new ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, trainData, devData, testData);
 	
+		long startTime = System.currentTimeMillis();
 		if (!experiment.run())
 			output.debugWriteln("Error: Experiment run failed.");
+		System.out.println();
+		System.out.println("The total runtime, in seconds: " + (System.currentTimeMillis() - startTime) / 1000);
+		System.out.println("The total runtime, in minutes: " + ((System.currentTimeMillis() - startTime) / 1000) / 60);
+		System.out.println("The total runtime, in hours: " + (((System.currentTimeMillis() - startTime) / 1000) / 60) / 60);
 	}
 	
 	private static DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> loadDataFromDirectory(String path, Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools) {
