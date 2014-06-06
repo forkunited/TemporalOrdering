@@ -20,6 +20,7 @@ import net.sf.javailp.SolverFactoryCPLEX;
 
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.timeml.TLink;
+import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.Document;
@@ -27,7 +28,7 @@ import ark.data.annotation.structure.DatumStructure;
 import ark.util.OutputWriter;
 
 public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {	
-	public interface LabelInferenceRules<L> {
+	public interface LabelInferenceRules<L> extends DatumStructure.DatumStructureConstraints<TLinkDatum<L>, L> {
 		L[][][] getCompositionRules();
 		L getConverse(L label);
 		L getRuleBasedFixedLabel(TLinkDatum<L> datum);
@@ -38,7 +39,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 	private Set<String> tlinkableIds;
 	
 	public TLinkGraph(String id, Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules) {
-		super(id);
+		super(id, labelInferenceRules);
 		this.adjacencyMap = new HashMap<String, Map<String, TLinkDatum<L>>>();
 		this.tlinkableIds = new HashSet<String>();
 		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, false, false));
@@ -165,6 +166,75 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			a[i] = null;
 
 		return a;
+	}
+	
+
+	@Override
+	public boolean constraintsHold() {
+		// TODO Auto-generated method stub
+		// something about checking constraints here.
+		
+		int numTransBroken = 0;
+		
+		for (String tlinkableId1 : tlinkableIds) {
+			for (String tlinkableId2 : tlinkableIds) {
+				for (String tlinkableId3 : tlinkableIds){
+					if (tlinkableId1.equals(tlinkableId2) || tlinkableId2.equals(tlinkableId3) || tlinkableId3.equals(tlinkableId1))
+						continue;
+										
+					if (!(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId3)) 
+							&& !(adjacencyMap.containsKey(tlinkableId3) && adjacencyMap.get(tlinkableId3).containsKey(tlinkableId1))
+							&& !(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId2))
+							&& !(adjacencyMap.containsKey(tlinkableId2) && adjacencyMap.get(tlinkableId2).containsKey(tlinkableId1))
+							&& !(adjacencyMap.containsKey(tlinkableId2) && adjacencyMap.get(tlinkableId2).containsKey(tlinkableId3))
+							&& !(adjacencyMap.containsKey(tlinkableId3) && adjacencyMap.get(tlinkableId3).containsKey(tlinkableId2))
+							)
+						throw new IllegalArgumentException("The tlinkableIds don't match up to the adjacency list in TLinkGraph! They should match.");
+					
+					L label1 = adjacencyMap.get(tlinkableId1).get(tlinkableId2).getLabel();
+					L label2 = adjacencyMap.get(tlinkableId2).get(tlinkableId3).getLabel();
+					L label3 = adjacencyMap.get(tlinkableId1).get(tlinkableId3).getLabel();
+					
+					L[][][] relationConstraints = this.labelInferenceRules.getCompositionRules();
+					
+					boolean transitivityHolds = false;
+					
+					for (L[][] compositionRule : relationConstraints) {
+						L firstConjunctLabel = compositionRule[0][0];
+						L secondConjunctLabel = compositionRule[0][1];
+						L[] consequentLabels = compositionRule[1];
+						
+						if (label1 != null && !firstConjunctLabel.equals(label1))
+							continue;
+						if (label2 != null && !secondConjunctLabel.equals(label2))
+							continue;
+						if (consequentLabels[0] == null) //|| (!this.includeDisjunctiveRules && consequentLabels.length > 1))
+							continue;
+						
+						for (int i = 0; i < consequentLabels.length; i++){
+							if (label3.equals(consequentLabels[i]))
+								transitivityHolds = true;
+						}
+					}
+					if (!transitivityHolds){
+						numTransBroken++;
+						System.out.println("Bad combo!:");
+						System.out.println("R1 = " + label1 + "& R2 = " + label2 + " & R3 = " + label3);
+					}
+				}
+			}
+		}
+		
+		if (numTransBroken > 0){
+			//for (String source : adjacencyMap.keySet()){
+			//	for (String target : adjacencyMap.get(source).keySet()){
+			System.out.println("Number of transitive closures broken: " + numTransBroken);
+			//	}
+			//}
+		}
+	
+		
+		return numTransBroken == 0;
 	}
 	
 	protected class OptimizerInference implements DatumStructureOptimizer<TLinkDatum<L>, L> {
@@ -394,12 +464,14 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				}
 			}
 			
+			/*	This was needed for Gerobi, which isn't used any more.
 			try {
 				Thread.sleep(25);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			*/
 			
 			return resultLabels;
 		}
