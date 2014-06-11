@@ -17,14 +17,14 @@ import ark.data.annotation.structure.DatumStructureCollection;
 import ark.experiment.ExperimentGST;
 import ark.util.OutputWriter;
 
-public class ExperimentGSTTlinkTypeStructured {
+public class ExperimentGSTTLinkTypeStructured {
 	private static int tlinkId;
 	
 	public static void main(String[] args) {
 		String experimentName = "GSTTLinkType/" + args[0];
 		String documentSetName = args[1];
 		boolean useTestData = Boolean.valueOf(args[2]);
-		boolean useDisjunctiveConstraints = Boolean.valueOf(args[3]);
+		boolean checkDisjunctiveConstraints = Boolean.valueOf(args[3]);
 		String experimentOutputName = documentSetName + "/" + experimentName;
 
 		TempProperties properties = new TempProperties();
@@ -53,11 +53,11 @@ public class ExperimentGSTTlinkTypeStructured {
 		ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
 				new ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, trainData, devData, testData);
 		
-		testConstraintsOnFullData(trainData, devData, testData, output, datumTools, useDisjunctiveConstraints);
+		testConstraintsOnFullData(trainData, devData, testData, output, datumTools, checkDisjunctiveConstraints);
 
 		if (!experiment.run())
 			output.debugWriteln("Error: Experiment run failed.");
-		testConstraintsOnOutput(experiment.getClassifiedData(), output, datumTools, useDisjunctiveConstraints);
+		testConstraintsOnOutput(experiment.getClassifiedData(), output, datumTools, checkDisjunctiveConstraints);
 
 	}
 
@@ -85,13 +85,13 @@ public class ExperimentGSTTlinkTypeStructured {
 	// tests constraints on the training, dev, and test data sets.
 	private static void testConstraintsOnFullData(DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> trainData, 
 			DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> devData, DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> testData, OutputWriter output,
-			Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools, boolean useDisjunctiveConstraints){
+			Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools, boolean checkDisjunctiveConstraints){
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> fullData = new DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>(datumTools, null);
 		fullData.addAll(trainData);
 		fullData.addAll(devData);
 		if (testData != null)
 			fullData.addAll(testData);
-		testConstraints(fullData, output, "training, dev, and test", useDisjunctiveConstraints);
+		testConstraints(fullData, output, "training, dev, and test", checkDisjunctiveConstraints);
 		
 	}
 	
@@ -99,7 +99,7 @@ public class ExperimentGSTTlinkTypeStructured {
 	private static void testConstraintsOnOutput(
 			Map<TLinkDatum<TimeMLRelType>, TimeMLRelType> classifiedData,
 			OutputWriter output,
-			Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools, boolean useDisjunctiveConstraints) {
+			Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools, boolean checkDisjunctiveConstraints) {
 		DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data = new DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType>(datumTools, null);
 		
 		for (TLinkDatum<TimeMLRelType> oldDatum : classifiedData.keySet()) {
@@ -107,14 +107,14 @@ public class ExperimentGSTTlinkTypeStructured {
 			data.add(new TLinkDatum<TimeMLRelType>(oldDatum.getId(), newTLink, newTLink.getTimeMLRelType()));
 		}
 		
-		testConstraints(data, output, "output", useDisjunctiveConstraints);		
+		testConstraints(data, output, "output", checkDisjunctiveConstraints);		
 	}
 	
 	// to test the set of constraints that should be enforced on each document. 
 	// the set of constraints are listed in TLink, the actual constraint checking happens within TLinkGraph, at the DatumStructure level.
-	private static void testConstraints(DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data, OutputWriter output, String typeOfData, boolean useDisjunctiveConstraints){
+	private static void testConstraints(DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> data, OutputWriter output, String typeOfData, boolean checkDisjunctiveConstraints){
 		DatumStructureCollection<TLinkDatum<TimeMLRelType>, TimeMLRelType> structuredDataset = data.getDatumTools().makeDatumStructureCollection("TLinkGraphDocument", data);
-		List<Map<String, Integer>> violations = structuredDataset.checkConstraints(useDisjunctiveConstraints);
+		List<Map<String, Integer>> violations = structuredDataset.checkConstraints(checkDisjunctiveConstraints);
 		int totalBroken = 0;
 		int total = 0;
 		int totalBrokenWithDCT = 0;
