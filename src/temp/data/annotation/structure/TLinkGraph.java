@@ -20,7 +20,6 @@ import net.sf.javailp.SolverFactoryCPLEX;
 
 import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.timeml.TLink;
-import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.Document;
@@ -167,29 +166,35 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 
 		return a;
 	}
-	
 
 	@Override
-	public boolean constraintsHold() {
-		// TODO Auto-generated method stub
-		// something about checking constraints here.
-		
+	public Map<String, Integer> constraintsHold(boolean useDisjunctiveConstraints) {		
 		int numTransBroken = 0;
+		int numTransBrokenWithDCT = 0;
+		int totalNum = 0;
 		
+		Set<Set<String>> alreadySeenTriplet = new HashSet<Set<String>>();
 		for (String tlinkableId1 : tlinkableIds) {
 			for (String tlinkableId2 : tlinkableIds) {
 				for (String tlinkableId3 : tlinkableIds){
 					if (tlinkableId1.equals(tlinkableId2) || tlinkableId2.equals(tlinkableId3) || tlinkableId3.equals(tlinkableId1))
 						continue;
 										
-					if (!(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId3)) 
-							&& !(adjacencyMap.containsKey(tlinkableId3) && adjacencyMap.get(tlinkableId3).containsKey(tlinkableId1))
-							&& !(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId2))
-							&& !(adjacencyMap.containsKey(tlinkableId2) && adjacencyMap.get(tlinkableId2).containsKey(tlinkableId1))
-							&& !(adjacencyMap.containsKey(tlinkableId2) && adjacencyMap.get(tlinkableId2).containsKey(tlinkableId3))
-							&& !(adjacencyMap.containsKey(tlinkableId3) && adjacencyMap.get(tlinkableId3).containsKey(tlinkableId2))
-							)
-						throw new IllegalArgumentException("The tlinkableIds don't match up to the adjacency list in TLinkGraph! They should match.");
+					if (!(adjacencyMap.containsKey(tlinkableId1) && adjacencyMap.get(tlinkableId1).containsKey(tlinkableId2)
+							&& adjacencyMap.containsKey(tlinkableId2) && adjacencyMap.get(tlinkableId2).containsKey(tlinkableId3)
+							&& adjacencyMap.get(tlinkableId1).containsKey(tlinkableId3)))
+						continue;
+					// TODO: remove this check. it seems to be working.
+					Set<String> thisTriplet= new HashSet<String>();
+					thisTriplet.add(tlinkableId1);
+					thisTriplet.add(tlinkableId2);
+					thisTriplet.add(tlinkableId3);
+					if (alreadySeenTriplet.contains(thisTriplet))
+						throw new IllegalStateException("When checking constraints, " + 
+								"this relation triplet has already been examined! problem with the \'if ... continue\' statement in constraintsHold!");
+	
+					alreadySeenTriplet.add(thisTriplet);
+					
 					
 					L label1 = adjacencyMap.get(tlinkableId1).get(tlinkableId2).getLabel();
 					L label2 = adjacencyMap.get(tlinkableId2).get(tlinkableId3).getLabel();
@@ -204,37 +209,55 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 						L secondConjunctLabel = compositionRule[0][1];
 						L[] consequentLabels = compositionRule[1];
 						
+
 						if (label1 != null && !firstConjunctLabel.equals(label1))
 							continue;
 						if (label2 != null && !secondConjunctLabel.equals(label2))
 							continue;
-						if (consequentLabels[0] == null) //|| (!this.includeDisjunctiveRules && consequentLabels.length > 1))
+						if (consequentLabels[0] == null || (consequentLabels.length > 1 && !useDisjunctiveConstraints)){
+							transitivityHolds = true;
 							continue;
+						}
+							
 						
 						for (int i = 0; i < consequentLabels.length; i++){
-							if (label3.equals(consequentLabels[i]))
+							if (label3.equals(consequentLabels[i])){
 								transitivityHolds = true;
+
+							}
 						}
 					}
+
+
 					if (!transitivityHolds){
 						numTransBroken++;
 						System.out.println("Bad combo!:");
-						System.out.println("R1 = " + label1 + "& R2 = " + label2 + " & R3 = " + label3);
+						System.out.println("R1 = " + label1 + " & R2 = " + label2 + " & R3 = " + label3);
+						System.out.println(tlinkableId1 + ", " + tlinkableId2 + ", " + tlinkableId3);
+						System.out.println();
+						if (tlinkableId1.equals("t0") || tlinkableId2.equals("t0") || tlinkableId3.equals("t0"))
+							numTransBrokenWithDCT++;
 					}
+					totalNum++;
 				}
 			}
 		}
 		
+		/*
 		if (numTransBroken > 0){
-			//for (String source : adjacencyMap.keySet()){
-			//	for (String target : adjacencyMap.get(source).keySet()){
-			System.out.println("Number of transitive closures broken: " + numTransBroken);
-			//	}
-			//}
+			System.out.println("Number of transitive closures broken: " + numTransBroken + " out of " + totalNum + " total triplets.");
+			System.out.println("Of those broken, " + numTransBrokenWithDCT + " are broken with DCT.");
+		} else{
+			System.out.println("Zero triplets violate the transitive closures!");
 		}
+		System.exit(0);
+		*/
 	
-		
-		return numTransBroken == 0;
+		Map<String, Integer> violations = new HashMap<String, Integer>();
+		violations.put("totalTriplets", totalNum);
+		violations.put("numTripletsWithTransBroken", numTransBroken);
+		violations.put("numTripletsWithTransBrokenWithDCT", numTransBrokenWithDCT);
+		return violations;
 	}
 	
 	protected class OptimizerInference implements DatumStructureOptimizer<TLinkDatum<L>, L> {

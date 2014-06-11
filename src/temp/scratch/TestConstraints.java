@@ -176,11 +176,6 @@ public class TestConstraints {
 		}
 		return types;
 	}
-
-	// Finds the number of relations used in the set of documents.
-	private static int findNumRelations(TempDocumentSet tDocs){
-		return findRelations(tDocs).size();
-	}
 	
 	// to add one to the counter for that ID
 	// event vs time -> eventid or timeid -> reltype -> int
@@ -197,6 +192,11 @@ public class TestConstraints {
 		else
 			typeToInt.put(relType, typeToInt.get(relType) + 1);
 			
+	}
+
+	public static void testAllenConstraints(TempDocumentSet tDocs) {
+		
+		
 	}
 
 }
