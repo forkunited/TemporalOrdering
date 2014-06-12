@@ -45,7 +45,7 @@ model=Partition(defaultLabel=VAGUE)
 		trainingIterations=201
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
-		includeStructuredTraining=true
+		includeStructuredTraining=false
 	}
 	
 	constraint_bs=And(FeatureMatch(tlinkPosition, 1.0, "BETWEEN_SENTENCE"))
@@ -82,6 +82,6 @@ model=Partition(defaultLabel=VAGUE)
 		trainingIterations=201
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
-		includeStructuredTraining=true
+		includeStructuredTraining=false
 	}
 }
