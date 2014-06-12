@@ -27,7 +27,7 @@ import ark.data.annotation.structure.DatumStructure;
 import ark.util.OutputWriter;
 
 public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {	
-	public interface LabelInferenceRules<L> extends DatumStructure.DatumStructureConstraints<TLinkDatum<L>, L> {
+	public interface LabelInferenceRules<L> {
 		L[][][] getCompositionRules();
 		L getConverse(L label);
 		L getRuleBasedFixedLabel(TLinkDatum<L> datum);
@@ -36,9 +36,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 	
 	private Map<String, Map<String, TLinkDatum<L>>> adjacencyMap;
 	private Set<String> tlinkableIds;
+	private LabelInferenceRules<L> labelInferenceRules;
 	
 	public TLinkGraph(String id, Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules) {
-		super(id, labelInferenceRules);
+		super(id);
+		this.labelInferenceRules = labelInferenceRules;
 		this.adjacencyMap = new HashMap<String, Map<String, TLinkDatum<L>>>();
 		this.tlinkableIds = new HashSet<String>();
 		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, false, false));
@@ -199,6 +201,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					L label1 = adjacencyMap.get(tlinkableId1).get(tlinkableId2).getLabel();
 					L label2 = adjacencyMap.get(tlinkableId2).get(tlinkableId3).getLabel();
 					L label3 = adjacencyMap.get(tlinkableId1).get(tlinkableId3).getLabel();
+					
+					
 					
 					L[][][] relationConstraints = this.labelInferenceRules.getCompositionRules();
 					
