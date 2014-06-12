@@ -42,7 +42,7 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=201
+		trainingIterations=21
 		datumStructureCollection=TLinkGraphIntraSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
 		includeStructuredTraining=false
@@ -79,7 +79,7 @@ model=Partition(defaultLabel=VAGUE)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 		labelMapping=OnlyTimeBankDense
-		trainingIterations=201
+		trainingIterations=21
 		datumStructureCollection=TLinkGraphInterSentence
 		datumStructureOptimizer=InferenceTimeMLRelType
 		includeStructuredTraining=false
