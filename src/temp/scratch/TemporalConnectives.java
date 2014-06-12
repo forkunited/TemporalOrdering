@@ -1,9 +1,8 @@
-package temp.data.feature;
+package temp.scratch;
 
-import java.util.*;
-
-import jesse.util.CounterMap;
-import jesse.util.Pair;
+/*
+import ark.util.CounterTable;
+import ark.util.Pair;
 
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
@@ -12,16 +11,16 @@ import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.TLinkable;
 import temp.data.annotation.timeml.Time;
-
+*/
 public class TemporalConnectives {
-	TempDocumentSet tDocs;
+/*	TempDocumentSet tDocs;
 	Set<TimeMLRelType> relations;
 	
 	public TemporalConnectives(TempDocumentSet _tDocs, Set<TimeMLRelType> _relations){
 		tDocs = _tDocs;
 		relations = _relations;
 	}
-
+/*
 	public void findConnectives() {
 		// generate sentencesByDocByRelation 
 		// (which is a map from relation to the set of sentenecs that include that relation)
@@ -57,16 +56,16 @@ public class TemporalConnectives {
 		
 		
 		
-		Pair<Map<TimeMLRelType, CounterMap<String>>, CounterMap<String>> counts = countTokens(sentencesByDocByRelation);
-		Map<TimeMLRelType, CounterMap<String>> probFracs = new HashMap<TimeMLRelType, CounterMap<String>>();
+		Pair<Map<TimeMLRelType, CounterTable<String>>, CounterTable<String>> counts = countTokens(sentencesByDocByRelation);
+		Map<TimeMLRelType, CounterTable<String>> probFracs = new HashMap<TimeMLRelType, CounterTable<String>>();
 		initializeProbFracs(probFracs);
 		computeProbWordGivenRelation(counts.getFirst(), counts.getSecond(), probFracs);
 		printTopTenByRelation(probFracs);
 	}
 
-	private void initializeProbFracs(Map<TimeMLRelType, CounterMap<String>> probFracs){
+	private void initializeProbFracs(Map<TimeMLRelType, CounterTable<String>> probFracs){
 		for (TimeMLRelType rel : relations){
-			probFracs.put(rel, new CounterMap<String>());
+			probFracs.put(rel, new CounterTable<String>());
 		}
 	}
 
@@ -98,11 +97,11 @@ public class TemporalConnectives {
 	}
 	
 	// counts tokens. generates counts by relation.
-	private Pair<Map<TimeMLRelType, CounterMap<String>>, CounterMap<String>> countTokens(
+	private Pair<Map<TimeMLRelType, CounterTable<String>>, CounterTable<String>> countTokens(
 			Map<TimeMLRelType, Map<String, Set<Integer>>> sentencesByDocByRelation){
-		Map<TimeMLRelType, CounterMap<String>> tokenCountByRelation = new HashMap<TimeMLRelType, CounterMap<String>>();
+		Map<TimeMLRelType, CounterTable<String>> tokenCountByRelation = new HashMap<TimeMLRelType, CounterTable<String>>();
 		initializeTokenCountByRelation(tokenCountByRelation);
-		CounterMap<String> tokens = new CounterMap<String>();
+		CounterTable<String> tokens = new CounterTable<String>();
 		
 		// looping over the relations, then the documents, then the sentences to count the tokens
 		for (TimeMLRelType rel : sentencesByDocByRelation.keySet()){
@@ -124,37 +123,37 @@ public class TemporalConnectives {
 	
 	// helper method for countTokens
 	private void initializeTokenCountByRelation(
-			Map<TimeMLRelType, CounterMap<String>> tokenCountByRelation) {
+			Map<TimeMLRelType, CounterTable<String>> tokenCountByRelation) {
 		for (TimeMLRelType rel : relations){
-			tokenCountByRelation.put(rel, new CounterMap<String>());
+			tokenCountByRelation.put(rel, new CounterTable<String>());
 		}
 	}
 	
 	// computes P(word|relation)/P(word). If this number is high, it means this word is likely used with with that relation 
 	// more often than it's used in the general corpus
 	private void computeProbWordGivenRelation(
-			Map<TimeMLRelType, CounterMap<String>> countsByRelation,
-			CounterMap<String> tokenCounts, Map<TimeMLRelType, CounterMap<String>> probFracs) {
+			Map<TimeMLRelType, CounterTable<String>> countsByRelation,
+			CounterTable<String> tokenCounts, Map<TimeMLRelType, CounterTable<String>> probFracs) {
 		
 		for (TimeMLRelType rel : countsByRelation.keySet()){
-			CounterMap<String> relationCounts = countsByRelation.get(rel);
+			CounterTable<String> relationCounts = countsByRelation.get(rel);
 			for (String token : relationCounts.map.keySet()){
 				double probFrac = (relationCounts.value(token) / relationCounts.getTotal()) / (tokenCounts.value(token) / tokenCounts.getTotal());
 				probFracs.get(rel).increment(token, probFrac);
 			}
 		}
 	}
-
+/*
 	private void printTopTenByRelation(
-			Map<TimeMLRelType, CounterMap<String>> probFracs) {
+			Map<TimeMLRelType, CounterTable<String>> probFracs) {
 		// print these in order by value
 		for (TimeMLRelType rel : relations){
 			System.out.println("Number of tokens in " + rel + ": " + probFracs.get(rel).map.keySet().size());
 		}
 		
 		for (TimeMLRelType rel : relations){
-			CounterMap<String> relProbFracs = probFracs.get(rel);
-			Map<String, Double> sortedByProb = relProbFracs.sortByValue();
+			CounterTable<String> relProbFracs = probFracs.get(rel);
+			Map<String, Double> sortedByProb = relProbFracs.
 			System.out.println();
 			System.out.println("Top for " + rel);
 			int counter = 0;
@@ -167,7 +166,7 @@ public class TemporalConnectives {
 			System.out.println();
 		}
 		
-	}
+	}*/
 }
 
 
