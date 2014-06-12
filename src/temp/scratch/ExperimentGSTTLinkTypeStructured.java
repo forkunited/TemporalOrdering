@@ -125,6 +125,7 @@ public class ExperimentGSTTLinkTypeStructured {
 		}
 		output.debugWriteln("");
 		output.debugWriteln("Testing constraints on the " + typeOfData + " data:");
+		output.debugWriteln("Testing disjunctive closure? " + checkDisjunctiveConstraints);
 		output.debugWriteln("Total transitive closures in dataset: " + total);
 		output.debugWriteln("Total transitive closures broken: " + totalBroken);
 		output.debugWriteln("Total transitive closures broken involving DCT: " + totalBrokenWithDCT);
