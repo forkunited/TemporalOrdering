@@ -37,5 +37,5 @@ feature_tstRelation=TLinkTimeRelation(relation=SOURCE_TARGET)
 model=SVM()
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
-	trainingIterations=3001
+	trainingIterations=21
 }
