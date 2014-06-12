@@ -10,15 +10,15 @@ model=Partition(defaultLabel=VAGUE)
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	
-	feature_dct_sourceTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_dct_sourceTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
 	constraint_dct=And(FeatureMatch(tlinkPosition, 1.0,"DCT"), FeatureMatch(tlinkType, 1.0, ".*EVENT.*"))
 	model_dct=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/KCVTLinkType/PartitionExample-DCT_Fold-${FOLD}, warmRestart=false)
 	{
 		validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	}
 	
-	feature_wset_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
-	feature_wset_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=TargetTokenSpan)
+	feature_wset_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
+	feature_wset_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=TargetTokenSpan)
 	feature_wset_preps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
 	feature_wset_verbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
 	feature_wset_verbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)

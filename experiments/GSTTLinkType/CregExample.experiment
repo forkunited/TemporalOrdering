@@ -9,5 +9,5 @@ model=Creg(cmdPath=CregCmd, modelPath=CregModel/${DOCUMENT_SET}/GSTTLinkType/Cre
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 }
-feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
-feature=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=DefaultCleanFn, tokenExtractor=SourceTokenSpan)
+feature=NGramSentence(minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
+feature=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
