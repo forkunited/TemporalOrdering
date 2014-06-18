@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import ark.data.annotation.DocumentInMemory;
-
 public class TempDocumentSet {
 	private List<TempDocument> documents;
 	
@@ -37,7 +35,7 @@ public class TempDocumentSet {
 	
 	public boolean saveToXMLDirectory(String directoryPath) {
 		for (TempDocument document : this.documents) {
-			document.saveToJSONFile(new File(directoryPath, document.getName() + ".xml").getAbsolutePath());
+			document.saveToXMLFile(new File(directoryPath, document.getName() + ".xml").getAbsolutePath());
 		}
 		
 		return true;
@@ -72,7 +70,7 @@ public class TempDocumentSet {
 			
 			for (File file : tempFiles) {
 				System.out.println("Loading document " + file.getName());
-				documentSet.addDocument(new TempDocument(file.getAbsolutePath(), DocumentInMemory.StorageType.JSON));
+				documentSet.addDocument(new TempDocument(file.getAbsolutePath(), TempDocument.StorageType.JSON));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,7 +108,7 @@ public class TempDocumentSet {
 			});
 			
 			for (File file : tempFiles)
-				documentSet.addDocument(new TempDocument(file.getAbsolutePath(), DocumentInMemory.StorageType.XML));
+				documentSet.addDocument(new TempDocument(file.getAbsolutePath(), TempDocument.StorageType.XML));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

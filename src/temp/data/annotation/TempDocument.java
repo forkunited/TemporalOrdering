@@ -1,5 +1,9 @@
 package temp.data.annotation;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -7,13 +11,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jdom.Attribute;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.Text;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import ark.model.annotator.nlp.NLPAnnotator;
+import ark.util.FileUtil;
 import ark.util.Pair;
 import ark.data.annotation.Language;
 import ark.data.annotation.DocumentInMemory;
+import ark.data.annotation.nlp.ConstituencyParse;
+import ark.data.annotation.nlp.DependencyParse;
+import ark.data.annotation.nlp.PoSTag;
 import ark.data.annotation.nlp.TokenSpan;
 
 import net.sf.json.JSONArray;
@@ -26,6 +39,11 @@ import temp.data.annotation.timeml.Time;
 import temp.data.annotation.timeml.Time.TimeMLDocumentFunction;
 
 public class TempDocument extends DocumentInMemory {
+	public enum StorageType {
+		JSON,
+		XML
+	}
+	
 	private Time creationTime;
 	
 	private Event[][] events;
@@ -46,7 +64,32 @@ public class TempDocument extends DocumentInMemory {
 	}
 	
 	public TempDocument(String path, StorageType storageType) {
-		super(path, storageType);
+		if (storageType == StorageType.JSON) {
+			BufferedReader r = FileUtil.getFileReader(path);
+			String line = null;
+			StringBuffer lines = new StringBuffer();
+			try {
+				while ((line = r.readLine()) != null) {
+					lines.append(line).append("\n");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			fromJSON(JSONObject.fromObject(lines.toString()));
+		} else {
+			SAXBuilder builder = new SAXBuilder();
+			org.jdom.Document document = null;
+			try {
+				document = builder.build(new File(path));
+			} catch (JDOMException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			fromXML(document.getRootElement());
+		}
 	}
 	
 	public TempDocument(String name, String text, Language language, Time creationTime, NLPAnnotator annotator) {
@@ -295,7 +338,51 @@ public class TempDocument extends DocumentInMemory {
 	
 	@SuppressWarnings("unchecked")
 	public Element toXML() {
-		Element element = super.toXML();
+		Element element = new Element("file");
+		int sentenceCount = getSentenceCount();
+		
+		element.setAttribute("name", this.name);
+		element.setAttribute("language", this.language.toString());
+		element.setAttribute("nlpAnnotator", this.nlpAnnotator);
+		
+		for (int i = 0; i < sentenceCount; i++) {
+			int sentenceTokenCount = getSentenceTokenCount(i);
+			Element entryElement = new Element("entry");
+			entryElement.setAttribute("sid", String.valueOf(i));
+			entryElement.setAttribute("file", this.name);
+
+			Element sentenceElement = new Element("sentence");
+			sentenceElement.addContent(getSentence(i).toString().trim());
+			entryElement.addContent(sentenceElement);
+			
+			Element tokensElement = new Element("tokens");
+			for (int j = 0; j < sentenceTokenCount; j++) {
+				Element tokenElement = new Element("t");
+				tokenElement.addContent("\" \" \"" + getToken(i, j) + "\" \" \"");
+				if (this.posTags.length > 0) {
+					PoSTag posTag = getPoSTag(i, j);
+					if (posTag != null)
+						tokenElement.setAttribute("pos", posTag.toString());
+				}
+				tokensElement.addContent(tokenElement);
+			}
+			entryElement.addContent(sentenceElement);
+			entryElement.addContent(tokensElement);
+			
+			if (this.dependencyParses.length > 0) {
+				Element depsElement = new Element("deps");
+				depsElement.addContent(getDependencyParse(i).toString());
+				entryElement.addContent(depsElement);
+			}
+			
+			if (this.constituencyParses.length > 0) {
+				Element parseElement = new Element("parse");
+				parseElement.addContent(getConstituencyParse(i).toString());
+				entryElement.addContent(parseElement);
+			}
+			
+			element.addContent(entryElement);
+		}
 		
 		if (this.creationTime != null)
 			element.addContent(this.creationTime.toXML());
@@ -511,13 +598,71 @@ public class TempDocument extends DocumentInMemory {
 	
 	@SuppressWarnings("unchecked")
 	protected boolean fromXML(Element element) {
-		if (!super.fromXML(element))
-			return false;
+		boolean hasName = false;
+		boolean hasLanguage = false;
+		boolean hasNlpAnnotator = false;
 		
-		initializeTimeML();
+		List<Attribute> attributes = (List<Attribute>)element.getAttributes();
+		for (Attribute attribute : attributes) {
+			if (attribute.getName().equals("name"))
+				hasName = true;
+			else if (attribute.getName().equals("language"))
+				hasLanguage = true;
+			else if (attribute.getName().equals("nlpAnnotator"))
+				hasNlpAnnotator = true;
+		}
+		
+		if (hasName)
+			this.name = element.getAttributeValue("name");
+		
+		if (hasLanguage)
+			this.language = Language.valueOf(element.getAttributeValue("language"));
+		else
+			this.language = Language.English;
+			
+		if (hasNlpAnnotator)
+			this.nlpAnnotator = element.getAttributeValue("nlpAnnotator");
 		
 		List<Element> entryElements = (List<Element>)element.getChildren("entry");
+		this.tokens = new String[entryElements.size()][];
+		this.posTags = new PoSTag[entryElements.size()][];
+		this.dependencyParses = new DependencyParse[entryElements.size()];
+		this.constituencyParses = new ConstituencyParse[entryElements.size()];
 		
+		for (Element entryElement : entryElements) {
+			int sentenceIndex = Integer.parseInt(entryElement.getAttributeValue("sid"));
+			
+			Element tokensElement = entryElement.getChild("tokens");
+			List<Element> tElements = tokensElement.getChildren("t");
+			this.tokens[sentenceIndex] = new String[tElements.size()];
+			this.posTags[sentenceIndex] = new PoSTag[tElements.size()];
+			for (int j = 0; j < tElements.size(); j++) {
+				String tElementText = tElements.get(j).getText();
+				int firstQuoteIndex = -1;
+				int secondQuoteIndex = tElementText.length();
+				for (int i = 0; i < 3; i++) {
+					firstQuoteIndex = tElementText.indexOf("\"", firstQuoteIndex+1);
+					secondQuoteIndex = tElementText.lastIndexOf("\"", secondQuoteIndex-1);
+				}
+				
+				this.tokens[sentenceIndex][j] = tElementText.substring(firstQuoteIndex + 1, secondQuoteIndex);
+				List<Attribute> tAttributes = (List<Attribute>)tElements.get(j).getAttributes();
+				for (Attribute attribute : tAttributes)
+					if (attribute.getName().equals("pos"))
+						this.posTags[sentenceIndex][j] = PoSTag.valueOf(attribute.getValue());
+			}
+		
+			Element depsElement = entryElement.getChild("deps");
+			if (depsElement != null)
+				this.dependencyParses[sentenceIndex] = DependencyParse.fromString(depsElement.getText(), this, sentenceIndex);
+			
+			Element parseElement = entryElement.getChild("parse");
+			if (parseElement != null)
+				this.constituencyParses[sentenceIndex] = ConstituencyParse.fromString(parseElement.getText(), this, sentenceIndex);
+		}
+		
+		initializeTimeML();
+
 		List<List<Element>> timexesXML = new ArrayList<List<Element>>();
 		List<List<Element>> eventsXML = new ArrayList<List<Element>>();
 		Signal[][] signals = new Signal[entryElements.size()][];
@@ -721,5 +866,23 @@ public class TempDocument extends DocumentInMemory {
 		document.setTLinks(tlinks);
 		
 		return document;
+	}
+	
+	public boolean saveToXMLFile(String path) {
+		try {
+			org.jdom.Document document = new org.jdom.Document();
+			document.setRootElement(toXML());
+			
+			FileOutputStream out = new FileOutputStream(new File(path));
+			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+			
+			outputter.output(document, out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		return true;
 	}
 }
