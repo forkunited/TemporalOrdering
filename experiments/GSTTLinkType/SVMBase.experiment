@@ -38,4 +38,5 @@ model=SVM()
 {
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	trainingIterations=101
+	earlyStopIfNoLabelChange=true
 }
