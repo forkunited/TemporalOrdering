@@ -38,6 +38,7 @@ model=SVMStructured()
 	validLabels=BEFORE, AFTER, INCLUDES, IS_INCLUDED, SIMULTANEOUS, VAGUE
 	labelMapping=OnlyTimeBankDense
 	trainingIterations=201
+	earlyStopIfNoLabelChange=true
 	datumStructureCollection=TLinkGraphDocument
 	datumStructureOptimizer=InferenceTimeMLRelType
 	includeStructuredTraining=true
