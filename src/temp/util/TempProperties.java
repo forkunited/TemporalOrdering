@@ -2,6 +2,14 @@ package temp.util;
 
 import ark.util.Properties;
 
+/**
+ * 
+ * TempProperties loads in a temp.properties configuration
+ * file.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class TempProperties extends Properties {
 	private String freeLingLibraryPath;
 	private String freeLingDataDirPath;

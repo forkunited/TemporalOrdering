@@ -31,6 +31,13 @@ import temp.model.annotator.nlp.NLPAnnotatorFreeLing;
 import temp.model.annotator.timeml.TimeAnnotatorHeidel;
 import temp.util.TempProperties;
 
+/**
+ * Scratch is a scratch space in which to perform miscellaneous
+ * throw-away tasks. Feel free to delete the code here and replace
+ * it with other snippets you'd like to try.
+ * 
+ * @author Bill McDowell
+ */
 public class Scratch {
 	public static void main(String[] args) throws IOException {		
 		/*TempProperties properties = new TempProperties();

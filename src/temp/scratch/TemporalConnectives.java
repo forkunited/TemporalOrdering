@@ -12,6 +12,12 @@ import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.TLinkable;
 import temp.data.annotation.timeml.Time;
 */
+
+/**
+ * FIXME: Fill in documentation maybe later
+ * 
+ * @author Jesse Dodge
+ */
 public class TemporalConnectives {
 /*	TempDocumentSet tDocs;
 	Set<TimeMLRelType> relations;

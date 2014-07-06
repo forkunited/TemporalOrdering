@@ -17,6 +17,11 @@ import ark.data.annotation.structure.DatumStructureCollection;
 import ark.experiment.ExperimentGST;
 import ark.util.OutputWriter;
 
+/**
+ * FIXME: Fill in documentation maybe later
+ * 
+ * @author Jesse Dodge
+ */
 public class ExperimentGSTTLinkTypeStructured {
 	private static int tlinkId;
 	

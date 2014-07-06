@@ -14,6 +14,11 @@ import temp.data.annotation.timeml.Time;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.data.annotation.timeml.TLinkable.Type;
 
+/**
+ * FIXME: Fill in documentation maybe later
+ * 
+ * @author Jesse Dodge
+ */
 public class TestConstraints {
 	
 	public static void testConstraints(TempDocumentSet tDocs){

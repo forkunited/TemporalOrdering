@@ -7,6 +7,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * TempDocumentSet represents a set of NLP annotated
+ * temporal ordering documents that can be loaded from 
+ * or saved to disk
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class TempDocumentSet {
 	private List<TempDocument> documents;
 	
@@ -41,6 +49,11 @@ public class TempDocumentSet {
 		return true;
 	}
 	
+	/**
+	 * @param directoryPath
+	 * @return set of documents stored in JSON files at directoryPath and under
+	 * sub-directories of directoryPath
+	 */
 	public static TempDocumentSet loadFromJSONDirectory(String directoryPath) {
 		File directory = new File(directoryPath);
 		TempDocumentSet documentSet = new TempDocumentSet();
@@ -79,7 +92,12 @@ public class TempDocumentSet {
 		
 		return documentSet;
 	}
-	
+
+	/**
+	 * @param directoryPath
+	 * @return set of documents stored in XML files at directoryPath and under
+	 * sub-directories of directoryPath
+	 */
 	public static TempDocumentSet loadFromXMLDirectory(String directoryPath) {
 		File directory = new File(directoryPath);
 		TempDocumentSet documentSet = new TempDocumentSet();
