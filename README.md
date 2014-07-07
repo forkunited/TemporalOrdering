@@ -80,10 +80,10 @@ of the project.
 appropriate settings by replacing the text inside them that is surrounded by 
 square brackets.
 
+## Notes ##
 
+* Some of the jars included in build.xml are probably no longer necessary.  You might
+want to take some time to figure out which ones are unnecessary and remove them.
 
-
-
-Some jars in build.xml probably unnecessary but included for historical purposes. Might want to clean this up.
-
-Freeling only works on windows? Might be broken.  Hard to set up.
+* The FreeLing library interface in *temp.model.annotator.nlp.NLPAnnotatorFreeLing* 
+only works on Windows currently.
