@@ -48,6 +48,29 @@ import edu.upc.freeling.VectorWord;
 
 import temp.util.TempProperties;
 
+/**
+ * NLPAnnotatorFreeLing supplements a text with NLP 
+ * annotations (parses, part-of-speech tags, etc) using 
+ * the FreeLing NLP pipeline.  This pipeline works on several
+ * languages including English and Spanish.
+ * 
+ * The NLPAnnotatorFreeLing class currently only works on Windows
+ * machines, but can be fixed to work on other platforms
+ * as well.
+ * 
+ * The returned NLP annotations are in the ARKWater 
+ * (https://github.com/forkunited/ARKWater)
+ * library's format.
+ * 
+ * Once constructed for a specified language, the annotator 
+ * object can be used by calling
+ * the setText method to set the text to be annotated, and
+ * then calling the make[X] methods to retrieve the annotations
+ * for that text.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class NLPAnnotatorFreeLing extends NLPAnnotator {
 	private TempProperties properties;
 	
@@ -67,6 +90,13 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 
 	private Map<String, List<WordNet.Hypernym>> wordNetHypernymMap;
 	
+	/**
+	 * @param properties
+	 *
+	 * Sets up the FreeLing pipeline, assuming that the CLASSPATH
+	 * and other environment variables are set appropriately (see
+	 * FreeLing documentation)
+	 */
     public NLPAnnotatorFreeLing(TempProperties properties) {
 		this.properties = properties;
 		
@@ -131,6 +161,12 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		}
 	}
 	
+	/**
+	 * @param language
+	 * @return true if the language of the annotator is successfully 
+	 * set.  If this method is not called explicitly, then the default is 
+	 * Spanish (since this is the language we were using FreeLing for primarily)
+	 */
 	public boolean setLanguage(Language language) {
 		if (language == this.language)
 			return true;
@@ -182,6 +218,11 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return "FreeLing";
 	}
 	
+	/**
+	 * @param text
+	 * @return true if the annotator has received the text 
+	 * and is ready to return annotations for it
+	 */
 	public boolean setText(String text) {
 		this.text = text;
 		
@@ -201,6 +242,10 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return true;
 	}
 	
+	/**
+	 * @return an array of tokens for each segmented 
+	 * sentence of the text.
+	 */
 	public String[][] makeTokens() {
 		String[][] tokens = new String[(int)this.textSentences.size()][];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
@@ -220,6 +265,11 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tokens;
 	}
 	
+	/**
+	 * @return an array of part-of-speech tags for each segmented 
+	 * sentence of the text.  This maps the FreeLing PoS tags into
+	 * PennTreeBank PoS tags used by ARKWater.
+	 */
 	protected PoSTag[][] makePoSTagsInternal() {
 		PoSTag[][] tags = new PoSTag[(int)this.textSentences.size()][];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
@@ -286,6 +336,10 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return tags;
 	}
 	
+	/**
+	 * @return a dependency parse for each segmented 
+	 * sentence of the text.
+	 */
 	protected DependencyParse[] makeDependencyParsesInternal(Document document, int sentenceIndexOffset) {
 		DependencyParse[] parses = new DependencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
@@ -344,6 +398,10 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return parses;
 	}
 
+	/**
+	 * @return a constituency parse for each segmented 
+	 * sentence of the text.
+	 */
 	protected ConstituencyParse[] makeConstituencyParsesInternal(Document document, int sentenceIndexOffset) {
 		ConstituencyParse[] parses = new ConstituencyParse[(int)this.textSentences.size()];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);
@@ -395,6 +453,10 @@ public class NLPAnnotatorFreeLing extends NLPAnnotator {
 		return parses;
 	}
 	
+	/**
+	 * @return an array of hypernyms for each token of each segmented 
+	 * sentence of the text.
+	 */
 	public WordNet.Hypernym[][][] makeTokenHypernyms() {
 		WordNet.Hypernym[][][] hypernyms = new WordNet.Hypernym[(int)this.textSentences.size()][][];
 		ListSentenceIterator iterator = new ListSentenceIterator(this.textSentences);

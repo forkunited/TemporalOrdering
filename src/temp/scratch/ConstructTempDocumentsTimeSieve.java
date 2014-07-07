@@ -15,6 +15,26 @@ import ark.model.annotator.nlp.NLPAnnotatorStanford;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
 
+/**
+ * ConstructTempDocumentsTimeSieve takes the following arguments:
+ * 
+ * [inputPath] - Path to TimeSieve 'infofile' source dataset XML file
+ * [outputPath] - Path to output directory for serialized TempDocumentSet
+ * 
+ * And constructs a temp.data.annotation.TempDoccumentSet from 
+ * the 'infofile' at [inputPath], 
+ * serializing it as JSON files to the [outputPath] directory.
+ * 
+ * The output TempDocumentSet represents the input TimeSieve 'infofile' 
+ * documents extended
+ * with various NLP annotations (parses, PoSTags, tokenizations, etc).
+ * The NLP annotations are generated using 
+ * ark.model.annotator.nlp.NLPAnnotatorStanford (which assumes the input
+ * file represents an English dataset).
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class ConstructTempDocumentsTimeSieve {
 	public static void main(String[] args) {
 		String inputPath = args[0];

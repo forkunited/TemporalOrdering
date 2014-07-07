@@ -12,6 +12,16 @@ import temp.data.annotation.TempDocument;
 import ark.data.annotation.nlp.TokenSpan;
 import ark.util.Pair;
 
+/**
+ * Time represents a TimeML Event instance.  In TimeBank,
+ * this is represented by an EVENT and a MAKEINSTANCE for
+ * that event (with an eid and an eiid identifier)
+ * 
+ * See http://timeml.org/site/index.html for details.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class Event implements TLinkable {	
 	public enum TimeMLTense {
 		FUTURE,
@@ -124,6 +134,9 @@ public class Event implements TLinkable {
 		return TLinkable.Type.EVENT;
 	}
 	
+	/**
+	 * @return the event instance id (eiid) for this event
+	 */
 	public String getId() {
 		return this.id;
 	}
@@ -132,6 +145,9 @@ public class Event implements TLinkable {
 		return this.tokenSpan;
 	}
 	
+	/**
+	 * @return the event id (eid) for this event
+	 */
 	public String getSourceId() {
 		return this.sourceId;
 	}
@@ -156,6 +172,11 @@ public class Event implements TLinkable {
 		return this.timeMLClass;
 	}
 	
+	/**
+	 * @return part-of-speech according to TimeML (some
+	 * versions of TempEval have their own PoS tags given
+	 * in the data set)
+	 */
 	public TimeMLPoS getTimeMLPoS() {
 		return this.timeMLPoS;
 	}

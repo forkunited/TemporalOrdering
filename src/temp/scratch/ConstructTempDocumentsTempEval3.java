@@ -15,7 +15,36 @@ import temp.data.annotation.TempDocumentSet;
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
-
+/**
+ * ConstructTempDocumentsTempEval3 takes the following arguments:
+ * 
+ * [inputPath] - Path to TempEval3 source data set directory
+ * [outputPath] - Path to output directory for serialized TempDocumentSet
+ * [language] - Language of the input TempEval2 data
+ * 
+ * And constructs a temp.data.annotation.TempDoccumentSet from 
+ * the TempEval3 [language] data at the [inputPath] directory, 
+ * serializing it as JSON files to the [outputPath] directory.
+ * 
+ * The output TempDocumentSet represents TempEval3 documents extended
+ * with various NLP annotations (parses, PoSTags, tokenizations, etc).
+ * The NLP annotations are generated using 
+ * temp.model.annotator.nlp.NLPAnnotatorMultiLanguage.
+ * 
+ * IMPORTANT: I (Bill) believe this class is currently buggy, and doesn't 
+ * produce an entirely correct conversion of the TempEval3 data.  I 
+ * remember that I became frustrated with getting this to work, and I instead
+ * converted the TempEval3 data to the NLP annotated JSON format using 
+ * Nate Chambers' TimeSieve 'infofile' version 
+ * of the TempEval3 data instead of the original
+ * official version.  You can re-do this conversion by running 
+ * temp.scratch.ConstructTempDocumentsTimeSieve on the TempEval3 'infofile'.
+ * This might be on cab cluster with the other temporal ordering data,
+ * or you can ask me for a copy if you can't find it on cab.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class ConstructTempDocumentsTempEval3 {
 	public static void main(String[] args) {
 		String inputPath = args[0];

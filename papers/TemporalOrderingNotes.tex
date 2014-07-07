@@ -1,0 +1,233 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage{fullpage}
+\usepackage[pdftex]{graphicx}
+\usepackage{amsfonts,eucal,amsbsy,amsopn,amsmath}
+\usepackage{url}
+\usepackage[sort&compress]{natbib}
+\usepackage{latexsym}
+\usepackage{wasysym} 
+\usepackage{rotating}
+\usepackage{fancyhdr}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\usepackage{sectsty}
+\usepackage[dvipsnames,usenames]{color}
+\usepackage{multicol}
+\definecolor{orange}{rgb}{1,0.5,0}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage[table]{xcolor}
+\usepackage{sidecap}
+\usepackage{caption}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{floatrow}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{appendix}
+\usepackage{tikz}
+\usepackage{rotating}
+\usepackage{array}
+
+\usetikzlibrary{arrows}
+
+\newcolumntype{+}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+#1\ignorespaces
+}
+
+\renewcommand{\captionfont}{\small}
+\setlength{\oddsidemargin}{-0.04cm}
+\setlength{\textwidth}{16.59cm}
+\setlength{\topmargin}{-0.04cm}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{22.94cm}
+\allsectionsfont{\normalsize}
+\newcommand{\ignore}[1]{}
+\newenvironment{enumeratesquish}{\begin{list}{\addtocounter{enumi}{1}\arabic{enumi}.}{\setlength{\itemsep}{-0.25em}\setlength{\leftmargin}{1em}\addtolength{\leftmargin}{\labelsep}}}{\end{list}}
+\newenvironment{itemizesquish}{\begin{list}{\setcounter{enumi}{0}\labelitemi}{\setlength{\itemsep}{-0.25em}\setlength{\labelwidth}{0.5em}\setlength{\leftmargin}{\labelwidth}\addtolength{\leftmargin}{\labelsep}}}{\end{list}}
+
+\bibpunct{(}{)}{;}{a}{,}{,}
+\newcommand{\nascomment}[1]{\textcolor{blue}{\textsc{\textbf{[#1 --nas]}}}}
+\newcommand{\wvmcomment}[1]{\textcolor{green}{\textsc{\textbf{[#1 --wvm]}}}}
+
+\newcommand{\two}[2]{\begin{tabular}{c}\textbf{#1}\\\textbf{(#2)}\end{tabular}}
+
+\newcommand{\black}{\cellcolor{black}}
+
+\setlength{\tabcolsep}{5pt}
+
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\DeclareFloatFont{small}{\small}
+\floatsetup[table]{font=small}
+\floatsetup[caption]{font=small}
+\floatsetup[algorithm]{font=small}
+
+\title{Temporal Ordering Notes}
+
+\date{Spring 2014}
+
+\begin{document}
+\maketitle
+
+\section{Structured SVM}
+
+We have a generic structured SVM implemented according to the following objective
+function which minimizes the hinge loss over a set of $N$ structured inputs and
+outputs $\{(\mathbf{x}_i,\mathbf{y}_i)|1\leq i \leq N\}$:
+
+\begin{equation}
+\begin{split}
+\label{objective}
+& \min_{\mathbf{w},  \mathbf{b}} \lambda_2\|\mathbf{w}\|_2^2+\lambda_1\|\mathbf{w}\|_1 \\
+ & +\sum_{i=1}^N\bigg(-\mathbf{w}^\top \mathbf{g}(\mathbf{x}_i,\mathbf{y}_i)-\mathbf{b}^\top \mathbf{l}(\mathbf{y}_i)+\max_{\mathbf{y}\in \mathcal{Y}_{x_i}}\Big(\mathbf{w}^\top\mathbf{g}(\mathbf{x}_i,\mathbf{y})+\mathbf{b}^\top \mathbf{l}(\mathbf{y})+c(\mathbf{x}_i,\mathbf{y}_i,\mathbf{y})\Big)\bigg)
+\end{split}
+\end{equation}
+
+The components of $\mathbf{w}$ are the regularized weights on features 
+$\mathbf{g}$, the components of $\mathbf{b}$ are biases on label counts 
+$\mathbf{l}$ and $c(\mathbf{x}_i,\mathbf{y}_i,\mathbf{y})$ is the cost of predicting
+$\mathbf{y}$ for example $i$.  The minimization of objective \ref{objective} 
+results in feature weights $\mathbf{w}$ and biases $\mathbf{b}$ which
+make a prediction $\mathbf{y}$ for input $\mathbf{x}$ according to:
+
+\begin{equation}
+\label{prediction}
+\mathbf{y}=\argmax_{\mathbf{y}'\in\mathcal{Y}_x}\Big( \mathbf{w}^\top \mathbf{g}(\mathbf{x},\mathbf{y}')+\mathbf{b}^\top\mathbf{l}(\mathbf{y}') \Big)
+\end{equation}
+
+The model assumes that each structured input $\mathbf{x}_i$ factors into components $(x_{i1},\hdots,x_{ij},\hdots,x_{ik(\mathbf{x}_i)})$, 
+and each structured output $\mathbf{y}_i$ factors into corresponding labels
+ $(y_{i1},\hdots,y_{ij},\hdots,y_{ik(\mathbf{x}_i)})$.  Each label $y_{ij}$ 
+ comes from a set of factor labels $\mathcal{L}$ (and so $\mathcal{Y}_x=\mathcal{L}^{k(x_i)}$).
+Furthermore, the model is constructed so that $\mathbf{g}$ and 
+$\mathbf{w}$ have components $g_{ml}$ and $w_{ml}$ where $m$ indexes a 
+feature type and $l\in\mathcal{L}$ is a factor label, with $g_{ml}$ expressible
+as:
+
+\begin{equation}
+g_{ml}(\mathbf{x}_i,\mathbf{y}_i)=\sum_{j=1}^{k(\mathbf{x}_i)}\mathbf{1}(y_{ij}=l)f_m(x_{ij})
+\end{equation}
+
+Where each $f_m$ is a percept that only depends on a single factor of the 
+input structure (Nathan's terminology).
+
+Similarly, the model assumes that the cost function $\mathbf{c}$ is factorable as:
+
+\begin{equation}
+c(\mathbf{x}_i,\mathbf{y}_i,\mathbf{y}_h)=\sum_{j=1}^{k(\mathbf{x}_i)}\mathbf{1}(y_{ij}\neq y_{hj})
+\end{equation}
+
+When computing the loss for each example, the model must search a potentially large $\mathcal{Y}_x$ to find the value of the following expression:
+
+\begin{equation}
+\max_{\mathbf{y}\in \mathcal{Y}_{x_i}}\Big(\mathbf{w}^\top\mathbf{g}(\mathbf{x}_i,\mathbf{y})+\mathbf{b}^\top \mathbf{l}(\mathbf{y})+c(\mathbf{x}_i,\mathbf{y}_i,\mathbf{y})\Big)\bigg)
+\end{equation}
+
+To perform this search, the model relies on the fact that this expression is equal to:
+
+\begin{equation}
+\label{exp}
+\max_{\mathbf{y}_h\in \mathcal{Y}_{x_i}}\Bigg(\sum_{j=1}^{k(x_i)}\sum_{l\in\mathcal{L}}\bigg( \mathbf{1}(l=y_{hj})\Big( \mathbf{1}(y_{ij}\neq y_{hj})+\sum_m w_{ml}f_m(x_{ij})\Big) \bigg)\Bigg)
+\end{equation}
+
+In order to compute the value of expression \ref{exp}, the model computes the following
+for each $i$, $j$, and $l$:
+
+\begin{equation}
+u_{ijl} = \mathbf{1}(y_{ij}\neq l)+\sum_m w_{ml}f_m(x_{ij})
+\end{equation}
+
+Notice that these values are used in expression \ref{exp}.  They are passed to a domain-specific optimization function that computes $\mathbf{y}_h$ in expression \ref{exp} through:
+
+\begin{equation}
+\label{ilp}
+\mathbf{e}_i=\argmax_{\mathbf{e}_i'\in\{0,1\}^{k(x_i)}}\mathbf{e}_i'^\top \mathbf{u}
+\end{equation}
+
+Where each component $e_{ijl}$ of $\mathbf{e}_i$ indicates whether 
+$y_{hj}=l$, and these components are constrained so that the resulting 
+$\mathbf{y}_h\in\mathcal{Y}_{x_i}$.  The resulting $\mathbf{y}_h$ can be
+used to determine the value of expression \ref{exp}.
+
+The prediction for an example according to to equation \ref{prediction} is computed 
+similarly, just without the cost term in $u_{ijl}$
+
+The implementation allows the model to remain abstract while referring to 
+domain specific features and domain specific definitions for $\mathcal{Y}_x$.
+
+\subsection{Temporal Relation Classification Structured Model}
+
+The temporal relation classification task can use the model defined above 
+with an implementation of equation \ref{ilp} which has an ILP to enforce several 
+constraints.  The temporal relations can be partitioned into separate graph 
+structures in several ways for this task, but we currently have them 
+partitioned by sentence and sentence pairs.  So, we have a set of 
+within-sentence temporal relation graphs $\mathcal{X}_s$ and a set of 
+between-sentence temporal relation graphs $\mathcal{X}_b$.  Each 
+$\mathbf{x}_s\in\mathcal{X}_s$ contains relations between the document 
+creation time and all events and all times in a single sentences.  
+Each $\mathbf{x}_b\in\mathcal{X}_b$ contains relations between all events 
+and all times in two consecutive sentences. $\mathcal{X}_s$ is passed to 
+a structured within-sentence model $\mathcal{M}_s$, and $\mathcal{X}_b$ is 
+passed to a structured between-sentence model $\mathcal{M}_b$.  The temporal 
+relation classifications from $\mathcal{M}_s$ are used to constrain the 
+output space of $\mathcal{M}_b$.
+
+For this task, each $e_{ijl}$ from equation \ref{ilp} indicates whether 
+event-event or event-time pair $j$ has temporal relation $l$ in graph $i$.  
+There are several constraints on the value of each $e_{ijl}$ enforced through 
+an ILP that is run for each graph.  To make the constraints easier to 
+understand, we'll rewrite each $e_{ijl}$ as $t_{jkl}$ to indicate that there 
+is a temporal relation of type $l$ between vertices $j$ and $k$ (implicitly 
+in the same example graph $i$).  We have the following constraints:
+
+\begin{enumerate}
+
+\item \textbf{Label On-Off}: $\forall j\neq k, l: t_{jkl}\in \{0,1\}$
+
+\item \textbf{Single Label}: $\forall j\neq k: \sum_{l\in \mathcal{L}}t_{jkl}=1$
+
+\item \textbf{Converse}: $\forall j<k,l: t_{jkl}-t_{kjl'}\leq 0$ where $l'$ is 
+the converse of $l$
+
+\item \textbf{Grounded Time-Time}: $t_{jkl}\geq 1$ if $j$ and $k$ index time 
+expression vertices that are given relation $l$ according to their grounded 
+intervals
+
+\item \textbf{Transitivity}: $\forall \{j,k,m\}: t_{jkl}+t_{kml'}-t_{jml''}\leq 1$ for Allen's 
+interval algebra composition relations that 
+say $l(j,k)\wedge l'(k,m)\rightarrow l''(j,m)$
+
+\item \textbf{Disjunctive Transitivity}: $\forall \{j,k,m\}: t_{jkl}+t_{kml'}-\sum_{l''}t_{jml''}\leq 1$ 
+for Allen's interval algebra composition relations that say 
+$l(j,k)\wedge l'(k,m)\rightarrow \bigvee_{l''}l''(j,m)$
+
+\end{enumerate}
+
+In total there are $n(n-1)|\mathcal{L}|$ variables and $O(n^3)$ 
+constraints in the ILP for a graph with $n$ vertices.  The current 
+implementation has variables $t_{jkl}$ and $t_{kjl}$ representing forward and 
+backward links between two vertices.  It might be possible to eliminate the 
+backward link variables along with the \textbf{Converse} constraint for 
+improved efficiency, but we haven't had time to think through that yet. 
+
+The Allen's interval relations enforced by the \textbf{Transitivity} and 
+\textbf{Disjunctive Transitivity} constraints are given at 
+\url{http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html} and in the other 
+document we passed around through email.  Our implementation has the ability 
+to easily turn off and on each of these constraints to see how they 
+contribute to the overall performance.
+
+\end{document}

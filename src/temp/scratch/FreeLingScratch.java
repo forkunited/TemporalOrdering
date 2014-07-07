@@ -8,6 +8,12 @@ import temp.util.TempProperties;
 
 import edu.upc.freeling.*;
 
+/**
+ * FreeLingScratch is a scratch space in which to perform miscellaneous
+ * throw-away tasks/tests involving the FreeLing NLP library. 
+ * 
+ * @author Bill McDowell
+ */
 public class FreeLingScratch {
   // Modify this line to be your FreeLing installation directory
   private static final TempProperties properties = new TempProperties();

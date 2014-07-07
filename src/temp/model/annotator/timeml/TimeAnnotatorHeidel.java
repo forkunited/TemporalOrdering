@@ -21,11 +21,21 @@ import temp.data.annotation.timeml.Time;
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
+/**
+ * TimeAnnotatorHeidel is a wrapper around the HeidelTime temporal
+ * expression identifier/parser tool.
+ * 
+ * This implementation has not been tested thoroughly, so it probably
+ * requires some debugging.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class TimeAnnotatorHeidel extends TimeAnnotator {
 	private TempProperties properties;
 	private HeidelTimeStandalone heidelTime;
 	private SAXBuilder xmlBuilder;
-	private NLPAnnotator nlpAnnotator;
+	private NLPAnnotator nlpAnnotator; // For tokenizing/sentence-splitting XML output of HeidelTime
 	
 	public TimeAnnotatorHeidel(TempProperties properties) {
 		this.properties = properties;
@@ -33,6 +43,12 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 		this.xmlBuilder = new SAXBuilder();
 	}
 
+	/**
+	 * @param document
+	 * @return two-dimensional array of time expressions in the 
+	 * document, where inner array with index i contains times for 
+	 * sentence i.
+	 */
 	@Override
 	public Time[][] makeTimes(TempDocument document) {
 		if (!initializeForDocument(document))
@@ -62,6 +78,11 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 		return times;
 	}
 	
+	/**
+	 * @param document
+	 * @return true if HeidelTime and the NLPAnnotator have been 
+	 * initialized for the specified language
+	 */
 	private boolean initializeForDocument(TempDocument document) {
 		if (document.getLanguage() == Language.English)
 			this.heidelTime.setLanguage(de.unihd.dbs.uima.annotator.heideltime.resources.Language.ENGLISH);
@@ -73,7 +94,7 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 		if (document.getCreationTime() == null)
 			this.heidelTime.setDocumentType(DocumentType.NARRATIVES);
 		else
-			this.heidelTime.setDocumentType(DocumentType.NEWS);
+			this.heidelTime.setDocumentType(DocumentType.NEWS); // requires document creation time. Breaks otherwise
 		
 		if (document.getNLPAnnotator() == null && this.nlpAnnotator == null) {
 			this.nlpAnnotator = NLPAnnotatorMultiLanguage.forLanguage(this.properties, document.getLanguage());
@@ -89,6 +110,16 @@ public class TimeAnnotatorHeidel extends TimeAnnotator {
 		return true;
 	}
 	
+	/**
+	 * 
+	 * @param timeMLElement
+	 * @param document
+	 * @param sentenceIndex
+	 * @return array of times for a sentence given by HeidelTime.  HeidelTime returns
+	 * a TimeML document, and this function tokenizes and sentence-splits it, mapping
+	 * the HeidelTime time expressions to token indices within the temporal ordering 
+	 * document (temp.data.annotation.TempDocument).
+	 */
 	@SuppressWarnings("rawtypes")
 	private Time[] buildTimesFromTimeML(Element timeMLElement, TempDocument document, int sentenceIndex) {
 		List xmlParts = timeMLElement.getContent();

@@ -8,10 +8,12 @@ import ark.util.Pair;
 
 /**
  * 
- * Parses out normalized TimeML times into ranges of dates.  
+ * Parses out normalized TimeML times into ranges of dates representing
+ * grounded time intervals. 
  * 
- * Dates based on weeks are currently only roughly estimated, although it's possible
- * to represent them precisely.
+ * Dates based on weeks in time expressions are currently only roughly estimated, 
+ * although it's possible
+ * to represent them precisely.  Possibly fix this in the future.
  * 
  * @author Bill McDowell
  * 
@@ -24,9 +26,19 @@ public class NormalizedTimeValue {
 		NONE
 	}
 	
+	/**
+	 * TimePattern represents a regex that is used
+	 * to parse time expressions.  The TimePattern has a 
+	 * regex and a mapping from groups in that regex to
+	 * parts of the time (year, month, day, hour, etc). 
+	 *
+	 * @author Bill McDowell
+	 * 
+	 */
 	private class TimePattern {
-		private Pattern pattern;
+		private Pattern pattern; // regex
 		
+		// Regex groups for each part of date
 		private int yearGroup;
 		private int monthGroup;
 		private int dayGroup;
@@ -88,7 +100,15 @@ public class NormalizedTimeValue {
 		}
 		
 	}
-	
+
+	/**
+	 * Possible time expression regexes with groups mapped
+	 * to time parts by their indices.
+	 * 
+	 * These regexes come from http://www.timeml.org/timeMLdocs/TimeML.xsd which
+	 * is linked from http://timeml.org/site/publications/timeMLdocs/timeml_1.2.1.html.
+	 *  
+	 */
 	private TimePattern DATE_PATTERN = new TimePattern(
   		"([0-9X]{1,4})(-([0-9X]{1,2})(-([0-9X]{1,2}))?)?",
   				1,3,5,0,0,0,0,0,0,0,0);
@@ -110,7 +130,7 @@ public class NormalizedTimeValue {
 	private TimePattern REFERENCE_PATTERN = new TimePattern("PAST_REF|PRESENT_REF|FUTURE_REF",
 			0,0,0,0,0,0,0,0,0,0,0);
 	
-	private String value;
+	private String value; // regex string
 	private TimePattern pattern; 
 	private Matcher matcher;
   
@@ -125,6 +145,9 @@ public class NormalizedTimeValue {
 		Matcher partOfYearMatcher = this.PART_OF_YEAR_PATTERN.getMatcher(this.value);
 		Matcher referenceMatcher = this.REFERENCE_PATTERN.getMatcher(this.value);
 		
+		/**
+		 * Determine the format of the given time expression
+		 */
 		if (dateMatcher.matches()) {
 			this.pattern = this.DATE_PATTERN;
 			this.matcher = dateMatcher;			
@@ -149,6 +172,10 @@ public class NormalizedTimeValue {
 		}
 	}
 	
+	/**
+	 * @return a range (start year, end year) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getYears() { 
 		if (this.pattern == null || this.pattern.yearGroup() == 0)
 			return null;
@@ -168,6 +195,10 @@ public class NormalizedTimeValue {
 		return new Pair<Integer,Integer>(Integer.valueOf(minYear.toString()), Integer.valueOf(maxYear.toString()));
 	}
 	
+	/**
+	 * @return a range (start month, end month) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getMonths() { 
 		if (this.pattern == null)
 			return null;
@@ -211,6 +242,10 @@ public class NormalizedTimeValue {
 		return null;
 	}
 	
+	/**
+	 * @return a range (start day, end day) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getDays() { 
 		/* FIXME: Add support to find day based on week and week day */
 		if (this.pattern == null)
@@ -236,6 +271,10 @@ public class NormalizedTimeValue {
 		return null;
 	}
 
+	/**
+	 * @return a range (start hour, end hour) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getHours() {
 		if (this.pattern == null)
 			return null;
@@ -266,6 +305,10 @@ public class NormalizedTimeValue {
 		return null;
 	}
 	
+	/**
+	 * @return a range (start minute, end minute) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getMinutes() {
 		if (this.pattern == null)
 			return null;
@@ -279,6 +322,10 @@ public class NormalizedTimeValue {
 		return null;
 	}
 	
+	/**
+	 * @return a range (start second, end second) referenced by the time
+	 * value
+	 */
 	public Pair<Integer, Integer> getSeconds() { 
 		if (this.pattern == null)
 			return null;
@@ -292,6 +339,10 @@ public class NormalizedTimeValue {
 		return null;
 	}
 	
+	/**
+	 * @return a start and end time for the interval referenced by the
+	 * time expression
+	 */
 	public Pair<Calendar, Calendar> getRange() {
 
 		Pair<Integer, Integer> years = getYears();

@@ -22,16 +22,37 @@ import temp.data.annotation.timeml.Event;
 import temp.model.annotator.nlp.NLPAnnotatorFreeLing;
 import temp.util.TempProperties;
 
+/**
+ * EventAnnotatorChambers is a re-implementation of Nate Chambers'
+ * event extraction tool used in the CAEVO and NavyTime temporal
+ * ordering systems.
+ * 
+ * This implementation has not been tried or tested, so it probably
+ * requires some debugging.
+ * 
+ * Also note that this implementation relies on the multi-lingual WordNet
+ * bundled with FreeLing, and the FreeLing interface in 
+ * temp.model.annotator.nlp.NLPAnnotatorFreeLing currently only 
+ * works on Windows.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class EventAnnotatorChambers extends EventAnnotator {
 	private static int MIN_FEATURE_CUT_OFF = 2;
 	
+	// These are maximum-entropy classifiers from the Stanford
+	// NLP pipeline, just like Chambers used in the original
+	// implementation.  We use these instead of the classifiers
+	// from ARKWater in order to more easily replicate the 
+	// Chambers results
 	private Classifier<String,String> eventClassifier = null;
 	private Classifier<String,String> tenseClassifier = null;
 	private Classifier<String,String> aspectClassifier = null;
 	private Classifier<String,String> classClassifier = null;
 	
 	private TempProperties properties;
-	private NLPAnnotatorFreeLing freeLingAnnotator;
+	private NLPAnnotatorFreeLing freeLingAnnotator; // necessary for WordNet
 	
 	public EventAnnotatorChambers(TempProperties properties) {
 		this.properties = properties;
@@ -43,6 +64,11 @@ public class EventAnnotatorChambers extends EventAnnotator {
 		this.freeLingAnnotator = new NLPAnnotatorFreeLing(this.properties);
 	}
 	
+	/**
+	 * @param document
+	 * @return two-dimensional array of events in the document, where
+	 * inner array with index i contains events for sentence i.
+	 */
 	@Override
 	public Event[][] makeEvents(TempDocument document) {
 		if (this.eventClassifier == null)

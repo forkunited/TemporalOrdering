@@ -25,6 +25,32 @@ import temp.data.annotation.timeml.Time;
 import temp.model.annotator.nlp.NLPAnnotatorMultiLanguage;
 import temp.util.TempProperties;
 
+/**
+ * ConstructTempDocumentsTempEval2 takes the following arguments:
+ * 
+ * [inputPath] - Path to TempEval2 source data set directory
+ * [outputPath] - Path to output directory for serialized TempDocumentSet
+ * [language] - Language of the input TempEval2 data
+ * 
+ * And constructs a temp.data.annotation.TempDoccumentSet from 
+ * the TempEval2 [language] data at the [inputPath] directory, 
+ * serializing it as JSON files to the [outputPath] directory.
+ * 
+ * The output TempDocumentSet represents TempEval2 documents extended
+ * with various NLP annotations (parses, PoSTags, tokenizations, etc).
+ * The NLP annotations are generated using 
+ * temp.model.annotator.nlp.NLPAnnotatorMultiLanguage, and this
+ * class uses the Stanford library for the English data and the 
+ * FreeLing library for the Spanish data.  NLPAnnotatorMultiLanguage
+ * uses NLPAnnotatorFreeLing as an interface for the FreeLing library,
+ * and the implementation of this interface currently only works
+ * on Windows machines.  So ConstructTempDocumentsTempEval2 will
+ * currently fail on the Spanish TempEval2 unless you're set up 
+ * with FreeLing on a Windows machine.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class ConstructTempDocumentsTempEval2 {
 	public static void main(String[] args) {
 		String inputPath = args[0];

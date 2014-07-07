@@ -14,6 +14,14 @@ import temp.data.annotation.TempDocument;
 import ark.data.annotation.nlp.TokenSpan;
 import ark.util.Pair;
 
+/**
+ * Time represents a TimeML Timex (temporal expression).
+ * 
+ * See http://timeml.org/site/index.html for details.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class Time implements TLinkable {
 	public enum TimeMLType {
 		DATE,
@@ -119,6 +127,11 @@ public class Time implements TLinkable {
 		return this.freq;
 	}
 	
+	/**
+	 * @return a NormalizedTimeValue representing the 
+	 * grounded time-interval referenced by the Time
+	 * expression
+	 */
 	public NormalizedTimeValue getValue() {
 		return this.value;
 	}
@@ -143,6 +156,11 @@ public class Time implements TLinkable {
 		return this.timeMLMod;
 	}
 	
+	/**
+	 * @param time
+	 * @return TLink relation type between this Time and the given
+	 * time according to their grounded time intervals.  
+	 */
 	public TLink.TimeMLRelType getRelationToTime(Time time) {
 		if (this.timeMLType != Time.TimeMLType.DATE && this.timeMLType != Time.TimeMLType.TIME)
 			return TLink.TimeMLRelType.VAGUE;

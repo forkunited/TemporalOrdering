@@ -17,6 +17,16 @@ import ark.data.annotation.Datum;
 import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.nlp.TokenSpan;
 
+/**
+ * TLinkDatum represents a single TLink datum for
+ * a task involving the classification of TLinks. The datum consists 
+ * of a text document and a label (e.g. a relationship type) assigned 
+ * to the document.
+ *
+ * @author Bill McDowell
+ *
+ * @param <L> datum label type
+ */
 public class TLinkDatum<L> extends Datum<L> {
 	protected TLink tlink;
 	
@@ -30,6 +40,14 @@ public class TLinkDatum<L> extends Datum<L> {
 		return this.tlink;
 	}
 	
+	
+	/**
+	 * 
+	 * @param dataTools
+	 * @param inferenceRules Transitivity rules for inferring the type of one TLink from others
+	 * @return tools for manipulating TLinkDatums with TimeMLRelType 
+	 * (relationship type) labels.  
+	 */
 	public static Tools<TLink.TimeMLRelType> getTimeMLRelTypeTools(DataTools dataTools, TLinkGraph.LabelInferenceRules<TimeMLRelType> inferenceRules) {
 		Tools<TLink.TimeMLRelType> tools = new Tools<TLink.TimeMLRelType>(dataTools, inferenceRules) {
 			@Override
@@ -38,6 +56,10 @@ public class TLinkDatum<L> extends Datum<L> {
 			}
 		};
 		
+		/**
+		 * Map TempEval3 relationship types to TimeBank-Dense relationship
+		 * types
+		 */
 		tools.addLabelMapping(new LabelMapping<TLink.TimeMLRelType>() {
 			@Override
 			public String toString() {
@@ -79,6 +101,9 @@ public class TLinkDatum<L> extends Datum<L> {
 			}
 		});
 		
+		/**
+		 * Map all labels to corresponding labels in TimeBank-Dense
+		 */
 		tools.addLabelMapping(new LabelMapping<TLink.TimeMLRelType>() {
 			@Override
 			public String toString() {
@@ -102,6 +127,12 @@ public class TLinkDatum<L> extends Datum<L> {
 		return tools;
 	}
 	
+	/**
+	 * @param dataTools
+	 * @return tools for manipulating TLink datums with split relationship types
+	 * (for evaluating cost learning models).  See temp.data.annotation.cost.TimeMLRelTypeSplit
+	 * for more detail about the purpose of this.
+	 */
 	public static Tools<TimeMLRelTypeSplit> getTimeMLRelTypeSplitTools(DataTools dataTools) {
 		Tools<TimeMLRelTypeSplit> tools =  new Tools<TimeMLRelTypeSplit>(dataTools, null) {
 			@Override
@@ -110,6 +141,9 @@ public class TLinkDatum<L> extends Datum<L> {
 			}
 		};
 		
+		/**
+		 * Map split labels to single label
+		 */
 		tools.addLabelMapping(
 			new LabelMapping<TimeMLRelTypeSplit>() {
 				@Override
@@ -128,6 +162,18 @@ public class TLinkDatum<L> extends Datum<L> {
 		return tools;
 	}
 	
+	/**
+	 * Tools such as generic features, datum structures, tokenspan extractors,
+	 * etc for manipulating TLink datums.  An instantiation of the Tools can 
+	 * be used generate generic instances of features, models, etc that can be 
+	 * used by ARKWater during deserialization of experiment configuration files.
+	 * See ARKWater for more detailed documentation on the deserialization 
+	 * process.
+	 * 
+	 * @author Bill McDowell
+	 *
+	 * @param <L> TLinkDatum label type
+	 */
 	private static abstract class Tools<L> extends Datum.Tools<TLinkDatum<L>, L> {
 		public Tools(DataTools dataTools, TLinkGraph.LabelInferenceRules<L> inferenceRules) {
 			super(dataTools);

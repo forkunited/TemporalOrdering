@@ -16,6 +16,37 @@ import ark.data.annotation.Datum.Tools;
 import ark.experiment.ExperimentKCV;
 import ark.util.OutputWriter;
 
+/**
+ * ExperimentKCVTLinkType takes arguments
+ * 
+ * [experimentName] - Name of an experiment in 'experiments/KCVTLinkType' to run
+ * [documentSetName] - Name of data-set on which to run stored under [tempDocumentDataDirPath] from 'temp.properties' 
+ * 
+ * And runs the cross-validation experiment specified by the
+ * [experimentName].experiment configuration file in 'experiments/KCVTLinkType' on
+ * data in [tempDocumentDataDirPath]/[documentSetName] (where [tempDocumentDataDirPath]
+ * is specified in 'temp.properties') on the TLink relation-type classification 
+ * task.  The cross validation experiment is run by ark.experiment.ExperimentKCV 
+ * with an optional grid-search (see documentation in ARKWater for details).
+ * 
+ * ExperimentKCVTLinkType assumes that the directory
+ * [experimentOutputDir]/KCVTLinkType/[documentSetName] also exists to store the output
+ * of the experiment (where [experimentOutputDir] is specified in
+ * 'temp.properties').
+ * 
+ * The input experiment configuration files in 'experiments/KCVTLinkType' are
+ * mostly named according to the following convention:
+ * 
+ * [modelName][featureSet].experiment
+ * 
+ * Where [modelName] refers to a generic model (e.g. SVM) and [featureSet] refers
+ * to a set of features (e.g. 'base' for a baseline set of features).  They are parsed
+ * by ark.experiment.ExperimentKCV (see ARKWater for documentation on input configuration
+ * format).
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class ExperimentKCVTLinkType {
 	public static void main(String[] args) {
 		String experimentName = "KCVTLinkType/" + args[0];

@@ -38,6 +38,15 @@ import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.Time;
 import temp.data.annotation.timeml.Time.TimeMLDocumentFunction;
 
+/**
+ * TempDocument represents a single temporal-ordering document.
+ * The document can consist of plain-text, NLP annotations (see 
+ * ark.data.DocumentInMemory), events, times, signals, 
+ * and tlinks.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class TempDocument extends DocumentInMemory {
 	public enum StorageType {
 		JSON,
@@ -46,11 +55,19 @@ public class TempDocument extends DocumentInMemory {
 	
 	private Time creationTime;
 	
+	/*
+	 * Events, times, signals, and tlinks for each
+	 * sentence (one array per sentence)
+	 */
 	private Event[][] events;
 	private Time[][] times;
 	private Signal[][] signals;
 	private TLink[] tlinks;
 	
+	/*
+	 * Maps ids from events times and signals for
+	 * quick look ups
+	 */
 	private Map<String, Event> eventMap;
 	private Map<String, Time> timeMap;
 	private Map<String, Signal> signalMap;	

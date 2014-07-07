@@ -16,6 +16,41 @@ import ark.data.annotation.Datum.Tools;
 import ark.experiment.ExperimentGST;
 import ark.util.OutputWriter;
 
+/**
+ * ExperimentGSTTLinkType takes arguments
+ * 
+ * [experimentName] - Name of an experiment in 'experiments/GSTTLinkType' to run
+ * [documentSetName] - Name of data-set on which to run stored under [tempDocumentDataDirPath] from 'temp.properties' 
+ * [useTestData] - Indicator of whether or not to evaluate trained models on test set
+ * 
+ * And runs the grid-search-test experiment specified by the
+ * [experimentName].experiment configuration file in 'experiments/GSTTLinkType' on
+ * data in [tempDocumentDataDirPath]/[documentSetName] (where [tempDocumentDataDirPath]
+ * is specified in 'temp.properties') on the TLink relation-type classification 
+ * task.  The grid-search-test experiment is run by ark.experiment.ExperimentGST 
+ * (see documentation in ARKWater for details) to train models on a training set,
+ * perform a grid search on the dev set, and optionally evaluate on a test set. 
+ * 
+ * ExperimentGSTTLinkType assumes that the directory
+ * [experimentOutputDir]/GSTTLinkType/[documentSetName] also exists to store the output
+ * of the experiment (where [experimentOutputDir] is specified in
+ * 'temp.properties'), and also that [tempDocumentDataDirPath]/[documentSetName]
+ * contains 'train', 'dev', and 'test' subdirectories for the train/dev/test
+ * splits.
+ * 
+ * The input experiment configuration files in 'experiments/GSTTLinkType' are
+ * mostly named according to the following convention:
+ * 
+ * [modelName][featureSet].experiment
+ * 
+ * Where [modelName] refers to a generic model (e.g. SVM) and [featureSet] refers
+ * to a set of features (e.g. 'base' for a baseline set of features).  They are parsed
+ * by ark.experiment.ExperimentGST (see ARKWater for documentation on input configuration
+ * format).
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class ExperimentGSTTLinkType {
 	private static int tlinkId;
 	

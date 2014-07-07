@@ -9,6 +9,20 @@ import temp.data.annotation.timeml.TLink;
 import ark.data.annotation.DataSet;
 import ark.data.annotation.structure.DatumStructureCollection;
 
+/**
+ * TLinkGraphIntraSentenceCollection represents a collection 
+ * containing a temp.data.annotation.structure.TLinkGraph
+ * for every sentence.  Each TLinkGraph in the
+ * collection contains all TLinks within a single sentence.
+ * 
+ * This collection is used by a structured prediction model
+ * to group TLinks by sentence and impose constraints within
+ * the groups.
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> TLink label type
+ */
 public class TLinkGraphIntraSentenceCollection<L> extends DatumStructureCollection<TLinkDatum<L>, L> {
 	private LabelInferenceRules<L> labelInferenceRules;
 	

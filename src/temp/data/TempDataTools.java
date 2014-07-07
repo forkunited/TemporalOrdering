@@ -7,6 +7,13 @@ import ark.data.DataTools;
 import ark.util.OutputWriter;
 import ark.util.Stemmer;
 
+/**
+ * TempDataTools contains data tools (gazetteers, text
+ * cleaning functions, etc) for temporal ordering tasks.
+ * 
+ * @author Bill McDowell
+ *
+ */
 public class TempDataTools extends DataTools {
 	private TempProperties properties;
 	public TempDataTools(OutputWriter outputWriter, TempProperties properties) {
@@ -15,6 +22,8 @@ public class TempDataTools extends DataTools {
 		this.properties = properties;
 		this.addPath("CregCmd", new Path("CregCmd", properties.getCregCommandPath()));
 	
+		// For cleaning strings, and replacing all white space with "_"
+		// Especially useful for features to clean unigrams
 		this.addCleanFn(new DataTools.StringTransform() {
 			public String toString() {
 				return "TempDefaultCleanFn";
@@ -32,7 +41,7 @@ public class TempDataTools extends DataTools {
 				String[] parts = str.split("\\s+");
 				StringBuilder retStr = new StringBuilder();
 				for (int i = 0; i < parts.length; i++) {
-					if (parts[i].length() < 3 || parts[i].length() > 25)
+					if (parts[i].length() < 3 || parts[i].length() > 25) // remove short and long tokens
 						continue;
 					
 					parts[i] = Stemmer.stem(parts[i]);
@@ -45,6 +54,15 @@ public class TempDataTools extends DataTools {
 		
 	}
 	
+	/**
+	 * Get path by name given in experiment configuration file.  This
+	 * allows the experiments to refer to paths without being machine
+	 * specific.  
+	 * 
+	 * Paths starting with 'CregModel' refer to serialized creg models
+	 * stored in the directory specified by 'cregDataDirPath' in
+	 * temp.properties.
+	 */
 	public Path getPath(String name) {
 		if (name == null)
 			return null;
