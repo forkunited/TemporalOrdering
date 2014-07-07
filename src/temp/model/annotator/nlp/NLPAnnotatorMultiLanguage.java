@@ -10,6 +10,30 @@ import ark.model.annotator.nlp.NLPAnnotatorStanford;
 
 import temp.util.TempProperties;
 
+/**
+ * NLPAnnotatorMultiLanguage supplements a text with NLP 
+ * annotations (parses, part-of-speech tags, etc) using an
+ * annotation pipeline that is appropriate for a given
+ * language.
+ * 
+ * The FreeLing pipeline is used for the Spanish language,
+ * and the interface with this pipeline
+ * (temp.model.annotator.nlp.NLPAnnotatorFreeLing) currently
+ * only works on Windows machines.
+ * 
+ * The returned NLP annotations are in the ARKWater 
+ * (https://github.com/forkunited/ARKWater)
+ * library's format.
+ * 
+ * Once constructed for a specified language, the annotator can 
+ * be used by calling
+ * the setText method to set the text to be annotated, and
+ * then calling the make[X] methods to retrieve the annotations
+ * for that text.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 	private TempProperties properties;
 	private NLPAnnotator spanishAnnotator;
@@ -20,7 +44,11 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		setLanguage(language);
 	}
 	
-	
+	/**
+	 * @param language
+	 * @return true if the appropriate annotation pipeline for the
+	 * given language has been instantiated
+	 */
 	@Override
 	public boolean setLanguage(Language language) {
 		this.language = language;
@@ -34,6 +62,11 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		return true;
 	}
 
+	/**
+	 * @param text
+	 * @return true if the annotator has received the text 
+	 * and is ready to return annotations for it
+	 */
 	@Override
 	public boolean setText(String text) {
 		if (text == null) {
@@ -52,6 +85,9 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		return true;
 	}
 
+	/**
+	 * @return a name for the annotator
+	 */
 	@Override
 	public String toString() {
 		if (this.language == Language.English) {
@@ -63,6 +99,10 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		}
 	}
 
+	/**
+	 * @return an array of tokens for each segmented 
+	 * sentence of the text.
+	 */
 	@Override
 	public String[][] makeTokens() {
 		if (this.language == Language.English) {
@@ -74,6 +114,10 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		}
 	}
 
+	/**
+	 * @return an array of part-of-speech tags for each segmented 
+	 * sentence of the text.
+	 */
 	@Override
 	protected PoSTag[][] makePoSTagsInternal() {
 		if (this.language == Language.English) {
@@ -85,6 +129,10 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		}
 	}
 	
+	/**
+	 * @return a dependency parse for each segmented 
+	 * sentence of the text.
+	 */
 	@Override
 	protected DependencyParse[] makeDependencyParsesInternal(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {
@@ -96,7 +144,10 @@ public class NLPAnnotatorMultiLanguage extends NLPAnnotator {
 		}
 	}
 
-
+	/**
+	 * @return a constituency parse for each segmented
+	 * sentence of text.
+	 */
 	@Override
 	protected ConstituencyParse[] makeConstituencyParsesInternal(Document document, int sentenceIndexOffset) {
 		if (this.language == Language.English) {

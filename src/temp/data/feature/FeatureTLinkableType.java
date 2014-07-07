@@ -10,12 +10,29 @@ import ark.data.feature.Feature;
 import ark.data.feature.FeaturizedDataSet;
 import ark.util.BidirectionalLookupTable;
 
+/**
+ * FeatureTLinkableType computes the TLinkable-type 
+ * (either EVENT or TIME) of one of the entities linked
+ * by the TLink as an indicator vector to be used by a
+ * model.  Whether the TLinkable-type is computed
+ * for the source or target entity of the TLink is 
+ * determined by the 'sourceOrTarget' parameter.
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> label type for the TLinks
+ */
 public class FeatureTLinkableType<L> extends Feature<TLinkDatum<L>, L> {
 	public enum SourceOrTarget {
 		SOURCE,
 		TARGET
 	}
-	private SourceOrTarget sourceOrTarget;
+	
+	// Indicates whether to compute the TLinkable type for the
+	// source or target entity of the TLink
+	private SourceOrTarget sourceOrTarget; 
+	
+	// Vector mapping EVENT and TIME to indices
 	private BidirectionalLookupTable<String, Integer> vocabulary;
 	private String[] parameterNames = { "sourceOrTarget"};
 
@@ -26,11 +43,16 @@ public class FeatureTLinkableType<L> extends Feature<TLinkDatum<L>, L> {
 
 	@Override
 	public boolean init(FeaturizedDataSet<TLinkDatum<L>, L> dataSet) {
-		vocabulary.put(TLinkable.Type.EVENT.toString(), vocabulary.size());
-		vocabulary.put(TLinkable.Type.TIME.toString(), vocabulary.size());
+		vocabulary.put(TLinkable.Type.EVENT.toString(), vocabulary.size()); // Map EVENT to 0
+		vocabulary.put(TLinkable.Type.TIME.toString(), vocabulary.size()); // Map TIME to 1
 		return true;
 	}
 
+	/**
+	 * @param datum
+	 * @return sparse indicator vector representing whether the specified
+	 * entity (source or target) of the TLink is an EVENT or a TIME.
+	 */
 	@Override
 	public Map<Integer, Double> computeVector(TLinkDatum<L> datum) {
 		Map<Integer, Double> vect = new HashMap<Integer, Double>();

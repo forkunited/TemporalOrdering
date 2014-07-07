@@ -9,6 +9,15 @@ import org.jdom.Element;
 
 import temp.data.annotation.TempDocument;
 
+/**
+ * TLink represents a TimeML TLink--a temporal
+ * link between a pair of events/times.
+ * 
+ * See http://timeml.org/site/index.html for details.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class TLink {
 	public enum Type {
 		EVENT_EVENT,
@@ -126,10 +135,47 @@ public class TLink {
 		{ { TimeMLRelType.VAGUE, TimeMLRelType.VAGUE }, { null } },
 	};
 	
+	/**
+	 * @returns an array representing TLink relation type 
+	 * composition rules of the form: 
+	 * 
+	 * ((r(l')=t') and (r(l'')=t'')) implies or_i(r(l''')=t_i)
+	 * 
+	 * Where r(l)=t means that TLink l has relation t and
+	 * 'or_i' is a disjunction over propositions indexed by i.
+	 * These are the rules referred to as 'Transitivity' and
+	 * 'Disjunctive Transitivity' in the 
+	 * papers/TemporalOrderingNotes.pdf document.  They were 
+	 * derived from Allen's interval algebra
+	 * (see http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+	 * 
+	 * Each rule is stored as a two-dimensional array of length 2.
+	 * The first element of this array contains t' and t'', and
+	 * the second element of the array contains t_i for each i.  
+	 * 
+	 */
 	public static final TimeMLRelType[][][] getTimeMLRelTypeCompositionRules() {
 		return TLink.timeMLRelTypeCompositionRules;
 	}
 	
+	/**
+	 * Represents converse rules for TimeML relationship-types. The
+	 * rules are of the form:
+	 * 
+	 * (r(l')=t') implies (r(l'')=t'')
+	 * 
+	 * Where l' is a link in the reverse direction of l'' but
+	 * between the same events/times, and 
+	 * r(l)=t means that TLink l has relation t.
+	 * These are the rules referred to as 'Converse' in the
+	 * papers/TemporalOrderingNotes.pdf document.  They were 
+	 * derived from Allen's interval algebra
+	 * (see http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+	 * 
+	 * @param timeMLRelType (t')
+	 * @return converse of timeMLRelType (t'')
+	 *
+	 */
 	public static TimeMLRelType getConverseTimeMLRelType(TimeMLRelType timeMLRelType) {
 		if (timeMLRelType == TimeMLRelType.OVERLAPS)
 			return TimeMLRelType.OVERLAPPED_BY;

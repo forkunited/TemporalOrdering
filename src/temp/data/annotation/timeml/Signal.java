@@ -10,6 +10,14 @@ import org.jdom.Element;
 import temp.data.annotation.TempDocument;
 import ark.data.annotation.nlp.TokenSpan;
 
+/**
+ * Time represents a TimeML Signal.
+ * 
+ * See http://timeml.org/site/index.html for details.
+ * 
+ * @author Bill McDowell
+ * 
+ */
 public class Signal {	
 	private String id;
 	private TokenSpan tokenSpan;

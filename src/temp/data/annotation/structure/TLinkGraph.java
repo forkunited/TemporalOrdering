@@ -26,7 +26,29 @@ import ark.data.annotation.Document;
 import ark.data.annotation.structure.DatumStructure;
 import ark.util.OutputWriter;
 
+/**
+ * TLinkGraph is a graph with TLinkDatums as directed
+ * edges and times/events as vertices.  
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> TLink label type
+ */
 public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {	
+	/**
+	 * LabelInferecenceRules represents a set of rules for 
+	 * drawing inferences about the labels assigned 
+	 * to TLinks given the labels assigned to other
+	 * TLinks in the same TLinkGraph.  For example, this 
+	 * is currently implemented by 
+	 * temp.data.annotation.structure.InferenceRulesTimeMLRelType to 
+	 * represent rules for assigning TimeML relationship types
+	 * to TLinks.
+	 * 
+	 * @author Bill McDowell
+	 *
+	 * @param <L> TLink label type
+	 */
 	public interface LabelInferenceRules<L> {
 		L[][][] getCompositionRules();
 		L getConverse(L label);
@@ -34,8 +56,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		String getGenericName();
 	}
 	
+	// Maps event/time id 1 to event/time id 2 to the TLink between them
+	// If there is a link from e1 to e2, then there will be no link
+	// from e2 to e1 in this map (at least in existing data sets)
 	private Map<String, Map<String, TLinkDatum<L>>> adjacencyMap;
-	private Set<String> tlinkableIds;
+	private Set<String> tlinkableIds; // Ids of events and times
 	private LabelInferenceRules<L> labelInferenceRules;
 	
 	public TLinkGraph(String id, Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules) {
@@ -49,7 +74,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		addDatumStructureOptimizer(new OptimizerInference(datumTools, labelInferenceRules, true, true));
 	}
 
-	// id1 and id2 unordered
+	/**
+	 * @param id1 - first event/time id
+	 * @param id2 - second event/time id
+	 * @return TLink from id1 to id2 or from id2 to id1---whichever one exists
+	 */
 	public TLinkDatum<L> getTLinkBetween(String id1, String id2) {
 		if (this.adjacencyMap.containsKey(id1) && this.adjacencyMap.get(id1).containsKey(id2))
 			return adjacencyMap.get(id1).get(id2);
@@ -59,6 +88,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			return null;
 	}
 	
+	/**
+	 * @param e TLink
+	 * @return true if e was successfully added to the graph
+	 */
 	@Override
 	public boolean add(TLinkDatum<L> e) {
 		String sourceId = e.getTLink().getSource().getId();
@@ -130,6 +163,9 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * @return number of TLinks in the graph
+	 */
 	@Override
 	public int size() {
 		int size = 0;
@@ -263,10 +299,24 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		violations.put("numTripletsWithTransBrokenWithDCT", numTransBrokenWithDCT);
 		return violations;
 	}
-	
+
+	/**
+	 * OptimizerInference uses an ILP to optimize an objective function 
+	 * subject to some constraints.  The objective function is 
+	 * defined in terms of assignments of labels to TLinks, and the constraints
+	 * are given by a set of label inference rules (see TLinkGraph.LabelInferenceRules interface).
+	 * The objective and constraints are described in detail in papers/TemporalOrderingNotes.pdf
+	 * 
+	 * @author Bill McDowell
+	 */
 	protected class OptimizerInference implements DatumStructureOptimizer<TLinkDatum<L>, L> {
 		private LabelInferenceRules<L> labelInferenceRules;
-		private boolean includeDisjunctiveRules;
+		
+		// Indicates whether to include compositional (transitive) rules that include disjunctions
+		private boolean includeDisjunctiveRules; 
+		
+	    // Indicates whether to include rules governing labels that are determined by properties of the TLinks.
+		// Currently these just include rules based on the time intervals referenced by temporal expressions
 		private boolean includeRuleBasedFixedLabels;
 		private Tools<TLinkDatum<L>, L> datumTools;
 		
@@ -278,6 +328,16 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			this.datumTools = datumTools;
 		}
 		
+		/**
+		 * @param scoredDatumLabels - scores for assignments of labels to TLinks (u vector in papers/TemporalOrderingNotes.pdf)
+		 * @param fixedDatumLabels - labels that should be fixed to TLinks regardless of the objective function value.
+		 *							 These allow the within-sentence model to constrain the labels of the 
+		 *                           between sentence model 
+		 * @param validLabels - a set of labels that optimize is allowed to assign
+		 * @param labelMapping - a mapping function from all possible labels to validLabels
+		 * @return an optimal mapping from TLinks to labels according to the objective function 
+		 * defined in papers/TemporalOrderingNotes.pdf. 
+		 */
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules();
@@ -303,7 +363,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			
 			Map<String, Map<String, L>> fixedAdjacencyMap = new HashMap<String, Map<String, L>>();
 			
-			// Fixed label constraints
+			// Fixed label constraints (these ensure that some labels are definitely 
+			// assigned to TLinks regardless of the objective function value)
+			// These allow the within-sentence model to constrain the labels of the 
+			// between sentence model 
 			for (Entry<TLinkDatum<L>, L> entry : fixedDatumLabels.entrySet()) {
 				String tlinkableId1 = entry.getKey().getTLink().getSource().getId();
 				String tlinkableId2 = entry.getKey().getTLink().getTarget().getId();
@@ -329,7 +392,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				fixedAdjacencyMap.get(tlinkableId2).put(tlinkableId1, this.labelInferenceRules.getConverse(entry.getValue()));
 			}
 			
-			// Objective function and rule based constraints
+			// Objective function and rule based (grounded time interval) constraints
+			// Constraint 4 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 			Linear objective = new Linear();
 			for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
 				TLink tlink = datumEntry.getKey().getTLink();
@@ -342,6 +406,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				String tlinkVarPrefix = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
 				Map<L, Double> labelValues = datumEntry.getValue();
 				
+				// Objective function
 				double minValue = Double.MAX_VALUE;
 				for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
 					double value = labelEntry.getValue();//maxLabelMagnitude; // Scale value
@@ -353,6 +418,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 						objective.add(minValue - 1.0, tlinkVarPrefix + label); // Disprefer non-valid labels
 				}
 				
+				// Constraint 4 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 				if (this.includeRuleBasedFixedLabels) {
 					L label = this.labelInferenceRules.getRuleBasedFixedLabel(datumEntry.getKey());
 					if (label != null) {
@@ -387,15 +453,18 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					
 					for (L label : allLabels) {
 						// t_id1_id2_l \in {0, 1}
+						// Constraint 1 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 						String tlinkVar = tlinkVarPrefix1 + label;
 						problem.setVarType(tlinkVar, Integer.class);
 						problem.setVarUpperBound(tlinkVar, 1);
 						problem.setVarLowerBound(tlinkVar, 0);
 						
 						// Single label for each tlink
+						// Constraint 2 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 						singleLabelConstraint.add(1, tlinkVar);
 						
 						// Converse constraint
+						// Constraint 3 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 						String tlinkConverseVar = tlinkConverseVarPrefix1 + this.labelInferenceRules.getConverse(label);
 						Linear converseConstraint = new Linear();
 						converseConstraint.add(1, tlinkVar);
@@ -404,9 +473,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					}
 					
 					// Single label for each tlink
+					// Constraint 2 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 					problem.add(singleLabelConstraint, "=", 1);
 					
 					// Transitive constraints
+					// Constraint 5 and 6 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 					for (String tlinkableId3 : tlinkableIds) {
 						if (tlinkableId2.equals(tlinkableId3) || tlinkableId1.equals(tlinkableId3))
 							continue;
@@ -446,11 +517,14 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				}
 			}
 
+			// Solve the ILP
 			Solver solver = factory.get(); 
 			Result result = solver.solve(problem);
 			Map<TLinkDatum<L>, L> resultLabels = new HashMap<TLinkDatum<L>, L>();
 			
 			if (result == null) {
+				// ILP failed, so just assign labels by maximum scores without
+				// constraints
 				String document = TLinkGraph.this.iterator().next().getTLink().getTarget().getTokenSpan().getDocument().getName();
 				int sentence1 = TLinkGraph.this.iterator().next().getTLink().getSource().getTokenSpan().getSentenceIndex();
 				int sentence2 = TLinkGraph.this.iterator().next().getTLink().getTarget().getTokenSpan().getSentenceIndex();
@@ -475,6 +549,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				return resultLabels;
 			}
 			
+			// Get ILP results, and map labels from result to validLabels
+			// using the given label mapping
 			for (TLinkDatum<L> datum : TLinkGraph.this) {
 				String tlinkableId1 = datum.getTLink().getSource().getId();
 				String tlinkableId2 = datum.getTLink().getTarget().getId();
@@ -490,15 +566,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					}
 				}
 			}
-			
-			/*	This was needed for Gerobi, which isn't used any more.
-			try {
-				Thread.sleep(25);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			*/
 			
 			return resultLabels;
 		}

@@ -47,7 +47,7 @@ public class InferenceRulesTimeMLRelType implements TLinkGraph.LabelInferenceRul
 	}
 
 	/**
-	 * Represents converse of rules of the form:
+	 * Represents converse rules of the form:
 	 * 
 	 * (r(l')=t') implies (r(l'')=t'')
 	 * 

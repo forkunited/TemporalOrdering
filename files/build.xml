@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="TemporalOrdering">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+    <path id="TemporalOrdering.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="[path to jars directory]/ark-water-0.jar"/>
+        <pathelement location="[path to jars directory]/ezmorph-1.0.6.jar"/>
+        <pathelement location="[path to jars directory]/jdom.jar"/>
+        <pathelement location="[path to jars directory]/joda-time-2.3.jar"/>
+        <pathelement location="[path to jars directory]/joda-time-2.3-javadoc.jar"/>
+        <pathelement location="[path to jars directory]/joda-time-2.3-sources.jar"/>
+        <pathelement location="[path to jars directory]/jsch-0.1.50.jar"/>
+        <pathelement location="[path to jars directory]/json-lib-2.4-jdk15.jar"/>
+        <pathelement location="[path to jars directory]/restfb-1.6.12.jar"/>
+        <pathelement location="[path to jars directory]/secondstring-20120620.jar"/>
+        <pathelement location="[path to jars directory]/stanford-corenlp-1.3.5.jar"/>
+        <pathelement location="[path to jars directory]/stanford-corenlp-1.3.5-models.jar"/>
+        <pathelement location="[path to jars directory]/stanford-corenlp-1.3.5-sources.jar"/>
+        <pathelement location="[path to lib directory]/freeling-3.1-win/bin/freeling.jar"/>
+        <pathelement location="[path to lib directory]/heideltime-standalone-1.5/de.unihd.dbs.heideltime.standalone.jar"/>
+        <pathelement location="[path to jars directory]/guava-11.0.2.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="ConstructTempDocumentsTempEval2">
+        <java classname="temp.scratch.ConstructTempDocumentsTempEval2" failonerror="true" fork="yes">
+            <arg line="[path to TempEval2 input data directory]\training\spanish\data\ [path to TempEval2 output data directory] Spanish"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="ConstructTempDocumentsTempEval3">
+        <java classname="temp.scratch.ConstructTempDocumentsTempEval3" failonerror="true" fork="yes">
+            <arg line="[path to TempEval3 input data directory]\TBAQ-cleaned\TimeBank [path to TempEval3 output data directory] English"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="ConstructTempDocumentsTimeSieve">
+        <java classname="temp.scratch.ConstructTempDocumentsTimeSieve" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx4G"/>
+            <arg line="[path to Time-sieve infofile] [path to TimeSieve data output directory]"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="ExperimentGSTTLinkType">
+        <java classname="temp.scratch.ExperimentGSTTLinkType" failonerror="true" fork="yes">
+            <arg line="CregBasePartitionPosition TimeBankDenseUnofficial"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="ExperimentKCVTLinkType">
+        <java classname="temp.scratch.ExperimentKCVTLinkType" failonerror="true" fork="yes">
+            <arg line="SVMCLabelPairUnorderedBase TimeBankDenseUnofficial"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="ExperimentKCVTLinkTypeSplit">
+        <java classname="temp.scratch.ExperimentKCVTLinkTypeSplit" failonerror="true" fork="yes">
+            <arg line="SVMCAltLabelPairUnorderedBase TimeBankDenseUnofficial"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="FreeLingScratch">
+        <java classname="temp.scratch.FreeLingScratch" failonerror="true" fork="yes">
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+    <target name="Scratch">
+        <java classname="temp.scratch.Scratch" failonerror="true" fork="yes">
+            <arg line="Example TimeSieveUnofficial"/>
+            <classpath refid="TemporalOrdering.classpath"/>
+        </java>
+    </target>
+</project>

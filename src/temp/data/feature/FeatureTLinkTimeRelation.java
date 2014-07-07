@@ -13,6 +13,20 @@ import ark.data.feature.Feature;
 import ark.data.feature.FeaturizedDataSet;
 import ark.util.BidirectionalLookupTable;
 
+/**
+ * FeatureTLinkTimeRelation computes the relation type 
+ * of a Time-Time link according to the grounding of the times
+ * to intervals.  The 'relation' property determines whether
+ * to compute the relation type between the source and target
+ * of a TLink, between the source time of the TLink and the DCT, or
+ * between the target time of the TLink and the DCT.  The 
+ * computed relation type is represented as an indicator vector
+ * to be used by a model.
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> label type of the TLink
+ */
 public class FeatureTLinkTimeRelation<L> extends Feature<TLinkDatum<L>, L>{
 	public enum Relation {
 		TARGET_DCT,
@@ -23,12 +37,18 @@ public class FeatureTLinkTimeRelation<L> extends Feature<TLinkDatum<L>, L>{
 	private Relation relation;
 	private String[] parameterNames = { "relation" };
 	
+	// Maps relationship types to vector component indices
 	private BidirectionalLookupTable<String, Integer> vocabulary;
 	
 	public FeatureTLinkTimeRelation() {
 		this.vocabulary = new BidirectionalLookupTable<String, Integer>();
 	}
 	
+	/**
+	 * @param dataSet
+	 * @return true if the feature has been initialized with a mapping
+	 * from relationship types to vector component indices 
+	 */
 	@Override
 	public boolean init(FeaturizedDataSet<TLinkDatum<L>, L> dataSet) {
 		TLink.TimeMLRelType[] relations = TLink.TimeMLRelType.values();
@@ -39,6 +59,14 @@ public class FeatureTLinkTimeRelation<L> extends Feature<TLinkDatum<L>, L>{
 		return true;
 	}
 
+	/**
+	 * @param datum
+	 * @return a sparse indicator vector representing the relationship
+	 * type of either the datum's Time-Time TLink or the TLink between 
+	 * one of the
+	 * datum's incident timexes and the DCT according to the groundings
+	 * of the times to intervals.
+	 */
 	@Override
 	public Map<Integer, Double> computeVector(TLinkDatum<L> datum) {
 		Map<Integer, Double> vector = new HashMap<Integer, Double>();

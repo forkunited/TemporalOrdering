@@ -8,6 +8,19 @@ import temp.data.annotation.structure.TLinkGraph.LabelInferenceRules;
 import ark.data.annotation.DataSet;
 import ark.data.annotation.structure.DatumStructureCollection;
 
+/**
+ * TLinkGraphDocumentCollection represents a collection 
+ * containing a temp.data.annotation.structure.TLinkGraph
+ * for each document.
+ * 
+ * This collection is used by a structured prediction model
+ * to group TLinks by document and impose constraints within
+ * the groups.
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> TLink label type
+ */
 public class TLinkGraphDocumentCollection<L> extends DatumStructureCollection<TLinkDatum<L>, L> {
 	private LabelInferenceRules<L> labelInferenceRules;
 	

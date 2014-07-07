@@ -10,21 +10,42 @@ import ark.data.feature.Feature;
 import ark.data.feature.FeaturizedDataSet;
 import ark.util.BidirectionalLookupTable;
 
+/**
+ * FeatureTLinkAttribute computes an attribute of a TLink
+ * as an indicator vector to be used by a model. The attribute
+ * that is computed for a TLink is determined by the 'attribute'
+ * parameter.  Valid attributes are enum properties of the 
+ * temp.data.annotation.timeml.TLink class.  The computed
+ * indicator vector has a component for each value of the
+ * enum corresponding to the specified attribute.
+ * 
+ * @author Bill McDowell
+ *
+ * @param <L> label type of the TLink
+ */
 public class FeatureTLinkAttribute<L> extends Feature<TLinkDatum<L>, L>{
 	public enum Attribute {
 		POSITION,
 		TYPE
 	}
 	
+	// Determines which attribute to compute
 	private Attribute attribute;
 	private String[] parameterNames = { "attribute" };
 	
+	// Mapping from attribute values to indices of the returned vector
 	private BidirectionalLookupTable<String, Integer> vocabulary;
 	
 	public FeatureTLinkAttribute() {
 		this.vocabulary = new BidirectionalLookupTable<String, Integer>();
 	}
 	
+	/**
+	 * @param dataSet
+	 * @return true if the feature has been initialized with a mapping
+	 * from attribute values to their indices within vectors computed
+	 * for datums
+	 */
 	@Override
 	public boolean init(FeaturizedDataSet<TLinkDatum<L>, L> dataSet) {
 		if (this.attribute == Attribute.POSITION) {
@@ -40,6 +61,11 @@ public class FeatureTLinkAttribute<L> extends Feature<TLinkDatum<L>, L>{
 		return true;
 	}
 
+	/**
+	 * @param datum
+	 * @return sparse mapping from attribute value indices to indicators of
+	 * whether or not the attribute takes the value
+	 */
 	@Override
 	public Map<Integer, Double> computeVector(TLinkDatum<L> datum) {
 		Map<Integer, Double> vector = new HashMap<Integer, Double>();
