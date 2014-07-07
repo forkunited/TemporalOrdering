@@ -26,6 +26,11 @@ public class ExperimentGSTTLinkTypeStructured {
 	private static int tlinkId;
 	
 	public static void main(String[] args) {
+		TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
+		tcaw.checkIfAllTwoPairsNeedToBeChecked();
+		System.exit(0);
+		
+		
 		String experimentName = "GSTTLinkType/" + args[0];
 		String documentSetName = args[1];
 		boolean useTestData = Boolean.valueOf(args[2]);

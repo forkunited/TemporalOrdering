@@ -282,16 +282,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				}
 			}
 		}
-		
-		/*
-		if (numTransBroken > 0){
-			System.out.println("Number of transitive closures broken: " + numTransBroken + " out of " + totalNum + " total triplets.");
-			System.out.println("Of those broken, " + numTransBrokenWithDCT + " are broken with DCT.");
-		} else{
-			System.out.println("Zero triplets violate the transitive closures!");
-		}
-		System.exit(0);
-		*/
 	
 		Map<String, Integer> violations = new HashMap<String, Integer>();
 		violations.put("totalTriplets", totalNum);
@@ -328,6 +318,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			this.datumTools = datumTools;
 		}
 		
+<<<<<<< HEAD
+		// plan: break this into methods, rewrite the section on constraint stuff.
+		// idea: fixed label constraints is for those labels between TIME and TIME
+=======
 		/**
 		 * @param scoredDatumLabels - scores for assignments of labels to TLinks (u vector in papers/TemporalOrderingNotes.pdf)
 		 * @param fixedDatumLabels - labels that should be fixed to TLinks regardless of the objective function value.
@@ -338,9 +332,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		 * @return an optimal mapping from TLinks to labels according to the objective function 
 		 * defined in papers/TemporalOrderingNotes.pdf. 
 		 */
+>>>>>>> bcd6b47caab08a6d54a693e2739b11ab363bc422
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
-			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules();
+			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules(); 
 
 			SolverFactory factory = new SolverFactoryCPLEX();
 			factory.setParameter(Solver.VERBOSE, 0); 
@@ -420,6 +415,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				
 				// Constraint 4 from section 1.1 of papers/TemporalOrderingNotes.pdf.
 				if (this.includeRuleBasedFixedLabels) {
+					// if the tlink is of type TIME_TIME, there is only one appropriate relation.
 					L label = this.labelInferenceRules.getRuleBasedFixedLabel(datumEntry.getKey());
 					if (label != null) {
 						Linear fixedLabelConstraint = new Linear();
@@ -446,6 +442,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 					String tlinkVarPrefix1 = "t_" + tlinkableId1 + "_" + tlinkableId2 + "_";
 					String tlinkConverseVarPrefix1 = "t_" + tlinkableId2 + "_" + tlinkableId1 + "_";
 					L fixedLabel1 = null;
+					// fixedLabel1 would be in fixedAdjacencyMap if tlinkableId1 and tlinkableId2 are both times. possibly also otherwise
 					if (fixedAdjacencyMap.containsKey(tlinkableId1) && fixedAdjacencyMap.get(tlinkableId1).containsKey(tlinkableId2))
 						fixedLabel1 = fixedAdjacencyMap.get(tlinkableId1).get(tlinkableId2);
 						
@@ -464,7 +461,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 						singleLabelConstraint.add(1, tlinkVar);
 						
 						// Converse constraint
+<<<<<<< HEAD
+						// not sure why this is necessary
+=======
 						// Constraint 3 from section 1.1 of papers/TemporalOrderingNotes.pdf.
+>>>>>>> bcd6b47caab08a6d54a693e2739b11ab363bc422
 						String tlinkConverseVar = tlinkConverseVarPrefix1 + this.labelInferenceRules.getConverse(label);
 						Linear converseConstraint = new Linear();
 						converseConstraint.add(1, tlinkVar);
