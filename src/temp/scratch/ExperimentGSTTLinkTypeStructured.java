@@ -26,8 +26,10 @@ public class ExperimentGSTTLinkTypeStructured {
 	private static int tlinkId;
 	
 	public static void main(String[] args) {
-		TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
-		tcaw.checkIfAllTwoPairsNeedToBeChecked();
+		// FIXME: I commented this because it was broken on my computer...
+		// I think you just forgot to add this class to repo? - Bill
+		//TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
+		//tcaw.checkIfAllTwoPairsNeedToBeChecked();
 		System.exit(0);
 		
 		
