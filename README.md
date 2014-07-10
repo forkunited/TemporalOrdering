@@ -73,10 +73,14 @@ project.
 Before running anything, you need to configure the project for your local 
 setup.  To configure, do the following:
 
-1.  Copy *files/build.xml* and *files/temp.properties* to the top-level directory
+1. Untar the jars at *files/jars.tgz* into an appropriate location. (This
+doesn't actually exist right now for this project. Just ask Jesse for the
+Jars instead.)
+
+2.  Copy *files/build.xml* and *files/temp.properties* to the top-level directory
 of the project. 
 
-2.  Fill out the copied *temp.properties* and *build.xml* files with the 
+3.  Fill out the copied *temp.properties* and *build.xml* files with the 
 appropriate settings by replacing the text inside them that is surrounded by 
 square brackets.
 
