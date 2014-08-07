@@ -318,6 +318,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			this.datumTools = datumTools;
 		}
 		
+		// plan: break this into methods, rewrite the section on constraint stuff.
+		// idea: fixed label constraints is for those labels between TIME and TIME
 		/**
 		 * @param scoredDatumLabels - scores for assignments of labels to TLinks (u vector in papers/TemporalOrderingNotes.pdf)
 		 * @param fixedDatumLabels - labels that should be fixed to TLinks regardless of the objective function value.

@@ -73,17 +73,21 @@ project.
 Before running anything, you need to configure the project for your local 
 setup.  To configure, do the following:
 
-1.  Copy *files/build.xml* and *files/temp.properties* to the top-level directory
+1. Untar the jars at *files/jars.tgz* into an appropriate location. (This
+doesn't actually exist right now for this project. Just ask Jesse for the
+Jars instead.)
+
+2.  Copy *files/build.xml* and *files/temp.properties* to the top-level directory
 of the project. 
 
-2.  Fill out the copied *temp.properties* and *build.xml* files with the 
+3.  Fill out the copied *temp.properties* and *build.xml* files with the 
 appropriate settings by replacing the text inside them that is surrounded by 
 square brackets.
 
+## Notes ##
 
+* Some of the jars included in build.xml are probably no longer necessary.  You might
+want to take some time to figure out which ones are unnecessary and remove them.
 
-
-
-Some jars in build.xml probably unnecessary but included for historical purposes. Might want to clean this up.
-
-Freeling only works on windows? Might be broken.  Hard to set up.
+* The FreeLing library interface in *temp.model.annotator.nlp.NLPAnnotatorFreeLing* 
+only works on Windows currently.
