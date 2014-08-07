@@ -318,10 +318,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			this.datumTools = datumTools;
 		}
 		
-<<<<<<< HEAD
-		// plan: break this into methods, rewrite the section on constraint stuff.
-		// idea: fixed label constraints is for those labels between TIME and TIME
-=======
 		/**
 		 * @param scoredDatumLabels - scores for assignments of labels to TLinks (u vector in papers/TemporalOrderingNotes.pdf)
 		 * @param fixedDatumLabels - labels that should be fixed to TLinks regardless of the objective function value.
@@ -332,7 +328,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		 * @return an optimal mapping from TLinks to labels according to the objective function 
 		 * defined in papers/TemporalOrderingNotes.pdf. 
 		 */
->>>>>>> bcd6b47caab08a6d54a693e2739b11ab363bc422
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules(); 
@@ -461,11 +456,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 						singleLabelConstraint.add(1, tlinkVar);
 						
 						// Converse constraint
-<<<<<<< HEAD
-						// not sure why this is necessary
-=======
 						// Constraint 3 from section 1.1 of papers/TemporalOrderingNotes.pdf.
->>>>>>> bcd6b47caab08a6d54a693e2739b11ab363bc422
 						String tlinkConverseVar = tlinkConverseVarPrefix1 + this.labelInferenceRules.getConverse(label);
 						Linear converseConstraint = new Linear();
 						converseConstraint.add(1, tlinkVar);
