@@ -56,6 +56,17 @@ public class TLink {
 		VAGUE
 	}
 	
+	public enum TimeRelType {
+		BEFORE,
+		IS_INCLUDED,
+		INCLUDES,
+		SIMULTANEOUS,
+		AFTER,
+		OVERLAPS,      // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+		OVERLAPPED_BY, // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
+		VAGUE
+	}
+	
 	// NOTE: Currently only for TimeBank-Dense relations + overlaps/overlapped_by
 	// Each sub-array represents a rule of the form (r_1\wedge r_2)->(r_3\vee .. r_n)
 	// The first array in each sub-array contain r_1 and r_2
@@ -181,12 +192,6 @@ public class TLink {
 			return TimeMLRelType.OVERLAPPED_BY;
 		else if (timeMLRelType == TimeMLRelType.OVERLAPPED_BY)
 			return TimeMLRelType.OVERLAPS;
-		else if (timeMLRelType == TimeMLRelType.OVERLAP)
-			return TimeMLRelType.OVERLAP;
-		else if (timeMLRelType == TimeMLRelType.BEFORE_OR_OVERLAP)
-			return TimeMLRelType.OVERLAP_OR_AFTER;
-		else if (timeMLRelType == TimeMLRelType.OVERLAP_OR_AFTER)
-			return TimeMLRelType.BEFORE_OR_OVERLAP;
 		else if (timeMLRelType == TimeMLRelType.BEFORE)
 			return TimeMLRelType.AFTER;
 		else if (timeMLRelType == TimeMLRelType.AFTER)
@@ -195,24 +200,30 @@ public class TLink {
 			return TimeMLRelType.IS_INCLUDED;
 		else if (timeMLRelType == TimeMLRelType.IS_INCLUDED)
 			return TimeMLRelType.INCLUDES;
-		else if (timeMLRelType == TimeMLRelType.DURING)
-			return TimeMLRelType.DURING_INV;
-		else if (timeMLRelType == TimeMLRelType.DURING_INV)
-			return TimeMLRelType.DURING;
 		else if (timeMLRelType == TimeMLRelType.SIMULTANEOUS)
 			return TimeMLRelType.SIMULTANEOUS;
-		else if (timeMLRelType == TimeMLRelType.IAFTER)
-			return TimeMLRelType.IBEFORE;
-		else if (timeMLRelType == TimeMLRelType.IDENTITY)
-			return TimeMLRelType.IDENTITY;
-		else if (timeMLRelType == TimeMLRelType.BEGINS)
-			return TimeMLRelType.BEGUN_BY;
-		else if (timeMLRelType == TimeMLRelType.BEGUN_BY)
-			return TimeMLRelType.BEGINS;
-		else if (timeMLRelType == TimeMLRelType.ENDS)
-			return TimeMLRelType.ENDED_BY;
-		else if (timeMLRelType == TimeMLRelType.ENDED_BY)
-			return TimeMLRelType.ENDS;
+//		else if (timeMLRelType == TimeMLRelType.OVERLAP)
+//			return TimeMLRelType.OVERLAP;
+//		else if (timeMLRelType == TimeMLRelType.BEFORE_OR_OVERLAP)
+//			return TimeMLRelType.OVERLAP_OR_AFTER;
+//		else if (timeMLRelType == TimeMLRelType.OVERLAP_OR_AFTER)
+//			return TimeMLRelType.BEFORE_OR_OVERLAP;
+//		else if (timeMLRelType == TimeMLRelType.DURING)
+//			return TimeMLRelType.DURING_INV;
+//		else if (timeMLRelType == TimeMLRelType.DURING_INV)
+//			return TimeMLRelType.DURING;
+//		else if (timeMLRelType == TimeMLRelType.IAFTER)
+//			return TimeMLRelType.IBEFORE;
+//		else if (timeMLRelType == TimeMLRelType.IDENTITY)
+//			return TimeMLRelType.IDENTITY;
+//		else if (timeMLRelType == TimeMLRelType.BEGINS)
+//			return TimeMLRelType.BEGUN_BY;
+//		else if (timeMLRelType == TimeMLRelType.BEGUN_BY)
+//			return TimeMLRelType.BEGINS;
+//		else if (timeMLRelType == TimeMLRelType.ENDS)
+//			return TimeMLRelType.ENDED_BY;
+//		else if (timeMLRelType == TimeMLRelType.ENDED_BY)
+//			return TimeMLRelType.ENDS;
 		else
 			return TimeMLRelType.VAGUE;
 	}

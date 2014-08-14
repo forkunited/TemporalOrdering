@@ -332,6 +332,13 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		 */
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
+			
+			
+			if (true)
+				return actuallyUnstructuredSetup(scoredDatumLabels);
+
+			
+			
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules(); 
 
 			SolverFactory factory = new SolverFactoryCPLEX();
@@ -340,6 +347,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			
 			Set<L> allLabels = new HashSet<L>();
 			allLabels.addAll(validLabels);
+			
+			// this might not be necessary
 			for (L[][] rule : compositionRules)
 				for (L label : rule[1]) // Add labels from consequents of rules
 					if (label != null)
@@ -562,8 +571,31 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			}
 			
 			return resultLabels;
+			
 		}
 		
+		
+		private Map<TLinkDatum<L>, L> actuallyUnstructuredSetup(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels) {
+			Map<TLinkDatum<L>, L> resultLabels = new HashMap<TLinkDatum<L>, L>();
+		
+			for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
+				Map<L, Double> labelValues = datumEntry.getValue();
+				
+				double maxValue = Double.MIN_VALUE;
+				L maxLabel = null;
+				for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
+					if (labelEntry.getValue() > maxValue) {
+						maxValue = labelEntry.getValue();
+						maxLabel = labelEntry.getKey();
+					}
+				}
+				
+				resultLabels.put(datumEntry.getKey(), maxLabel);
+			}
+			
+			return resultLabels;
+		}
+
 		public String getGenericName() {
 			StringBuilder name = new StringBuilder();
 			
@@ -578,6 +610,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			return name.toString();
 		}
 	}
+		
+		
 	
 	public class TLinkIterator implements Iterator<TLinkDatum<L>> {
 		private Iterator<Map<String, TLinkDatum<L>>> mapIterator;
