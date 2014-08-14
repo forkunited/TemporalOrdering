@@ -30,7 +30,7 @@ public class ExperimentGSTTLinkTypeStructured {
 		// I think you just forgot to add this class to repo? - Bill
 		//TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
 		//tcaw.checkIfAllTwoPairsNeedToBeChecked();
-		System.exit(0);
+		//System.exit(0);
 		
 		
 		String experimentName = "GSTTLinkType/" + args[0];
