@@ -1,13 +1,16 @@
 package temp.data.annotation.structure;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Random;
 
 import net.sf.javailp.Linear;
 import net.sf.javailp.OptType;
@@ -309,6 +312,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		// Currently these just include rules based on the time intervals referenced by temporal expressions
 		private boolean includeRuleBasedFixedLabels;
 		private Tools<TLinkDatum<L>, L> datumTools;
+		private Random random;
 		
 		public OptimizerInference(Tools<TLinkDatum<L>, L> datumTools, LabelInferenceRules<L> labelInferenceRules, boolean includeDisjunctiveRules, boolean includeRuleBasedFixedLabels) {
 			super();
@@ -316,6 +320,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			this.includeDisjunctiveRules = includeDisjunctiveRules;
 			this.includeRuleBasedFixedLabels = includeRuleBasedFixedLabels;
 			this.datumTools = datumTools;
+			this.random = datumTools.getDataTools().makeLocalRandom();
 		}
 		
 		// plan: break this into methods, rewrite the section on constraint stuff.
@@ -581,16 +586,29 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
 				Map<L, Double> labelValues = datumEntry.getValue();
 				
-				double maxValue = Double.MIN_VALUE;
+				double maxScore = Double.NEGATIVE_INFINITY;
+				List<L> maxLabels = null; // for breaking ties randomly
 				L maxLabel = null;
 				for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
-					if (labelEntry.getValue() > maxValue) {
-						maxValue = labelEntry.getValue();
+					if (labelEntry.getValue() == maxScore) {
+						if (maxLabels == null) {
+							maxLabels = new ArrayList<L>();
+							if (maxLabel != null) {
+								maxLabels.add(maxLabel);
+								maxLabel = null;
+							}
+						}
+						maxLabels.add(labelEntry.getKey());
+					} else if (labelEntry.getValue() > maxScore) {
+						maxScore = labelEntry.getValue();
 						maxLabel = labelEntry.getKey();
+						maxLabels = null;
 					}
 				}
-				
-				resultLabels.put(datumEntry.getKey(), maxLabel);
+				if (maxLabels != null)
+					resultLabels.put(datumEntry.getKey(), maxLabels.get(this.random.nextInt(maxLabels.size())));
+				else
+					resultLabels.put(datumEntry.getKey(), maxLabel);
 			}
 			
 			return resultLabels;
