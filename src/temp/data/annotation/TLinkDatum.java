@@ -68,6 +68,7 @@ public class TLinkDatum<L> extends Datum<L> {
 			
 			@Override
 			public TLink.TimeMLRelType map(TLink.TimeMLRelType label) {
+				
 				if (label == TLink.TimeMLRelType.BEFORE_OR_OVERLAP)
 					return TLink.TimeMLRelType.VAGUE;
 				else if (label == TLink.TimeMLRelType.BEGINS)

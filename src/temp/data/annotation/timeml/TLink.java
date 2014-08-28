@@ -32,6 +32,7 @@ public class TLink {
 	}
 	
 	public enum TimeMLRelType {
+
 		OVERLAPS,      // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
 		OVERLAPPED_BY, // Additional relation for transitivity (shown at http://www.ics.uci.edu/~alspaugh/cls/shr/allen.html)
 		
@@ -57,6 +58,7 @@ public class TLink {
 	}
 	
 	public enum TimeRelType {
+
 		BEFORE,
 		IS_INCLUDED,
 		INCLUDES,
@@ -202,28 +204,28 @@ public class TLink {
 			return TimeMLRelType.INCLUDES;
 		else if (timeMLRelType == TimeMLRelType.SIMULTANEOUS)
 			return TimeMLRelType.SIMULTANEOUS;
-//		else if (timeMLRelType == TimeMLRelType.OVERLAP)
-//			return TimeMLRelType.OVERLAP;
-//		else if (timeMLRelType == TimeMLRelType.BEFORE_OR_OVERLAP)
-//			return TimeMLRelType.OVERLAP_OR_AFTER;
-//		else if (timeMLRelType == TimeMLRelType.OVERLAP_OR_AFTER)
-//			return TimeMLRelType.BEFORE_OR_OVERLAP;
-//		else if (timeMLRelType == TimeMLRelType.DURING)
-//			return TimeMLRelType.DURING_INV;
-//		else if (timeMLRelType == TimeMLRelType.DURING_INV)
-//			return TimeMLRelType.DURING;
-//		else if (timeMLRelType == TimeMLRelType.IAFTER)
-//			return TimeMLRelType.IBEFORE;
-//		else if (timeMLRelType == TimeMLRelType.IDENTITY)
-//			return TimeMLRelType.IDENTITY;
-//		else if (timeMLRelType == TimeMLRelType.BEGINS)
-//			return TimeMLRelType.BEGUN_BY;
-//		else if (timeMLRelType == TimeMLRelType.BEGUN_BY)
-//			return TimeMLRelType.BEGINS;
-//		else if (timeMLRelType == TimeMLRelType.ENDS)
-//			return TimeMLRelType.ENDED_BY;
-//		else if (timeMLRelType == TimeMLRelType.ENDED_BY)
-//			return TimeMLRelType.ENDS;
+		else if (timeMLRelType == TimeMLRelType.OVERLAP)
+			return TimeMLRelType.OVERLAP;
+		else if (timeMLRelType == TimeMLRelType.BEFORE_OR_OVERLAP)
+			return TimeMLRelType.OVERLAP_OR_AFTER;
+		else if (timeMLRelType == TimeMLRelType.OVERLAP_OR_AFTER)
+			return TimeMLRelType.BEFORE_OR_OVERLAP;
+		else if (timeMLRelType == TimeMLRelType.DURING)
+			return TimeMLRelType.DURING_INV;
+		else if (timeMLRelType == TimeMLRelType.DURING_INV)
+			return TimeMLRelType.DURING;
+		else if (timeMLRelType == TimeMLRelType.IAFTER)
+			return TimeMLRelType.IBEFORE;
+		else if (timeMLRelType == TimeMLRelType.IDENTITY)
+			return TimeMLRelType.IDENTITY;
+		else if (timeMLRelType == TimeMLRelType.BEGINS)
+			return TimeMLRelType.BEGUN_BY;
+		else if (timeMLRelType == TimeMLRelType.BEGUN_BY)
+			return TimeMLRelType.BEGINS;
+		else if (timeMLRelType == TimeMLRelType.ENDS)
+			return TimeMLRelType.ENDED_BY;
+		else if (timeMLRelType == TimeMLRelType.ENDED_BY)
+			return TimeMLRelType.ENDS;
 		else
 			return TimeMLRelType.VAGUE;
 	}

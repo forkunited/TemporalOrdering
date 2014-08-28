@@ -4,7 +4,7 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 
-gridSearchParameterValues=wsdct_l2(.001,.01,.1, 1, 10, 100, 1000, 10000)
+gridSearchParameterValues=l2(.001,.01,.1, 1, 10, 100, 1000, 10000)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
@@ -41,5 +41,5 @@ model=SVMStructured()
 	earlyStopIfNoLabelChange=true
 	datumStructureCollection=TLinkGraphDocument
 	datumStructureOptimizer=InferenceTimeMLRelType
-	includeStructuredTraining=true
+	includeStructuredTraining=false
 }
