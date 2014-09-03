@@ -339,8 +339,8 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			
 			
-			//if (true)
-			//	return actuallyUnstructuredSetup(scoredDatumLabels);
+			if (true)
+				return actuallyUnstructuredSetup(scoredDatumLabels);
 
 			
 			
