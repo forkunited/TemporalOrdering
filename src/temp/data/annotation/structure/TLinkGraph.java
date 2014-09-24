@@ -340,7 +340,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			
 			
 			if (true)
-				return actuallyUnstructuredSetup(scoredDatumLabels);
+				return actuallyUnstructuredSetup(scoredDatumLabels, validLabels);
 
 			
 			
@@ -580,17 +580,17 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		}
 		
 		
-		private Map<TLinkDatum<L>, L> actuallyUnstructuredSetup(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels) {
+		private Map<TLinkDatum<L>, L> actuallyUnstructuredSetup(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Set<L> validLabels) {
 			Map<TLinkDatum<L>, L> resultLabels = new HashMap<TLinkDatum<L>, L>();
 		
 			for (Entry<TLinkDatum<L>, Map<L, Double>> datumEntry : scoredDatumLabels.entrySet()) {
-				Map<L, Double> labelValues = datumEntry.getValue();
-				
 				double maxScore = Double.NEGATIVE_INFINITY;
 				List<L> maxLabels = null; // for breaking ties randomly
 				L maxLabel = null;
-				for (Entry<L, Double> labelEntry : labelValues.entrySet()) {
-					if (labelEntry.getValue() == maxScore) {
+				for (L label : validLabels) {
+					double score = datumEntry.getValue().get(label);;
+					
+					if (score == maxScore) {
 						if (maxLabels == null) {
 							maxLabels = new ArrayList<L>();
 							if (maxLabel != null) {
@@ -598,15 +598,16 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 								maxLabel = null;
 							}
 						}
-						maxLabels.add(labelEntry.getKey());
-					} else if (labelEntry.getValue() > maxScore) {
-						maxScore = labelEntry.getValue();
-						maxLabel = labelEntry.getKey();
+						maxLabels.add(label);
+					} else if (score > maxScore) {
+						maxScore = score;
+						maxLabel = label;
 						maxLabels = null;
 					}
 				}
+				
 				if (maxLabels != null)
-					resultLabels.put(datumEntry.getKey(), maxLabels.get(this.random.nextInt(maxLabels.size())));
+					resultLabels.put(datumEntry.getKey(), maxLabels.get(0));//get(this.random.nextInt(maxLabels.size()))); TODO: fix this. should be random.
 				else
 					resultLabels.put(datumEntry.getKey(), maxLabel);
 			}
