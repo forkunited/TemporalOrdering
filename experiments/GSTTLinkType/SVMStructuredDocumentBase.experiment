@@ -4,7 +4,7 @@ trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 evaluation=Accuracy()
 
-gridSearchParameterValues=l2(.001,.01,.1, 1, 10, 100, 1000, 10000)
+gridSearchParameterValues=l2(.175, .25, .5, 1, 2, 4, 8, 9, 10, 16, 32, 64, 128)
 
 feature_tlinkPosition=TLinkAttribute(attribute=POSITION)
 feature_tlinkType=TLinkAttribute(attribute=TYPE)
