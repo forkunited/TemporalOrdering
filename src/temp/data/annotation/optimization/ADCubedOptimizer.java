@@ -6,7 +6,7 @@ import java.util.*;
 import edu.uci.ics.jung.graph.Graph;
 
 public class ADCubedOptimizer<L> {
-	
+	/*
 	public void optimize(FactorGraphBuilder<L> graph){
 		
 		Graph<MyNode<L>, String> factorGraph = graph.getFactorGraph();
@@ -50,5 +50,5 @@ public class ADCubedOptimizer<L> {
 	private void projectOntoSimplex(){
 		
 	}
-
+*/
 }
