@@ -3,6 +3,8 @@ package temp.data.annotation.optimization;
 import java.util.*;
 import java.util.Map.Entry;
 
+import ark.data.annotation.Datum.Tools.LabelMapping;
+
 import edu.uci.ics.jung.graph.Graph;
 
 import temp.data.annotation.TLinkDatum;
@@ -14,20 +16,35 @@ import temp.data.annotation.TLinkDatum;
  */
 
 public class GreedyOptimizer<L>{
-	private List<FactorGraph<L>> graphs;
 	private Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels;
+	private Map<TLinkDatum<L>, L> fixedDatumLabels;
+	private Set<L> validLabels;
+	private LabelMapping<L> labelMapping;
+	private L[][][] compositionRules;
+	private int numInitialGraphs;
 	
-	public GreedyOptimizer(List<FactorGraph<L>> graphs, Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels) {
-		this.graphs = graphs;
+	public GreedyOptimizer(
+			Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels,
+			Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels,
+			LabelMapping<L> labelMapping, L[][][] compositionRules,
+			int numInitialGraphs) {
 		this.scoredDatumLabels = scoredDatumLabels;
+		this.fixedDatumLabels = fixedDatumLabels;
+		this.validLabels = validLabels;
+		this.labelMapping = labelMapping;
+		this.compositionRules = compositionRules;
+		this.numInitialGraphs = numInitialGraphs;
 	}
 
 	public Map<TLinkDatum<L>, L> optimize(){
-		for (FactorGraph<L> graph : graphs){
+
+		double maxScore = Double.NEGATIVE_INFINITY;
+		FactorGraph<L> bestGraph = null;
+		for (int i = 0; i < numInitialGraphs; i++){
+			FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+					fixedDatumLabels, validLabels, labelMapping, compositionRules);
+			graph.build();
 			graph.initializeGraph();
-		}
-		
-		for (FactorGraph<L> graph : graphs){
 			boolean foundValidMoveThisIter = false;
 			do {
 				foundValidMoveThisIter = false;
@@ -53,11 +70,17 @@ public class GreedyOptimizer<L>{
 					}
 				}
 			} while (foundValidMoveThisIter);
+			double currentScore = computeScore(graph);
+			if (currentScore > maxScore){
+				maxScore = currentScore;
+				bestGraph = graph;
+			}
 		}
-		
-		return findHighestScoringAssignment();
+		System.out.println("Found one highest scoring assignment! Score = " + maxScore);
+		return makeMapFromTLinkToLabels(bestGraph.getFactorGraph());
 	}
 	
+	/*
 	private Map<TLinkDatum<L>, L> findHighestScoringAssignment(){
 		double maxScore = Double.NEGATIVE_INFINITY;
 		int indexOfMaxScore = -1;		
@@ -69,9 +92,8 @@ public class GreedyOptimizer<L>{
 				indexOfMaxScore = i;
 			}
 		}
-		System.out.println("Found one highest scoring assignment! Score = " + maxScore);
 		return makeMapFromTLinkToLabels(graphs.get(indexOfMaxScore).getFactorGraph());
-	}
+	}*/
 	
 	private Map<TLinkDatum<L>, L> makeMapFromTLinkToLabels(Graph<MyNode<L>, String> graph){
 		Map<TLinkDatum<L>, L> MAP = new HashMap<TLinkDatum<L>, L>();

@@ -357,15 +357,10 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			else if (typeOfOptimization.equals("Unstructured"))
 				return actuallyUnstructuredSetup(scoredDatumLabels, validLabels);
 			else if (typeOfOptimization.equals("GreedyOptimization")){
-				List<FactorGraph<L>> graphs = new ArrayList<FactorGraph<L>>();
+				
 				int numInitialGraphs = 100;
-				for (int i = 0; i < numInitialGraphs; i++){
-					FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
-							fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
-					graph.build();
-					graphs.add(graph);
-				}
-				GreedyOptimizer<L> gO = new GreedyOptimizer<L>(graphs, scoredDatumLabels);				
+				GreedyOptimizer<L> gO = new GreedyOptimizer<L>(scoredDatumLabels, 
+						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules(), numInitialGraphs);				
 				return gO.optimize();
 			}
 			else if (!typeOfOptimization.equals("ILP")){
