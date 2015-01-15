@@ -22,6 +22,9 @@ import net.sf.javailp.SolverFactoryCPLEX;
 
 
 import temp.data.annotation.TLinkDatum;
+import temp.data.annotation.optimization.ADCubedOptimizer;
+import temp.data.annotation.optimization.FactorGraph;
+import temp.data.annotation.optimization.GreedyOptimizer;
 import temp.data.annotation.timeml.TLink;
 import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
@@ -338,9 +341,36 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			
+			// this is a flag for what kind of optimization we can do.
+			// this can take on four values: "AD^3", "Unstructured", "GreedyOptimization", and "ILP".
+			String typeOfOptimization = "GreedyOptimization";
 			
-			if (true)
+			// TODO: finish AD^3
+			// TODO: crate Optimize class, have AD^3, Greedy, ILP, Unstructured extend / inherit from it.
+			if (typeOfOptimization.equals("AD^3")){
+				FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
+				graph.build();
+				ADCubedOptimizer<L> optimizer = new ADCubedOptimizer<L>();
+				//optimizer.optimize(graph);
+			}
+			else if (typeOfOptimization.equals("Unstructured"))
 				return actuallyUnstructuredSetup(scoredDatumLabels, validLabels);
+			else if (typeOfOptimization.equals("GreedyOptimization")){
+				List<FactorGraph<L>> graphs = new ArrayList<FactorGraph<L>>();
+				int numInitialGraphs = 100;
+				for (int i = 0; i < numInitialGraphs; i++){
+					FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+							fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
+					graph.build();
+					graphs.add(graph);
+				}
+				GreedyOptimizer<L> gO = new GreedyOptimizer<L>(graphs, scoredDatumLabels);				
+				return gO.optimize();
+			}
+			else if (!typeOfOptimization.equals("ILP")){
+				throw new IllegalArgumentException("Selected an incorrect type of optimization!");
+			}
 
 			
 			

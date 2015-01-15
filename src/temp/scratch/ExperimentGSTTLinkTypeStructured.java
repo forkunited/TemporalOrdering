@@ -28,8 +28,8 @@ public class ExperimentGSTTLinkTypeStructured {
 	public static void main(String[] args) {
 		// FIXME: I commented this because it was broken on my computer...
 		// I think you just forgot to add this class to repo? - Bill
-		//TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
-		//tcaw.checkIfAllTwoPairsNeedToBeChecked();
+		TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
+		tcaw.checkIfAllTwoPairsNeedToBeChecked();
 		//System.exit(0);
 		
 		
