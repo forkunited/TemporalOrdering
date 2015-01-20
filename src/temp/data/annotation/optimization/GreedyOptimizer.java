@@ -49,6 +49,8 @@ public class GreedyOptimizer<L>{
 		double avgNumChangesPerIter = 0;
 		double avgNumChangesFirstIter = 0;
 		double avgNumChangesFirstFiveIter = 0;
+		double[] avgNumValidMoves = new double[6];
+		double[] avgNumValidMovesFirstIter = new double[6];
 		
 		double maxScore = Double.NEGATIVE_INFINITY;
 		FactorGraph<L> bestGraph = null;
@@ -58,20 +60,34 @@ public class GreedyOptimizer<L>{
 					fixedDatumLabels, validLabels, labelMapping, compositionRules);
 			graph.build();
 			graph.initializeGraph();
-			boolean foundValidMoveThisIter = false;
 			
 			// for tracking the number of changes at each iteration
 			double numIters = 0;
 			double numChangesPerIter = 0;
 			double numChangesFirstIter = 0;
 			double numChangesFirstFiveIter = 0;
+			double[] avgNumValidMovesOneGraph = new double[6];
+			double[] avgNumValidMovesOneGrgaphFirstIter = new double[6];
+			
+			boolean foundValidMoveThisIter = false;
 			do {
 				foundValidMoveThisIter = false;
 				// loop over the one-hot variables in a given graph
-				for (MyNode<L> oneHot : FactorGraph.getSetOfVerticesOfType(graph.getFactorGraph(), temp.data.annotation.optimization.NodeType.onehotConstraint)){
+				Set<MyNode<L>> oneHotVerts = FactorGraph.getSetOfVerticesOfType(graph.getFactorGraph(), 
+						temp.data.annotation.optimization.NodeType.onehotConstraint);
+				for (MyNode<L> oneHot : oneHotVerts){
 					// choose highest scoring label for this node
 					TreeMap<Double, List<L>> sortedLabels = new TreeMap<Double, List<L>>();
 					fillSortedLabels(sortedLabels, oneHot, graph);
+					
+					// to count the number of valid moves, to be printed to console
+					int numValidMoves = countNumValidMoves(oneHot, graph);
+					avgNumValidMovesOneGraph[numValidMoves] += 1/oneHotVerts.size();
+					if (numIters < 1){
+						avgNumValidMovesOneGrgaphFirstIter[numValidMoves] += 1/oneHotVerts.size();
+					}
+						
+					
 					
 					boolean foundMove = false;
 					for (double score : sortedLabels.descendingKeySet()){
@@ -110,20 +126,34 @@ public class GreedyOptimizer<L>{
 			avgNumChangesPerIter += numChangesPerIter / 100.0;
 			avgNumChangesFirstIter += numChangesFirstIter / 100.0;
 			avgNumChangesFirstFiveIter += numChangesFirstFiveIter / 100.0;
+			for (int k = 0; k < avgNumValidMovesOneGraph.length; k++){
+				avgNumValidMovesOneGraph[k] = avgNumValidMovesOneGraph[k] / numIters;
+			}
+			for (int k = 0; k < avgNumValidMoves.length; k++){
+				avgNumValidMoves[k] += avgNumValidMovesOneGraph[k] / 100.0;
+			}
+			for (int k = 0; k < avgNumValidMovesFirstIter.length; k++){
+				avgNumValidMovesFirstIter[k] += avgNumValidMovesOneGrgaphFirstIter[k] / 100.0;
+			}
 		}
 		
 		printInfoToConsole(avgNumIters, maxNumIters, minNumIters, avgNumChangesPerIter, 
-				avgNumChangesFirstIter, avgNumChangesFirstFiveIter, maxScore);
+				avgNumChangesFirstIter, avgNumChangesFirstFiveIter, maxScore, avgNumValidMoves, avgNumValidMovesFirstIter);
 		return makeMapFromTLinkToLabels(bestGraph.getFactorGraph());
 	}
 	
+
+
 	private void printInfoToConsole(double avgNumIters, double maxNumIters, double minNumIters, 
-			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore) {
+			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore, 
+			double[] avgNumValidMoves, double[] avgNumValidMovesFirstIter) {
 		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + maxScore);
 		System.out.println("Number of iterations: Average: " + avgNumIters + ", Min: " + minNumIters + ", Max: " + maxNumIters);
 		System.out.println("Average number of changes per iteration: " + avgNumChangesPerIter);
 		System.out.println("Average number of changes in the first iteration: " + avgNumChangesFirstIter);
 		System.out.println("Average number of changes in the first five iterations: " + avgNumChangesFirstFiveIter);
+		System.out.println("Average number of available moves across iterations and graphs: " + Arrays.toString(avgNumValidMoves));
+		System.out.println("Average number of available moves in the first iteration across graphs: " + Arrays.toString(avgNumValidMovesFirstIter));
 	}
 
 	/*
@@ -229,5 +259,16 @@ public class GreedyOptimizer<L>{
 				}
 			}
 		}
+	}
+	
+	// computes the number of valid changes that can be made to the current node without breaking transitivity
+	private int countNumValidMoves(MyNode<L> oneHot, FactorGraph<L> graph) {
+		int numMoves = 0;
+		for (L label : validLabels){
+			if (validMove(oneHot, label, graph) && oneHot.getActiveLabel() != label){
+				numMoves++;
+			}
+		}
+		return numMoves;
 	}
 }
