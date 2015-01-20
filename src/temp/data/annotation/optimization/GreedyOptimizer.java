@@ -36,16 +36,35 @@ public class GreedyOptimizer<L>{
 		this.numInitialGraphs = numInitialGraphs;
 	}
 
+	// input: nothing
+	// output: takes the graph I have tries to find a MAP assignment.
+	// things to print out: average number of iterations for the K graphs
+	//						average number of changes per iteration
+	//						average number of changes in the first iteration
+	//						average number of changes in the first five iterations
 	public Map<TLinkDatum<L>, L> optimize(){
-
+		double avgNumIters = 0;
+		double maxNumIters = -1;
+		double minNumIters = Double.POSITIVE_INFINITY;
+		double avgNumChangesPerIter = 0;
+		double avgNumChangesFirstIter = 0;
+		double avgNumChangesFirstFiveIter = 0;
+		
 		double maxScore = Double.NEGATIVE_INFINITY;
 		FactorGraph<L> bestGraph = null;
+
 		for (int i = 0; i < numInitialGraphs; i++){
 			FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
 					fixedDatumLabels, validLabels, labelMapping, compositionRules);
 			graph.build();
 			graph.initializeGraph();
 			boolean foundValidMoveThisIter = false;
+			
+			// for tracking the number of changes at each iteration
+			double numIters = 0;
+			double numChangesPerIter = 0;
+			double numChangesFirstIter = 0;
+			double numChangesFirstFiveIter = 0;
 			do {
 				foundValidMoveThisIter = false;
 				// loop over the one-hot variables in a given graph
@@ -62,6 +81,11 @@ public class GreedyOptimizer<L>{
 								oneHot.setActiveLabel(label);
 								foundMove = true;
 								foundValidMoveThisIter = true;
+								numChangesPerIter += 1;
+								if (numIters == 0)
+									numChangesFirstIter += 1;
+								if (numIters < 5)
+									numChangesFirstFiveIter += 1;
 								break;
 							}
 						}
@@ -69,17 +93,39 @@ public class GreedyOptimizer<L>{
 							break;
 					}
 				}
+				numIters += 1;
 			} while (foundValidMoveThisIter);
 			double currentScore = computeScore(graph);
 			if (currentScore > maxScore){
 				maxScore = currentScore;
 				bestGraph = graph;
 			}
+			
+			// to update the counters for the number of iterations and number of changes
+			avgNumIters += numIters / 100.0;
+			if (maxNumIters < numIters)
+				maxNumIters = numIters;
+			if (minNumIters > numIters)
+				minNumIters = numIters;
+			avgNumChangesPerIter += numChangesPerIter / 100.0;
+			avgNumChangesFirstIter += numChangesFirstIter / 100.0;
+			avgNumChangesFirstFiveIter += numChangesFirstFiveIter / 100.0;
 		}
-		System.out.println("Found one highest scoring assignment! Score = " + maxScore);
+		
+		printInfoToConsole(avgNumIters, maxNumIters, minNumIters, avgNumChangesPerIter, 
+				avgNumChangesFirstIter, avgNumChangesFirstFiveIter, maxScore);
 		return makeMapFromTLinkToLabels(bestGraph.getFactorGraph());
 	}
 	
+	private void printInfoToConsole(double avgNumIters, double maxNumIters, double minNumIters, 
+			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore) {
+		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + maxScore);
+		System.out.println("Number of iterations: Average: " + avgNumIters + ", Min: " + minNumIters + ", Max: " + maxNumIters);
+		System.out.println("Average number of changes per iteration: " + avgNumChangesPerIter);
+		System.out.println("Average number of changes in the first iteration: " + avgNumChangesFirstIter);
+		System.out.println("Average number of changes in the first five iterations: " + avgNumChangesFirstFiveIter);
+	}
+
 	/*
 	private Map<TLinkDatum<L>, L> findHighestScoringAssignment(){
 		double maxScore = Double.NEGATIVE_INFINITY;

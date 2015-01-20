@@ -63,8 +63,6 @@ public class FactorGraph<L> {
 				second.getTLink().getTarget().equals(third.getTLink().getTarget()));
 	}
 	
-	// TODO: check that looping over permutations of nodes, and rearranging each gives us what we need. 
-	//		 it may give us repeats. 
 	private void addTransitiveFactors(Graph<MyNode<L>, String> factorGraph){
 		Set<MyNode<L>> tLinksInGraph = new HashSet<MyNode<L>>(factorGraph.getVertices());
 		for (MyNode<L> first : tLinksInGraph){
@@ -214,7 +212,6 @@ public class FactorGraph<L> {
 		// Add vertices for the TLinks
 		for (TLinkDatum<L> datum : scoredDatumLabels.keySet()) { 
 			checkDoc(datum);
-			//TODO: remove
 			factorGraph.addVertex(new MyNode<L>(datum, getVertexName(datum), temp.data.annotation.optimization.NodeType.variable));
 		}
 
@@ -225,7 +222,7 @@ public class FactorGraph<L> {
 		checkBinarizedTransitiveFactors(factorGraph);
 		fixTransitiveFactorsForBinaryGraph(factorGraph);
 		
-		checkGraph(factorGraph);
+		//checkGraph(factorGraph);
 		
 		this.factorGraph = factorGraph;
 		

@@ -357,7 +357,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			else if (typeOfOptimization.equals("Unstructured"))
 				return actuallyUnstructuredSetup(scoredDatumLabels, validLabels);
 			else if (typeOfOptimization.equals("GreedyOptimization")){
-				
 				int numInitialGraphs = 100;
 				GreedyOptimizer<L> gO = new GreedyOptimizer<L>(scoredDatumLabels, 
 						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules(), numInitialGraphs);				
