@@ -22,6 +22,7 @@ public class GreedyOptimizer<L>{
 	private LabelMapping<L> labelMapping;
 	private L[][][] compositionRules;
 	private int numInitialGraphs;
+	private int numOneHotVerts;
 	
 	public GreedyOptimizer(
 			Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels,
@@ -75,6 +76,7 @@ public class GreedyOptimizer<L>{
 				// loop over the one-hot variables in a given graph
 				Set<MyNode<L>> oneHotVerts = FactorGraph.getSetOfVerticesOfType(graph.getFactorGraph(), 
 						temp.data.annotation.optimization.NodeType.onehotConstraint);
+				numOneHotVerts = oneHotVerts.size();
 				for (MyNode<L> oneHot : oneHotVerts){
 					// choose highest scoring label for this node
 					TreeMap<Double, List<L>> sortedLabels = new TreeMap<Double, List<L>>();
@@ -123,7 +125,7 @@ public class GreedyOptimizer<L>{
 				maxNumIters = numIters;
 			if (minNumIters > numIters)
 				minNumIters = numIters;
-			avgNumChangesPerIter += numChangesPerIter / 100.0;
+			avgNumChangesPerIter += (numChangesPerIter / numIters) / 100.0;
 			avgNumChangesFirstIter += numChangesFirstIter / 100.0;
 			avgNumChangesFirstFiveIter += numChangesFirstFiveIter / 100.0;
 			for (int k = 0; k < avgNumValidMovesOneGraph.length; k++){
@@ -147,7 +149,9 @@ public class GreedyOptimizer<L>{
 	private void printInfoToConsole(double avgNumIters, double maxNumIters, double minNumIters, 
 			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore, 
 			double[] avgNumValidMoves, double[] avgNumValidMovesFirstIter) {
-		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + maxScore);
+		System.out.println();
+		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + 
+				Math.round(maxScore) + ", number of variables in graph: " + numOneHotVerts);
 		System.out.println("Number of iterations: Average: " + avgNumIters + ", Min: " + minNumIters + ", Max: " + maxNumIters);
 		System.out.println("Average number of changes per iteration: " + avgNumChangesPerIter);
 		System.out.println("Average number of changes in the first iteration: " + avgNumChangesFirstIter);
