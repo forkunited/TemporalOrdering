@@ -149,6 +149,9 @@ public class GreedyOptimizer<L>{
 	private void printInfoToConsole(double avgNumIters, double maxNumIters, double minNumIters, 
 			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore, 
 			double[] avgNumValidMoves, double[] avgNumValidMovesFirstIter) {
+		roundAvgNumValidMoves(avgNumValidMoves);
+		roundAvgNumValidMoves(avgNumValidMovesFirstIter);
+		
 		System.out.println();
 		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + 
 				Math.round(maxScore) + ", number of variables in graph: " + numOneHotVerts);
@@ -159,7 +162,14 @@ public class GreedyOptimizer<L>{
 		System.out.println("Average number of available moves across iterations and graphs: " + Arrays.toString(avgNumValidMoves));
 		System.out.println("Average number of available moves in the first iteration across graphs: " + Arrays.toString(avgNumValidMovesFirstIter));
 	}
-
+	
+	private void roundAvgNumValidMoves(double[] avgNumValidMoves) {
+		for (int i = 0; i < avgNumValidMoves.length; i++){
+			avgNumValidMoves[i] = Math.round(1000*avgNumValidMoves[i]) / 1000.0;
+		}
+		
+	}
+	
 	/*
 	private Map<TLinkDatum<L>, L> findHighestScoringAssignment(){
 		double maxScore = Double.NEGATIVE_INFINITY;
@@ -174,7 +184,8 @@ public class GreedyOptimizer<L>{
 		}
 		return makeMapFromTLinkToLabels(graphs.get(indexOfMaxScore).getFactorGraph());
 	}*/
-	
+
+
 	private Map<TLinkDatum<L>, L> makeMapFromTLinkToLabels(Graph<MyNode<L>, String> graph){
 		Map<TLinkDatum<L>, L> MAP = new HashMap<TLinkDatum<L>, L>();
 		for (MyNode<L> oneHot : FactorGraph.getSetOfVerticesOfType(graph, temp.data.annotation.optimization.NodeType.onehotConstraint)){
