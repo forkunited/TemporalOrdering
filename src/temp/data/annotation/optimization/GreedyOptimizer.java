@@ -84,9 +84,9 @@ public class GreedyOptimizer<L>{
 					
 					// to count the number of valid moves, to be printed to console
 					int numValidMoves = countNumValidMoves(oneHot, graph);
-					avgNumValidMovesOneGraph[numValidMoves] += 1/oneHotVerts.size();
+					avgNumValidMovesOneGraph[numValidMoves] += 1.0/oneHotVerts.size();
 					if (numIters < 1){
-						avgNumValidMovesOneGrgaphFirstIter[numValidMoves] += 1/oneHotVerts.size();
+						avgNumValidMovesOneGrgaphFirstIter[numValidMoves] += 1.0/oneHotVerts.size();
 					}
 						
 					
