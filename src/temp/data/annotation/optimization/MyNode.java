@@ -37,6 +37,7 @@ class MyNode<L> {
 	
 	// only used by the oneHot nodes, to tell which of the associated binary variables is active
 	private L activeLabel;
+	private boolean isThisBinaryNodeActive;
 
 	// for creating variable nodes, binarizedVar nodes
 	public MyNode(TLinkDatum<L> tLink, String name, NodeType type) {

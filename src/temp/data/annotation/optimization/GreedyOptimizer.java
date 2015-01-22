@@ -45,8 +45,8 @@ public class GreedyOptimizer<L>{
 	//						average number of changes in the first five iterations
 	public Map<TLinkDatum<L>, L> optimize(){
 		double avgNumIters = 0;
-		double maxNumIters = -1;
-		double minNumIters = Double.POSITIVE_INFINITY;
+		int maxNumIters = -1;
+		int minNumIters = Integer.MAX_VALUE;
 		double avgNumChangesPerIter = 0;
 		double avgNumChangesFirstIter = 0;
 		double avgNumChangesFirstFiveIter = 0;
@@ -54,19 +54,21 @@ public class GreedyOptimizer<L>{
 		double[] avgNumValidMovesFirstIter = new double[6];
 		
 		double maxScore = Double.NEGATIVE_INFINITY;
-		FactorGraph<L> bestGraph = null;
-
+		
+		// to build the factor graph
+		FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+				fixedDatumLabels, validLabels, labelMapping, compositionRules);
+		graph.build();
+		graph.initializeGraph();
+		Map<TLinkDatum<L>, L> bestAssignment = makeMapFromTLinkToLabels(graph.getFactorGraph());
 		for (int i = 0; i < numInitialGraphs; i++){
-			FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
-					fixedDatumLabels, validLabels, labelMapping, compositionRules);
-			graph.build();
-			graph.initializeGraph();
 			
+			graph.initializeGraph();
 			// for tracking the number of changes at each iteration
-			double numIters = 0;
-			double numChangesPerIter = 0;
-			double numChangesFirstIter = 0;
-			double numChangesFirstFiveIter = 0;
+			int numIters = 0;
+			int numChangesPerIter = 0;
+			int numChangesFirstIter = 0;
+			int numChangesFirstFiveIter = 0;
 			double[] avgNumValidMovesOneGraph = new double[6];
 			double[] avgNumValidMovesOneGrgaphFirstIter = new double[6];
 			
@@ -88,8 +90,6 @@ public class GreedyOptimizer<L>{
 					if (numIters < 1){
 						avgNumValidMovesOneGrgaphFirstIter[numValidMoves] += 1.0/oneHotVerts.size();
 					}
-						
-					
 					
 					boolean foundMove = false;
 					for (double score : sortedLabels.descendingKeySet()){
@@ -100,8 +100,9 @@ public class GreedyOptimizer<L>{
 								foundMove = true;
 								foundValidMoveThisIter = true;
 								numChangesPerIter += 1;
-								if (numIters == 0)
+								if (numIters < 1){
 									numChangesFirstIter += 1;
+								}
 								if (numIters < 5)
 									numChangesFirstFiveIter += 1;
 								break;
@@ -111,12 +112,19 @@ public class GreedyOptimizer<L>{
 							break;
 					}
 				}
+				/*if (numChangesPerIter > 1 && numIters == 1){
+					System.out.println("Num iters: " + numIters + ", and foundMove: " + foundValidMoveThisIter);
+					System.out.println("First iteration value of numChangesPerIter: " + numChangesPerIter);
+					System.out.println("First iteration value of numChangesFirstIter: " + numChangesFirstIter);
+					System.out.println("First iteration value of numChangesFirstFiveIter: " + numChangesFirstFiveIter);
+					System.exit(0);
+				}*/
 				numIters += 1;
 			} while (foundValidMoveThisIter);
 			double currentScore = computeScore(graph);
 			if (currentScore > maxScore){
 				maxScore = currentScore;
-				bestGraph = graph;
+				bestAssignment = makeMapFromTLinkToLabels(graph.getFactorGraph());
 			}
 			
 			// to update the counters for the number of iterations and number of changes
@@ -127,7 +135,7 @@ public class GreedyOptimizer<L>{
 				minNumIters = numIters;
 			avgNumChangesPerIter += (numChangesPerIter / numIters) / 100.0;
 			avgNumChangesFirstIter += numChangesFirstIter / 100.0;
-			avgNumChangesFirstFiveIter += numChangesFirstFiveIter / 100.0;
+			avgNumChangesFirstFiveIter += (numChangesFirstFiveIter / Math.min(5.0, numIters)) / 100.0;
 			for (int k = 0; k < avgNumValidMovesOneGraph.length; k++){
 				avgNumValidMovesOneGraph[k] = avgNumValidMovesOneGraph[k] / numIters;
 			}
@@ -141,7 +149,7 @@ public class GreedyOptimizer<L>{
 		
 		printInfoToConsole(avgNumIters, maxNumIters, minNumIters, avgNumChangesPerIter, 
 				avgNumChangesFirstIter, avgNumChangesFirstFiveIter, maxScore, avgNumValidMoves, avgNumValidMovesFirstIter);
-		return makeMapFromTLinkToLabels(bestGraph.getFactorGraph());
+		return bestAssignment;
 	}
 	
 
@@ -152,7 +160,6 @@ public class GreedyOptimizer<L>{
 		roundAvgNumValidMoves(avgNumValidMoves);
 		roundAvgNumValidMoves(avgNumValidMovesFirstIter);
 		
-		System.out.println();
 		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + 
 				Math.round(maxScore) + ", number of variables in graph: " + numOneHotVerts);
 		System.out.println("Number of iterations: Average: " + avgNumIters + ", Min: " + minNumIters + ", Max: " + maxNumIters);
@@ -160,7 +167,9 @@ public class GreedyOptimizer<L>{
 		System.out.println("Average number of changes in the first iteration: " + avgNumChangesFirstIter);
 		System.out.println("Average number of changes in the first five iterations: " + avgNumChangesFirstFiveIter);
 		System.out.println("Average number of available moves across iterations and graphs: " + Arrays.toString(avgNumValidMoves));
-		System.out.println("Average number of available moves in the first iteration across graphs: " + Arrays.toString(avgNumValidMovesFirstIter));
+		System.out.println("Average number of available moves in the first iteration across graphs: " + 
+				Arrays.toString(avgNumValidMovesFirstIter));
+		System.out.println();
 	}
 	
 	private void roundAvgNumValidMoves(double[] avgNumValidMoves) {
