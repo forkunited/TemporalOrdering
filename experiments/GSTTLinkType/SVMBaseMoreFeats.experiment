@@ -22,6 +22,10 @@ feature_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
 feature_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
 feature_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=TargetTokenSpan)
 
+feature_conjSourceTenseAspect=Conjunction(featureReferences=seTense/seAspect, minFeatureOccurrence=2)
+feature_conjTargetTenseAspect=Conjunction(featureReferences=teTense/teAspect, minFeatureOccurrence=2)
+feature_conjSourceTargetTenseAspect=Conjunction(featureReferences=conjSourceTenseAspect/conjTargetTenseAspect, minFeatureOccurences=4)
+
 feature_sPreps=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=IN)
 feature_sVerbsBase=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VB)
 feature_sVerbsPast=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=VBD)
