@@ -41,6 +41,11 @@ feature_tVerbsThirdPresent=NGramPoS(minFeatureOccurrence=1, tokenExtractor=Targe
 feature_tAnyPoS=NGramPoS(minFeatureOccurrence=1, tokenExtractor=TargetTokenSpan, PoS=ANY)
 feature_conjPoS=Conjunction(featureReferences=sAnyPoS/tAnyPoS, minFeatureOccurrence=2)
 
+feature_sPrevTokenAnyPoS=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=ANY, tokensBeforeTokenSpan=1)
+feature_sNextTokenAnyPoS=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=ANY, tokensAfterTokenSpan=1)
+feature_tPrevTokenAnyPoS=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=ANY, tokensBeforeTokenSpan=1)
+feature_tNextTokenAnyPoS=NGramPoS(minFeatureOccurrence=1, tokenExtractor=SourceTokenSpan, PoS=ANY, tokensAfterTokenSpan=1)
+
 feature_dPath=DependencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
 feature_cPath=ConstituencyPath(minFeatureOccurrence=1, sourceTokenExtractor=SourceTokenSpan, targetTokenExtractor=TargetTokenSpan)
 feature_tsdctRelation=TLinkTimeRelation(relation=SOURCE_DCT)
