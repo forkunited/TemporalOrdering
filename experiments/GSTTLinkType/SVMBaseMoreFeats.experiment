@@ -1,5 +1,5 @@
 randomSeed=1
-maxThreads=2
+maxThreads=4
 trainOnDev=true
 errorExampleExtractor=SourceTokenSpan
 
@@ -13,12 +13,14 @@ feature_seClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=SOURC
 feature_teClass=TLinkEventAttribute(attribute=TIMEML_CLASS, sourceOrTarget=TARGET)
 feature_seTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=SOURCE)
 feature_teTense=TLinkEventAttribute(attribute=TIMEML_TENSE, sourceOrTarget=TARGET)
+feature_conjTense=Conjunction(featureReferences=seTense/teTense, minFeatureOccurrence=2)
 feature_seAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=SOURCE)
 feature_teAspect=TLinkEventAttribute(attribute=TIMEML_ASPECT, sourceOrTarget=TARGET)
 feature_sePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=SOURCE)
 feature_tePolarity=TLinkEventAttribute(attribute=TIMEML_POLARITY, sourceOrTarget=TARGET)
 feature_stType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=SOURCE)
 feature_ttType=TLinkTimeAttribute(attribute=TIMEML_TYPE, sourceOrTarget=TARGET)
+feature_conjType=Conjunction(featureReferences=stType/ttType, minFeatureOccurrence=2)
 feature_sTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=SourceTokenSpan)
 feature_tTokens=NGramContext(contextWindowSize=0, minFeatureOccurrence=1, n=1, cleanFn=TempDefaultCleanFn, tokenExtractor=TargetTokenSpan)
 
