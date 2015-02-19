@@ -1,50 +1,124 @@
-// Copyright (c) 2012 Andre Martins
-// All Rights Reserved.
-//
-// This file is part of AD3 2.0.
-//
-// AD3 2.0 is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// AD3 2.0 is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with AD3 2.0.  If not, see <http://www.gnu.org/licenses/>.
-//
-
 #include "ad3/FactorGraph.h"
 #include <cstdlib>
+#include "AD3_TemporalDecoder.h"
 
+void decode_graph(int num_arcs, const vector<double> &scores, const vector<vector<int> > &one_hot_constraints, const vector<vector<int> > &transitivity_constraints, vector<double> &posteriors){
+  AD3::FactorGraph factor_graph;
+
+  vector<AD3::BinaryVariable*> binary_variables(num_arcs);
+  for (int i = 0; i < num_arcs; ++i) {
+      binary_variables[i] = factor_graph.CreateBinaryVariable();
+      binary_variables[i] ->SetLogPotential(scores[i]);
+  }
+
+  // Impose one-hot constraints.
+  for (int i = 0; i < one_hot_constraints.size(); ++i){
+    vector<AD3::BinaryVariable*> one_hot_variables;
+    for (int j = 0; j < one_hot_constraints[i].size(); j++){
+      one_hot_variables.push_back(binary_variables[one_hot_constraints[i][j]]);
+    }
+    factor_graph.CreateFactorXOR(one_hot_variables);
+  }
+
+  // Impose transitivity constraints.
+  for (int i = 0; i < transitivity_constraints.size(); ++i){
+    vector<AD3::BinaryVariable*> local_variables(3);
+    local_variables[0] = binary_variables[transitivity_constraints[i][0]];
+    local_variables[1] = binary_variables[transitivity_constraints[i][1]];
+    local_variables[2] = binary_variables[transitivity_constraints[i][2]];
+    factor_graph.CreateFactorIMPLY(local_variables);
+  }
+
+  vector<double> additional_posteriors;
+  double value;
+
+  // Run AD3.
+  cout << "Running AD3..."
+       << endl;
+  factor_graph.SetEtaAD3(0.1);
+  factor_graph.AdaptEtaAD3(true);
+  factor_graph.SetMaxIterationsAD3(1000);
+  factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+}
+
+JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
+  (JNIEnv *env, jobject thisObj, jobject j_scores, jobject j_oneHotConstraints, jobject j_transConstraints, jobject j_posteriors){
+    jclass c_arraylist = env->FindClass("java/util/ArrayList");
+    jmethodID fset_id = env->GetMethodID(c_arraylist,"set","(ILjava/lang/Object;)Ljava/lang/Object;");
+    jmethodID fget_id = env->GetMethodID(c_arraylist,"get","(I)Ljava/lang/Object;");
+    jmethodID fsize_id = env->GetMethodID(c_arraylist,"size","()I");
+
+    jclass c_double = env->FindClass("java/lang/Double");
+    jmethodID fdoublevalue_id = env->GetMethodID(c_double,"doubleValue","()D");
+
+    jclass c_integer = env->FindClass("java/lang/Integer");
+    jmethodID f_intvalue_id = env->GetMethodID(c_integer,"intValue","()I");
+    jmethodID fdouble_init = env->GetMethodID(c_double, "<init>","(D)V");
+    
+    int num_arcs = env->CallIntMethod(j_scores, fsize_id);
+
+    vector<double> scores;
+    vector<vector<int> > one_hot_constraints;
+    vector<vector<int> > transitivity_constraints; 
+
+    vector<double> posteriors;
+
+    for (int i = 0; i < num_arcs; ++i){
+      jobject dobj = env->CallObjectMethod(j_scores, fget_id, i);
+      double value = env->CallDoubleMethod(dobj, fdoublevalue_id);
+      scores.push_back(value);
+    }
+
+    for (int i = 0; i < num_arcs; ++i){
+      printf("%lf\n", scores[i]);
+    }
+
+    int size_onehot =  env->CallIntMethod(j_oneHotConstraints, fsize_id);
+
+    for (int i = 0; i < size_onehot; ++i){
+      jobject onehot_obj_i = env->CallObjectMethod(j_oneHotConstraints, fget_id, i);
+      int size_onehot_i = env->CallIntMethod(onehot_obj_i, fsize_id);
+      vector<int> onehot_i_vec;
+      for (int j = 0; j < size_onehot_i; ++j){
+        jobject iobj = env->CallObjectMethod(onehot_obj_i, fget_id, j);
+        int v = env->CallIntMethod(iobj, f_intvalue_id);
+        onehot_i_vec.push_back(v);
+      }
+      one_hot_constraints.push_back(onehot_i_vec);
+    }
+
+    int size_trans =  env->CallIntMethod(j_transConstraints, fsize_id);
+
+    for (int i = 0; i < size_trans; ++i){
+      jobject trans_obj_i = env->CallObjectMethod(j_transConstraints, fget_id, i);
+      int size_trans_i = env->CallIntMethod(trans_obj_i, fsize_id);
+      vector<int> trans_i_vec;
+      for (int j = 0; j < size_trans_i; ++j){
+        jobject iobj = env->CallObjectMethod(trans_obj_i, fget_id, j);
+        int v = env->CallIntMethod(iobj, f_intvalue_id);
+        trans_i_vec.push_back(v);
+      }
+      transitivity_constraints.push_back(trans_i_vec);
+    }
+
+    decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors);
+
+    // for (int i = 0; i < posteriors.size(); ++i){
+    //   cout << "posteriors[" << i << "]\t" << posteriors[i] << "\n";
+    // }
+    for (int i = 0; i < num_arcs; ++i){
+      jobject value =  env->NewObject(c_double, fdouble_init, posteriors[i]);
+      env->CallObjectMethod(j_posteriors, fset_id, i, value);
+    }
+
+
+}
+
+// Test running
 int main(int argc, char **argv) {
-  /*
-    TLink:t14->ei100AFTER
-    TLink:t14->ei100INCLUDES
-    TLink:ei99->ei100VAGUE
-    TLink:t14->ei100SIMULTANEOUS
-    TLink:ei99->ei100BEFORE
-    TLink:t14->ei100BEFORE
-    TLink:ei99->ei100IS_INCLUDED
-    TLink:ei99->ei100SIMULTANEOUS
-    TLink:ei99->ei100AFTER
-    TLink:ei99->t14AFTER
-    TLink:ei99->t14INCLUDES
-    TLink:ei99->t14VAGUE
-    TLink:ei99->ei100INCLUDES
-    TLink:ei99->t14BEFORE
-    TLink:t14->ei100VAGUE
-    TLink:ei99->t14SIMULTANEOUS
-    TLink:ei99->t14IS_INCLUDED
-    TLink:t14->ei100IS_INCLUDED
-  */
-
   int num_arcs = 18;
 
-  double scores[18] = {1.0, 0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  double scores_arr[18] = {1.0, 0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
   vector<vector<int> > one_hot_constraints(3);
 
@@ -69,26 +143,8 @@ int main(int argc, char **argv) {
   one_hot_constraints[2].push_back(7);
   one_hot_constraints[2].push_back(4);
 
-
-  /*
-    [15, 5, 4]
-    [15, 3, 7]
-    [16, 0, 8]
-    [13, 5, 4]
-    [9, 3, 8]
-    [15, 1, 12]
-    [16, 17, 6]
-    [9, 0, 8]
-    [10, 3, 12]
-    [10, 1, 12]
-    [15, 17, 6]
-    [13, 1, 4]
-    [9, 1, 8]
-    [13, 3, 4]
-    [16, 3, 6]
-    [16, 5, 4]
-    [15, 0, 8]
-  */
+  vector<double> scores (scores_arr, scores_arr + sizeof(scores_arr) / sizeof(scores_arr[0]) );
+  
   vector<vector<int> > transitivity_constraints(17); 
   for(int i = 0; i < transitivity_constraints.size(); i++){
     transitivity_constraints[i].resize(3);
@@ -161,50 +217,8 @@ int main(int argc, char **argv) {
   transitivity_constraints[16][1] = 0;
   transitivity_constraints[16][2] = 8;
 
-
-
-
-  AD3::FactorGraph factor_graph;
-
-  vector<AD3::BinaryVariable*> binary_variables(num_arcs);
-  for (int i = 0; i < num_arcs; ++i) {
-      binary_variables[i] = factor_graph.CreateBinaryVariable();
-      binary_variables[i] ->SetLogPotential(scores[i]);
-  }
-
-
-  for (int i = 0; i < one_hot_constraints.size(); ++i){
-    vector<AD3::BinaryVariable*> one_hot_variables;
-    for (int j = 0; j < one_hot_constraints[i].size(); j++){
-      one_hot_variables.push_back(binary_variables[one_hot_constraints[i][j]]);
-    }
-    factor_graph.CreateFactorXOR(one_hot_variables);
-  }
-  
-  // binary_variables[0] ->SetLogPotential(100);
-  // binary_variables[1] ->SetLogPotential(200);
-  // binary_variables[2] ->SetLogPotential(-50);
-
-  // Impose transitivity constraints.
-  for (int i = 0; i < transitivity_constraints.size(); ++i){
-    vector<AD3::BinaryVariable*> local_variables(3);
-    local_variables[0] = binary_variables[transitivity_constraints[i][0]];
-    local_variables[1] = binary_variables[transitivity_constraints[i][1]];
-    local_variables[2] = binary_variables[transitivity_constraints[i][2]];
-    factor_graph.CreateFactorIMPLY(local_variables);
-  }
-  
   vector<double> posteriors;
-  vector<double> additional_posteriors;
-  double value;
-
-  // Run AD3.
-  cout << "Running AD3..."
-       << endl;
-  factor_graph.SetEtaAD3(0.1);
-  factor_graph.AdaptEtaAD3(true);
-  factor_graph.SetMaxIterationsAD3(1000);
-  factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors);
 
   for (int i = 0; i < posteriors.size(); ++i){
     cout << "posteriors[" << i << "]\t" << posteriors[i] << "\n";
