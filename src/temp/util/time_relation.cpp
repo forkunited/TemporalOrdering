@@ -1,6 +1,6 @@
 #include "ad3/FactorGraph.h"
 #include <cstdlib>
-#include "AD3_TemporalDecoder.h"
+#include "temp_util_TemporalDecoder.h"
 
 void decode_graph(int num_arcs, const vector<double> &scores, const vector<vector<int> > &one_hot_constraints, const vector<vector<int> > &transitivity_constraints, vector<double> &posteriors){
   AD3::FactorGraph factor_graph;
@@ -38,10 +38,11 @@ void decode_graph(int num_arcs, const vector<double> &scores, const vector<vecto
   factor_graph.SetEtaAD3(0.1);
   factor_graph.AdaptEtaAD3(true);
   factor_graph.SetMaxIterationsAD3(1000);
-  factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  factor_graph.SolveExactMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  //factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
 }
 
-JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
+JNIEXPORT jdouble JNICALL  Java_temp_util_TemporalDecoder_decode_1graph
   (JNIEnv *env, jobject thisObj, jobject j_scores, jobject j_oneHotConstraints, jobject j_transConstraints, jobject j_posteriors){
     jclass c_arraylist = env->FindClass("java/util/ArrayList");
     jmethodID fset_id = env->GetMethodID(c_arraylist,"set","(ILjava/lang/Object;)Ljava/lang/Object;");
