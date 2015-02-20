@@ -1,8 +1,8 @@
 #include "ad3/FactorGraph.h"
 #include <cstdlib>
-#include "AD3_TemporalDecoder.h"
+#include "temp_util_TemporalDecoder.h"
 
-void decode_graph(int num_arcs, const vector<double> &scores, const vector<vector<int> > &one_hot_constraints, const vector<vector<int> > &transitivity_constraints, vector<double> &posteriors){
+void decode_graph(int num_arcs, const vector<double> &scores, const vector<vector<int> > &one_hot_constraints, const vector<vector<int> > &transitivity_constraints, vector<double> &posteriors, bool exact){
   AD3::FactorGraph factor_graph;
 
   vector<AD3::BinaryVariable*> binary_variables(num_arcs);
@@ -38,11 +38,15 @@ void decode_graph(int num_arcs, const vector<double> &scores, const vector<vecto
   factor_graph.SetEtaAD3(0.1);
   factor_graph.AdaptEtaAD3(true);
   factor_graph.SetMaxIterationsAD3(1000);
-  factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  if(exact){
+    factor_graph.SolveExactMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  }else{
+    factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  }
 }
 
 JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
-  (JNIEnv *env, jobject thisObj, jobject j_scores, jobject j_oneHotConstraints, jobject j_transConstraints, jobject j_posteriors){
+  (JNIEnv *env, jobject thisObj, jobject j_scores, jobject j_oneHotConstraints, jobject j_transConstraints, jobject j_posteriors, jboolean exact){
     jclass c_arraylist = env->FindClass("java/util/ArrayList");
     jmethodID fset_id = env->GetMethodID(c_arraylist,"set","(ILjava/lang/Object;)Ljava/lang/Object;");
     jmethodID fget_id = env->GetMethodID(c_arraylist,"get","(I)Ljava/lang/Object;");
@@ -69,9 +73,9 @@ JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
       scores.push_back(value);
     }
 
-    for (int i = 0; i < num_arcs; ++i){
-      printf("%lf\n", scores[i]);
-    }
+    // for (int i = 0; i < num_arcs; ++i){
+    //   printf("%lf\n", scores[i]);
+    // }
 
     int size_onehot =  env->CallIntMethod(j_oneHotConstraints, fsize_id);
 
@@ -100,8 +104,8 @@ JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
       }
       transitivity_constraints.push_back(trans_i_vec);
     }
-
-    decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors);
+    // printf("%d\n", exact);
+    decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors, exact);
 
     // for (int i = 0; i < posteriors.size(); ++i){
     //   cout << "posteriors[" << i << "]\t" << posteriors[i] << "\n";
@@ -218,7 +222,7 @@ int main(int argc, char **argv) {
   transitivity_constraints[16][2] = 8;
 
   vector<double> posteriors;
-  decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors);
+  decode_graph(num_arcs, scores, one_hot_constraints, transitivity_constraints, posteriors, false);
 
   for (int i = 0; i < posteriors.size(); ++i){
     cout << "posteriors[" << i << "]\t" << posteriors[i] << "\n";

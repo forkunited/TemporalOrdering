@@ -11,7 +11,7 @@ public class TemporalDecoder {
 	private native double decode_graph(ArrayList<Double> scores,
 			ArrayList<ArrayList<Integer>> oneHotConstraints,
 			ArrayList<ArrayList<Integer>> transConstraints,
-			ArrayList<Double> posteriors);
+			ArrayList<Double> posteriors, boolean exact);
 
 	public static void main(String[] args) {
 		int num_arcs = 18;
@@ -135,7 +135,7 @@ public class TemporalDecoder {
 			  posteriors.add(0.0);
 		  }
 		  
-		  new TemporalDecoder().decode_graph(scores, one_hot_constraints,transitivity_constraints,posteriors);
+		  new TemporalDecoder().decode_graph(scores, one_hot_constraints,transitivity_constraints,posteriors, false);
 		  
 		  for(int i = 0; i < posteriors.size(); i++){
 			  System.out.println(posteriors.get(i));
