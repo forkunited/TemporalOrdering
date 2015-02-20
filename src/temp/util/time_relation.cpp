@@ -38,6 +38,7 @@ void decode_graph(int num_arcs, const vector<double> &scores, const vector<vecto
   factor_graph.SetEtaAD3(0.1);
   factor_graph.AdaptEtaAD3(true);
   factor_graph.SetMaxIterationsAD3(1000);
+  
   if(exact){
     factor_graph.SolveExactMAPWithAD3(&posteriors, &additional_posteriors, &value);
   }else{
@@ -47,6 +48,7 @@ void decode_graph(int num_arcs, const vector<double> &scores, const vector<vecto
 
 JNIEXPORT jdouble JNICALL Java_AD3_TemporalDecoder_decode_1graph
   (JNIEnv *env, jobject thisObj, jobject j_scores, jobject j_oneHotConstraints, jobject j_transConstraints, jobject j_posteriors, jboolean exact){
+
     jclass c_arraylist = env->FindClass("java/util/ArrayList");
     jmethodID fset_id = env->GetMethodID(c_arraylist,"set","(ILjava/lang/Object;)Ljava/lang/Object;");
     jmethodID fget_id = env->GetMethodID(c_arraylist,"get","(I)Ljava/lang/Object;");
