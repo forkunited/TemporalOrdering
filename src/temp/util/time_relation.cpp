@@ -38,8 +38,8 @@ void decode_graph(int num_arcs, const vector<double> &scores, const vector<vecto
   factor_graph.SetEtaAD3(0.1);
   factor_graph.AdaptEtaAD3(true);
   factor_graph.SetMaxIterationsAD3(1000);
-  factor_graph.SolveExactMAPWithAD3(&posteriors, &additional_posteriors, &value);
-  //factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  //factor_graph.SolveExactMAPWithAD3(&posteriors, &additional_posteriors, &value);
+  factor_graph.SolveLPMAPWithAD3(&posteriors, &additional_posteriors, &value);
 }
 
 JNIEXPORT jdouble JNICALL  Java_temp_util_TemporalDecoder_decode_1graph
