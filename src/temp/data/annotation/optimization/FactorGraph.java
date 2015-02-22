@@ -115,7 +115,7 @@ public class FactorGraph<L> {
 	public static <L> Set<MyNode<L>> getSetOfVerticesOfType(Graph<MyNode<L>, String> factorGraph, NodeType type){
 		Set<MyNode<L>> vertices = new HashSet<MyNode<L>>();
 		for (MyNode<L> vertex : factorGraph.getVertices()){
-			if (vertex.getType().equals(type))
+			if (vertex.getType() == type)
 				vertices.add(vertex);
 		}
 		return vertices;
@@ -129,8 +129,13 @@ public class FactorGraph<L> {
 		//  add edge between each new node and new one-hot vertex
 		//  add edge between ecah new node and old trans factor
 		// 	remove old node
-		
-		for (MyNode<L> vertex : getSetOfVerticesOfType(factorGraph, temp.data.annotation.optimization.NodeType.variable)){
+		binarizeVariables(factorGraph, NodeType.fixedVariable);
+		binarizeVariables(factorGraph, NodeType.variable);
+
+	}
+	
+	private void binarizeVariables(Graph<MyNode<L>, String> factorGraph, NodeType nodeType){
+		for (MyNode<L> vertex : getSetOfVerticesOfType(factorGraph, nodeType)){
 			// make new vertices
 			Map<L, MyNode<L>> newNodes = new HashMap<L, MyNode<L>>();
 			for (L label : validLabels){
@@ -141,8 +146,17 @@ public class FactorGraph<L> {
 			connectNewNodesToTransNodes(vertex, newNodes, factorGraph);
 			removeNodeAndIncidentEdges(vertex, factorGraph);
 			
+			
 			// adding one-hot
-			MyNode<L> oneHot = new MyNode<L>(vertex.getTLink(), vertex.toString() + ":one-hot", temp.data.annotation.optimization.NodeType.onehotConstraint);
+			MyNode<L> oneHot = null;
+			if (nodeType == NodeType.variable)
+				oneHot = new MyNode<L>(vertex.getTLink(), vertex.toString() + ":one-hot", 
+						temp.data.annotation.optimization.NodeType.onehotConstraint);
+			else {
+				oneHot = new MyNode<L>(vertex.getTLink(), vertex.toString() + ":one-hot", 
+						temp.data.annotation.optimization.NodeType.onehotFixedVariableConstraint);
+				oneHot.setActiveLabel(vertex.getLabel());
+			}
 			
 			factorGraph.addVertex(oneHot);
 			// connecting one-hot to new binary nodes
@@ -199,7 +213,6 @@ public class FactorGraph<L> {
 		}
 	}
 
-	// here is where we implement alternating directions dual decomposition.
 	public void build() {
 		// first make a factor graph out of the scored datum labels
 		// then check that shit using JUNG
@@ -208,14 +221,18 @@ public class FactorGraph<L> {
 		// Graph<V, E> where V is the type of the vertices
 		// and E is the type of the edges
 		Graph<MyNode<L>, String> factorGraph = new UndirectedSparseGraph<MyNode<L>, String>();
-		
+				
 		// Add vertices for the TLinks
-		for (TLinkDatum<L> datum : scoredDatumLabels.keySet()) { 
+		for (TLinkDatum<L> datum : scoredDatumLabels.keySet()) {
 			checkDoc(datum);
 			factorGraph.addVertex(new MyNode<L>(datum, getVertexName(datum), temp.data.annotation.optimization.NodeType.variable));
 		}
+		// Add the fixedLabels
+		for (TLinkDatum<L> datum: fixedDatumLabels.keySet()){
+			factorGraph.addVertex(new MyNode<L>(datum, getVertexName(datum), temp.data.annotation.optimization.NodeType.fixedVariable, fixedDatumLabels.get(datum)));
+		}
 
-
+		
 		addTransitiveFactors(factorGraph);
 		checkTransitiveFactors(factorGraph);
 		binarizeTLinks(factorGraph);
@@ -226,7 +243,7 @@ public class FactorGraph<L> {
 		
 		this.factorGraph = factorGraph;
 		
-		//printoutGraph(factorGraph);
+		//printoutGraph();
 		//visualizeGraph(factorGraph);
 		//System.exit(0);
 	}

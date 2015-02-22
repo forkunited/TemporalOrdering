@@ -10,10 +10,12 @@ import temp.data.annotation.TLinkDatum;
 
 enum NodeType {
 	variable,
+	fixedVariable,
 	binarizedVariable,
 	transitiveConstraint,
 	binarizedTransitiveConstraint,
-	onehotConstraint
+	onehotConstraint,
+	onehotFixedVariableConstraint
 }
 
 class MyNode<L> {
@@ -31,13 +33,12 @@ class MyNode<L> {
 	private NodeType type;
 	
 	// for the ad^3 algorithm
-	private double p;
-	private Map<String, Double> q;
-	private Map<String, Double> lambda;
+	private double[] p;
+	private Map<String, double[]> q;
+	private Map<String, double[]> lambda;
 	
 	// only used by the oneHot nodes, to tell which of the associated binary variables is active
 	private L activeLabel;
-	private boolean isThisBinaryNodeActive;
 
 	// for creating variable nodes, binarizedVar nodes
 	public MyNode(TLinkDatum<L> tLink, String name, NodeType type) {
@@ -50,6 +51,7 @@ class MyNode<L> {
 	}
 	
 	// for creating binarized tlinks, so we know which label this particular node represents
+	// and for the fixed variables.
 	public MyNode(TLinkDatum<L> tLink, String name, NodeType type, L label) {
 		this.tLink = tLink;
 		this.name = name;
@@ -123,24 +125,32 @@ class MyNode<L> {
 		return binarizedRelations.get(0);
 	}
 	
-	public void setP(double p){
+	public void setP(double[] p){
 		this.p = p;
 	}
 	
-	public double getP(){
+	public double[] getP(){
 		return p;
 	}
 	
-	public void setQ(double qi, MyNode<L> node){
+	public void setQ(double[] qi, MyNode<L> node){
 		q.put(node.toString(), qi);
 	}
 	
-	public double getQ(MyNode<L> node){
+	public double[] getQ(MyNode<L> node){
 		return q.get(node.toString());
 	}
 	
-	public Map<String, Double> getQ(){
-		return new HashMap<String, Double>(q);
+	public Map<String, double[]> getQ(){
+		return new HashMap<String, double[]>(q);
+	}
+	
+	public void setLambda(String binaryVarName, double[] newValue){
+		lambda.put(binaryVarName, newValue);
+	}
+	
+	public double[] getLambda(String binaryVarName){
+		return lambda.get(binaryVarName);
 	}
 	
 	public List<MyNode<L>> getUnbinarizedRelations(){
@@ -165,7 +175,7 @@ class MyNode<L> {
 	
 	// only used for the one-hot constraints
 	public void setActiveLabel(L newActiveLabel){
-		if (this.type != NodeType.onehotConstraint){
+		if (this.type != NodeType.onehotConstraint && this.type != NodeType.onehotFixedVariableConstraint){
 			throw new IllegalArgumentException("trying to tell a node which label is active when that node isn't a one-hot node! Bad news bears.");
 		}
 		activeLabel = newActiveLabel;

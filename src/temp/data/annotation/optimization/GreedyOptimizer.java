@@ -23,6 +23,7 @@ public class GreedyOptimizer<L>{
 	private L[][][] compositionRules;
 	private int numInitialGraphs;
 	private int numOneHotVerts;
+	private int numFixedVerts;
 	
 	public GreedyOptimizer(
 			Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels,
@@ -60,6 +61,7 @@ public class GreedyOptimizer<L>{
 				fixedDatumLabels, validLabels, labelMapping, compositionRules);
 		graph.build();
 		graph.initializeGraph();
+		numFixedVerts = FactorGraph.getSetOfVerticesOfType(graph.getFactorGraph(), NodeType.onehotFixedVariableConstraint).size();
 		Map<TLinkDatum<L>, L> bestAssignment = makeMapFromTLinkToLabels(graph.getFactorGraph());
 		for (int i = 0; i < numInitialGraphs; i++){
 			
@@ -151,8 +153,6 @@ public class GreedyOptimizer<L>{
 				avgNumChangesFirstIter, avgNumChangesFirstFiveIter, maxScore, avgNumValidMoves, avgNumValidMovesFirstIter);
 		return bestAssignment;
 	}
-	
-
 
 	private void printInfoToConsole(double avgNumIters, double maxNumIters, double minNumIters, 
 			double avgNumChangesPerIter, double avgNumChangesFirstIter, double avgNumChangesFirstFiveIter, double maxScore, 
@@ -161,7 +161,7 @@ public class GreedyOptimizer<L>{
 		roundAvgNumValidMoves(avgNumValidMovesFirstIter);
 		
 		System.out.println("Found one highest scoring assignment out of " + numInitialGraphs + " graphs! Score = " + 
-				Math.round(maxScore) + ", number of variables in graph: " + numOneHotVerts);
+				Math.round(maxScore) + ", # variables: " + numOneHotVerts + ", # fixed vars: " + numFixedVerts);
 		System.out.println("Number of iterations: Average: " + avgNumIters + ", Min: " + minNumIters + ", Max: " + maxNumIters);
 		System.out.println("Average number of changes per iteration: " + avgNumChangesPerIter);
 		System.out.println("Average number of changes in the first iteration: " + avgNumChangesFirstIter);
@@ -254,7 +254,7 @@ public class GreedyOptimizer<L>{
 	
 	private boolean isBinaryVariableActive(MyNode<L> node, Graph<MyNode<L>, String> graph){
 		for (MyNode<L> oneHotForRel : graph.getNeighbors(node)){
-			if (oneHotForRel.getType() == NodeType.onehotConstraint){
+			if (oneHotForRel.getType() == NodeType.onehotConstraint || oneHotForRel.getType() == NodeType.onehotFixedVariableConstraint){
 				return (oneHotForRel.getActiveLabel() == node.getLabel());
 			}
 		}
