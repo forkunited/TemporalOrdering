@@ -1,6 +1,6 @@
 package temp.util;
 
-import java.util.*;
+import java.util.ArrayList;
 
 public class TemporalDecoder {
 	static {
@@ -8,17 +8,17 @@ public class TemporalDecoder {
 		// ad3temporal.dll (Windows) or libad3temporal.so (Unixes)
 	}
 
-	public native double decode_graph(List<Double> scores,
-			List<List<Integer>> oneHotConstraints,
-			List<List<Integer>> transConstraints,
-			List<Double> posteriors);
+	private native void decode_graph(ArrayList<Double> scores,
+			ArrayList<ArrayList<Integer>> oneHotConstraints,
+			ArrayList<ArrayList<Integer>> transConstraints,
+			ArrayList<Double> posteriors, boolean exact);
 
 	public static void main(String[] args) {
 		int num_arcs = 18;
 
-		  double[] scores_arr = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		  double[] scores_arr = new double[]{1.0, 0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-		  List<List<Integer>> one_hot_constraints = new ArrayList<List<Integer>>();
+		  ArrayList<ArrayList<Integer>> one_hot_constraints = new ArrayList<ArrayList<Integer>>();
 		  one_hot_constraints.add(new ArrayList<Integer>());
 		  one_hot_constraints.add(new ArrayList<Integer>());
 		  one_hot_constraints.add(new ArrayList<Integer>());
@@ -44,11 +44,11 @@ public class TemporalDecoder {
 		  one_hot_constraints.get(2).add(7);
 		  one_hot_constraints.get(2).add(4);
 
-		  List<Double> scores = new ArrayList<Double>();
+		  ArrayList<Double> scores = new ArrayList<Double>();
 		  for (double d : scores_arr){
 			  scores.add(d);
 		  }
-		  List<List<Integer>> transitivity_constraints = new ArrayList<List<Integer>>(); 
+		  ArrayList<ArrayList<Integer>> transitivity_constraints = new ArrayList<ArrayList<Integer>>(); 
 		  for (int i = 0; i < 17; i++){
 			  ArrayList<Integer> g = new ArrayList<Integer>();
 			  g.add(-1);
@@ -135,7 +135,7 @@ public class TemporalDecoder {
 			  posteriors.add(0.0);
 		  }
 		  
-		  new TemporalDecoder().decode_graph(scores, one_hot_constraints,transitivity_constraints,posteriors);
+		  new TemporalDecoder().decode_graph(scores, one_hot_constraints,transitivity_constraints,posteriors, false);
 		  
 		  for(int i = 0; i < posteriors.size(); i++){
 			  System.out.println(posteriors.get(i));
