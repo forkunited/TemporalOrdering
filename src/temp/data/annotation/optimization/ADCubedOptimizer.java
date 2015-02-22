@@ -21,10 +21,10 @@ public class ADCubedOptimizer<L> {
 		Graph<MyNode<L>, String> factorGraph = graph.getFactorGraph();
 		initializeGraph(factorGraph);
 		int iteration = 0;
-		while (stoppingCriteriaNotMet){
+		//while (stoppingCriteriaNotMet){
 			iteration++;
 			updateQs(factorGraph, iteration);
-		}
+		//}
 	}
 	
 	private void updateQs(Graph<MyNode<L>, String> factorGraph, int iteration){
@@ -107,7 +107,7 @@ public class ADCubedOptimizer<L> {
 	// since it's a binarized factor graph, we set each variable node y_i to 1/2 = 1/|y_i|
 	private void initializeGraph(Graph<MyNode<L>, String> factorGraph){
 		for (MyNode<L> curVertex : FactorGraph.getSetOfVerticesOfType(factorGraph, NodeType.binarizedVariable)){
-			curVertex.setP(1/validLabels.size());
+		//	curVertex.setP(1/validLabels.size());
 		}
 		
 		// to set the lambdas for bot the constriaints, transitive and one-hot 
@@ -118,7 +118,7 @@ public class ADCubedOptimizer<L> {
 	private void initializeLambdas(Graph<MyNode<L>, String> factorGraph, NodeType type){
 		for (MyNode<L> curConstraintVertex : FactorGraph.getSetOfVerticesOfType(factorGraph, type)){
 			for (MyNode<L> adjacentNode : factorGraph.getNeighbors(curConstraintVertex)){
-				curConstraintVertex.setLambda(adjacentNode.toString(), 0);
+			//	curConstraintVertex.setLambda(adjacentNode.toString(), 0);
 			}
 		}
 	}
