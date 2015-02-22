@@ -8,7 +8,7 @@ public class TemporalDecoder {
 		// ad3temporal.dll (Windows) or libad3temporal.so (Unixes)
 	}
 
-	private native void decode_graph(ArrayList<Double> scores,
+	public native void decode_graph(ArrayList<Double> scores,
 			ArrayList<ArrayList<Integer>> oneHotConstraints,
 			ArrayList<ArrayList<Integer>> transConstraints,
 			ArrayList<Double> posteriors, boolean exact);

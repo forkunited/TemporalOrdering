@@ -25,6 +25,7 @@ import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.optimization.ADCubedOptimizer;
 import temp.data.annotation.optimization.FactorGraph;
 import temp.data.annotation.optimization.GreedyOptimizer;
+import temp.data.annotation.optimization.InterfaceWithADCubed;
 import temp.data.annotation.timeml.TLink;
 import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
@@ -338,12 +339,12 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 		 * @return an optimal mapping from TLinks to labels according to the objective function 
 		 * defined in papers/TemporalOrderingNotes.pdf. 
 		 */
-		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping) {
+		public Map<TLinkDatum<L>, L> optimize(Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels, 
+				Map<TLinkDatum<L>, L> fixedDatumLabels, Set<L> validLabels, LabelMapping<L> labelMapping, boolean firstIter) {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
-			
 			// this is a flag for what kind of optimization we can do.
 			// this can take on four values: "AD^3", "Unstructured", "GreedyOptimization", and "ILP".
-			String typeOfOptimization = "GreedyOptimization";
+			String typeOfOptimization = "AD^3Interface";
 			
 			// TODO: finish AD^3
 			// TODO: crate Optimize class, have AD^3, Greedy, ILP, Unstructured extend / inherit from it.
@@ -351,22 +352,25 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
 						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
 				graph.build();
-				ADCubedOptimizer<L> optimizer = new ADCubedOptimizer<L>();
-				//optimizer.optimize(graph);
-			}
-			else if (typeOfOptimization.equals("Unstructured"))
+				ADCubedOptimizer<L> optimizer = new ADCubedOptimizer<L>(validLabels, scoredDatumLabels);
+				optimizer.optimize(graph);
+			} else if (typeOfOptimization.equals("AD^3Interface")){
+				FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
+				graph.build();
+				InterfaceWithADCubed<L> IWADC = new InterfaceWithADCubed<L>(graph, scoredDatumLabels, validLabels);
+				return IWADC.generateADCubedVariables(firstIter);
+			} else if (typeOfOptimization.equals("Unstructured")) {
 				return actuallyUnstructuredSetup(scoredDatumLabels, validLabels);
-			else if (typeOfOptimization.equals("GreedyOptimization")){
+			} else if (typeOfOptimization.equals("GreedyOptimization")){
 				int numInitialGraphs = 100;
 				GreedyOptimizer<L> gO = new GreedyOptimizer<L>(scoredDatumLabels, 
 						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules(), numInitialGraphs);				
 				return gO.optimize();
-			}
-			else if (!typeOfOptimization.equals("ILP")){
+			} else if (!typeOfOptimization.equals("ILP")){
 				throw new IllegalArgumentException("Selected an incorrect type of optimization!");
 			}
 
-			
 			
 			L[][][] compositionRules = this.labelInferenceRules.getCompositionRules(); 
 
