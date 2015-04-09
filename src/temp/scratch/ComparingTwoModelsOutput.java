@@ -48,13 +48,10 @@ public class ComparingTwoModelsOutput {
 		}
 		
 		System.out.println(label);
-		System.out.println("model1\\model2\tmodel2 t\tmodel2 f");
+		System.out.println("(model1 \\ model2)\tmodel2 t\tmodel2 f");
 		System.out.println("model1 t\t" + truetrue + "\t" + truefalse);
 		System.out.println("model1 f\t" + falsetrue + "\t" + falsefalse);
-	}
-	
-	private static void printContingencyTableForEachTrueLabel(){
-		
+		System.out.println();
 	}
 	
 	private static Map<String, Pair<String, String>> readOutput(String loc){
@@ -66,17 +63,18 @@ public class ComparingTwoModelsOutput {
 		try {
 			String sCurrentLine;
 			br = new BufferedReader(new FileReader(loc));
+			String pred = null;
+			String gold = null;
+			String tlink = null;
 			while ((sCurrentLine = br.readLine()) != null) {
-				String pred = null;
-				String gold = null;
-				String tlink = null;
+
 				if (sCurrentLine.startsWith("PREDICTED:")){
 					pred = sCurrentLine.split(" ")[1];
 				} else if (sCurrentLine.startsWith("ACTUAL:"))
 					gold = sCurrentLine.split(" ")[1];
 				else if (sCurrentLine.startsWith("temp."))
 					tlink = sCurrentLine.split("@")[1];
-				else if (sCurrentLine.equals("")){
+				else if (sCurrentLine.equals("") && pred != null){
 					predictions.put(tlink, new Pair<String, String>(pred, gold));
 					pred = null;
 					gold = null;
