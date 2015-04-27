@@ -346,7 +346,7 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			OutputWriter output = this.datumTools.getDataTools().getOutputWriter();
 			// this is a flag for what kind of optimization we can do.
 			// this can take on four values: "AD^3", "Unstructured", "GreedyOptimization", and "ILP".
-			String typeOfOptimization = "AD^3Interface";
+			String typeOfOptimization = "ILP";
 			
 			// TODO: crate Optimize class, have AD^3, Greedy, ILP, Unstructured extend / inherit from it.
 			
