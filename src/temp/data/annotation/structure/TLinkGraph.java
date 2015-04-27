@@ -1,6 +1,7 @@
 package temp.data.annotation.structure;
 
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import ark.data.annotation.Datum.Tools;
 import ark.data.annotation.Datum.Tools.LabelMapping;
 import ark.data.annotation.Document;
 import ark.data.annotation.structure.DatumStructure;
+import ark.model.evaluation.ConfusionMatrix;
 import ark.util.OutputWriter;
 
 /**
@@ -346,8 +348,11 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			// this can take on four values: "AD^3", "Unstructured", "GreedyOptimization", and "ILP".
 			String typeOfOptimization = "AD^3Interface";
 			
-			// TODO: finish AD^3
 			// TODO: crate Optimize class, have AD^3, Greedy, ILP, Unstructured extend / inherit from it.
+			
+			
+			
+			
 			if (typeOfOptimization.equals("AD^3")){
 				FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
 						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
@@ -603,7 +608,102 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 				}
 			}
 			
+			// TODO: DELETE THIS! It's for comparing ILP vs AD3
+			FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
+					fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());
+			graph.build();
+			InterfaceWithADCubed<L> IWADC = new InterfaceWithADCubed<L>(graph, scoredDatumLabels, validLabels);
+			compareLabels(IWADC.generateADCubedVariables(firstIter), resultLabels, scoredDatumLabels, validLabels);
+
 			return resultLabels;
+			
+		}
+		
+		private void compareLabels(Map<TLinkDatum<L>, L> ad3, Map<TLinkDatum<L>, L> ilp, Map<TLinkDatum<L>, Map<L, Double>> scoredDatumLabels,
+				Set<L> validLabels){
+			double ilpScore = 0;
+			double ad3Score = 0;
+			
+			Map<L, Map<L, Integer>> confusionMatrix = new HashMap<L, Map<L, Integer>>();
+			for (L label : validLabels){
+				Map<L, Integer> actual = new HashMap<L, Integer>();
+				for (L actualLabel : validLabels)
+					actual.put(actualLabel, 0);
+				confusionMatrix.put(label, actual);
+			}
+			for (TLinkDatum<L> curTLink : ad3.keySet()){
+				ad3Score += scoredDatumLabels.get(curTLink).get(ad3.get(curTLink));
+				ilpScore += scoredDatumLabels.get(curTLink).get(ilp.get(curTLink));
+				confusionMatrix.get(ilp.get(curTLink)).put(ad3.get(curTLink), 1 + confusionMatrix.get(ilp.get(curTLink)).get(ad3.get(curTLink)));
+			}
+			
+			
+			// CODE COPIED FROM ConfusionMatrix!
+			StringBuilder confusionMatrixStr = new StringBuilder();
+			L[] validLabelsArray = (L[])validLabels.toArray();
+			
+			confusionMatrixStr.append("ILP Score: " + ilpScore);
+			confusionMatrixStr.append("AD3 Score: " + ad3Score);
+			confusionMatrixStr.append("\n");
+			
+			confusionMatrixStr.append("(A)cutal\\(P)redicted");
+			confusionMatrixStr.append("\t");
+			for (int i = 0; i < validLabelsArray.length; i++) {
+				confusionMatrixStr.append(validLabelsArray[i]).append(" (P)\t");
+			}
+			confusionMatrixStr.append("Total\tIncorrect\t% Incorrect\n");
+			
+			DecimalFormat cleanDouble = new DecimalFormat("0"); // FIXME: Pass as argument
+			
+			double[] colTotals = new double[validLabels.size()];
+			double[] colIncorrects = new double[validLabels.size()];
+			for (int i = 0; i < validLabelsArray.length; i++) {
+				confusionMatrixStr.append(validLabelsArray[i]).append(" (A)\t");
+				double rowTotal = 0.0;
+				double rowIncorrect = 0.0;
+				for (int j = 0; j < validLabelsArray.length; j++) {
+					if (confusionMatrix.containsKey(validLabelsArray[i]) && confusionMatrix.get(validLabelsArray[i]).containsKey(validLabelsArray[j])) {
+						double value = confusionMatrix.get(validLabelsArray[i]).get(validLabelsArray[j]);
+						String cleanDoubleStr = cleanDouble.format(value);
+						confusionMatrixStr.append(cleanDoubleStr)
+										  .append("\t");
+					
+						rowTotal += value;
+						rowIncorrect += ((i == j) ? 0 : value);
+						colTotals[j] += value;
+						colIncorrects[j] += ((i == j) ? 0 : value);
+					} else
+						confusionMatrixStr.append("0.0\t");
+				}
+				
+				confusionMatrixStr.append(cleanDouble.format(rowTotal))
+								  .append("\t")
+								  .append(cleanDouble.format(rowIncorrect))
+								  .append("\t")
+								  .append(rowTotal == 0 ? 0.0 : cleanDouble.format(100.0*rowIncorrect/rowTotal))
+								  .append("\n");
+			}
+			
+			confusionMatrixStr.append("Total\t");
+			for (int i = 0; i < colTotals.length; i++)
+				confusionMatrixStr.append(cleanDouble.format(colTotals[i])).append("\t");
+			confusionMatrixStr.append("\n");
+			
+			confusionMatrixStr.append("Incorrect\t");
+			for (int i = 0; i < colIncorrects.length; i++)
+				confusionMatrixStr.append(cleanDouble.format(colIncorrects[i])).append("\t");
+			confusionMatrixStr.append("\n");
+			
+			confusionMatrixStr.append("% Incorrect\t");
+			for (int i = 0; i < colTotals.length; i++)
+				confusionMatrixStr.append(colTotals[i] == 0 ? 0.0 : cleanDouble.format(100.0*colIncorrects[i]/colTotals[i])).append("\t");
+			confusionMatrixStr.append("\n\n\n");
+			
+			
+			this.datumTools.getDataTools().getOutputWriter().resultsWriteln(confusionMatrixStr.toString());
+			
+			
+			
 			
 		}
 		
