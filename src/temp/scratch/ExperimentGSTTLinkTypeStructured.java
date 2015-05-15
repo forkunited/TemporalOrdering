@@ -8,6 +8,9 @@ import temp.data.annotation.TLinkDatum;
 import temp.data.annotation.TempDocument;
 import temp.data.annotation.TempDocumentSet;
 import temp.data.annotation.structure.InferenceRulesTimeMLRelType;
+import temp.data.annotation.structure.timeline.Timeline;
+import temp.data.annotation.structure.timeline.TimelineBuilder;
+import temp.data.annotation.structure.timeline.TimelineComparitor;
 import temp.data.annotation.timeml.TLink;
 import temp.data.annotation.timeml.TLink.TimeMLRelType;
 import temp.util.TempProperties;
@@ -26,11 +29,8 @@ public class ExperimentGSTTLinkTypeStructured {
 	private static int tlinkId;
 	
 	public static void main(String[] args) {
-		// FIXME: I commented this because it was broken on my computer...
-		// I think you just forgot to add this class to repo? - Bill
-		TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
-		tcaw.checkIfAllTwoPairsNeedToBeChecked();
-		//System.exit(0);
+		//TransitiveConstraintsAllWays tcaw = new TransitiveConstraintsAllWays();
+		//tcaw.checkIfAllTwoPairsNeedToBeChecked();
 		
 		
 		String experimentName = "GSTTLinkType/" + args[0];
@@ -62,6 +62,14 @@ public class ExperimentGSTTLinkTypeStructured {
 		if (useTestData)
 			testData = loadDataFromDirectory(documentSetPath + "/test", datumTools);
 		
+		
+		
+		
+//		System.out.println("Training size: " + trainData.size());
+//		System.out.println("Dev size: " + devData.size());
+//		System.out.println("Test size: " + testData.size());
+//		System.exit(0);
+		
 		ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType> experiment = 
 				new ExperimentGST<TLinkDatum<TimeMLRelType>, TimeMLRelType>(experimentOutputName, experimentInputPath, trainData, devData, testData);
 		
@@ -70,7 +78,14 @@ public class ExperimentGSTTLinkTypeStructured {
 		if (!experiment.run())
 			output.debugWriteln("Error: Experiment run failed.");
 		testConstraintsOnOutput(experiment.getClassifiedData(), output, datumTools, checkDisjunctiveConstraints);
+		
+		TimelineBuilder predTimeline = new TimelineBuilder(experiment.getClassifiedData());
+		TimelineBuilder goldTimeline = new TimelineBuilder(trainData);
+		TimelineComparitor tc = new TimelineComparitor();
+		tc.compare(predTimeline.buildTimeline(), goldTimeline.buildTimeline(), output);
+		
 
+		
 	}
 
 	private static DataSet<TLinkDatum<TimeMLRelType>, TimeMLRelType> loadDataFromDirectory(String path, Tools<TLinkDatum<TimeMLRelType>, TimeMLRelType> datumTools) {
@@ -103,8 +118,10 @@ public class ExperimentGSTTLinkTypeStructured {
 		fullData.addAll(devData);
 		if (testData != null)
 			fullData.addAll(testData);
-		testConstraints(fullData, output, "training, dev, and test", checkDisjunctiveConstraints);
-		
+		//testConstraints(fullData, output, "training, dev, and test", checkDisjunctiveConstraints);
+		//testConstraints(trainData, output, "training", checkDisjunctiveConstraints);
+		testConstraints(devData, output, "dev", checkDisjunctiveConstraints);
+		//testConstraints(testData, output, "test", checkDisjunctiveConstraints);
 	}
 	
 	// tests that the output of the experiment has the correct structure.
