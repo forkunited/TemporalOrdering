@@ -80,7 +80,7 @@ public class ExperimentGSTTLinkTypeStructured {
 		testConstraintsOnOutput(experiment.getClassifiedData(), output, datumTools, checkDisjunctiveConstraints);
 		
 		TimelineBuilder predTimeline = new TimelineBuilder(experiment.getClassifiedData());
-		TimelineBuilder goldTimeline = new TimelineBuilder(trainData);
+		TimelineBuilder goldTimeline = new TimelineBuilder(testData);
 		TimelineComparitor tc = new TimelineComparitor();
 		tc.compare(predTimeline.buildTimeline(), goldTimeline.buildTimeline(), output);
 		
