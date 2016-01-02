@@ -350,9 +350,6 @@ public class TLinkGraph<L> extends DatumStructure<TLinkDatum<L>, L> {
 			
 			// TODO: crate Optimize class, have AD^3, Greedy, ILP, Unstructured extend / inherit from it.
 			
-			
-			
-			
 			if (typeOfOptimization.equals("AD^3")){
 				FactorGraph<L> graph = new FactorGraph<L>(scoredDatumLabels, 
 						fixedDatumLabels, validLabels, labelMapping, this.labelInferenceRules.getCompositionRules());

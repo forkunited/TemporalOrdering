@@ -48,7 +48,7 @@ public class InterfaceWithADCubed<L> {
 		findTransitiveConstraints();
 		fillOnehotConstraints();
 		makePosteriors();
-		new TemporalDecoder().decode_graph(scores, oneHotConstraints, transConstraints, posteriors, useExactInference);
+		new TemporalDecoder().decode_graph(scores, oneHotConstraints, transConstraints, posteriors, false); // normally pass useExactInefrence here
 		return generateMapFromTLinkToLabel();
 		//printAll();
 	}
